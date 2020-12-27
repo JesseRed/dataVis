@@ -1,0 +1,137 @@
+library(readr)
+
+
+perform_preprocessing <-function(beha, data, savedirname, inshiny = TRUE){
+
+  cat(file = stderr(), "entering perform_preprocessing\n")
+  # if (inshiny){
+  # showModal(modalDialog(
+  #   title = "Please wait",
+  #   "... reading the csv file"
+  # ))
+  # }
+tbl_inp = data
+# reduce behavioral data to those that are in the data table
+tbl_beh <- beha[beha$ID %in% data$ID,]
+#if (inshiny){ removeModal()}
+
+
+coln = colnames(tbl_inp)
+region_list <- character(length=1)
+trial_list <- integer(length=1)
+freq_list <- integer(length=1)
+
+cat(file = stderr(), "first schleife\n")
+j <- 1
+#withProgress(message = 'parsing columnnames', value = 0, {
+cat(file = stderr(), paste0("length(coln)=",length(coln),"\n"))
+for (i in coln) {
+  if (grepl("__",i)) {
+    tmp <- strsplit(i,"__")
+    region_list[j]<-tmp[[1]][1]
+    trial_list[j]<-tmp[[1]][2]
+    freq_list[j]<-tmp[[1]][3]
+    j <- j+1
+  }
+}
+cat(file = stderr(), "\n\nregion_list = \n")
+cat(file = stderr(), region_list)
+cat(file = stderr(), "\n\ntrial_list = \n")
+cat(file = stderr(), trial_list)
+cat(file = stderr(), "\n\nfreq_list = \n")
+cat(file = stderr(), freq_list)
+#  incProgress(1/length(coln), detail = paste("part", j))
+#}) # Progress bar 
+
+uregion_comp_list = unique(region_list)
+# zerlege in erstes und 2. Region
+j = 1
+region_list <- character(length=1)
+cat(file = stderr(), "second schleife\n")
+for (i in uregion_comp_list){
+  if (grepl(">",i)) {
+    tmp <- strsplit(i,">")
+    region_list[j]<-tmp[[1]][1]
+    j = j + 1
+    region_list[j]<-tmp[[1]][2]
+    j = j + 1
+  }
+}
+uregion_list = unique(region_list)
+utrial_list = unique(trial_list)
+ufreq_list = unique(freq_list)
+subj_list <- seq(1,nrow(tbl_inp))
+beh_list <- colnames(tbl_beh)
+  
+cat(file = stderr(), "\n\nuregion_list = \n")
+cat(file = stderr(), uregion_list)
+cat(file = stderr(), "\n\nutrial_list = \n")
+cat(file = stderr(), utrial_list)
+cat(file = stderr(), "\n\nufreq_list = \n")
+cat(file = stderr(), ufreq_list)
+
+cat(file = stderr(), "reserving memory")
+mdat <- array(data = NA,
+              dim = c(nrow(tbl_inp),
+                      length(uregion_list),
+                      length(uregion_list), 
+                      length(utrial_list),
+                      length(ufreq_list)
+              )
+)
+# nun fuellen des datenarrays mdat
+idx = 1
+cat(file = stderr(), "entering proress bar\n")
+#withProgress(message = 'Creating Datastructure', value = 0, {
+  for (num_subj in subj_list){
+    if (idx!=num_subj){
+      idx = num_subj
+      print(cat(sprintf("subject number %d / %d", num_subj, length(subj_list))))
+    }     
+    num_region1 = 0
+    for (n_region1 in uregion_list){
+      num_region2 = 0
+      num_region1 = num_region1 + 1
+      for (n_region2 in uregion_list){
+        num_trial = 0
+        num_region2 = num_region2 + 1
+        for (n_trial in utrial_list){
+          num_freq = 0
+          num_trial = num_trial + 1
+          for (n_freq in ufreq_list){
+            num_freq = num_freq + 1
+            
+            if (n_region1==n_region2){ tmp = 0
+            } else{
+              
+              region_name = paste0(n_region1,">",n_region2)
+              col_name <- paste(region_name,toString(n_trial),toString(n_freq),sep = "__")
+              tmp =  tbl_inp[[col_name]][num_subj]
+              if (is.null(tmp)){
+                region_name = paste0(n_region2,">",n_region1)
+                col_name <- paste(region_name,toString(n_trial),toString(n_freq),sep = "__")
+                tmp =  tbl_inp[[col_name]][num_subj]
+              }
+              
+              if (is.null(tmp)){
+                tmp = NaN
+              }
+            }
+            mdat[num_subj, num_region1, num_region2, num_trial, num_freq] = tmp
+          }
+        }      
+      }
+    }
+  }
+  # Increment the progress bar, and update the detail text.
+#  incProgress(1/length(subj_list), detail = paste("Doing part", num_subj))
+#}) # Progress bar
+
+mybasepath = file.path("./data", savedirname)
+saveRDS(uregion_list, file = file.path(mybasepath, "uregion_list.Rda"))
+saveRDS(utrial_list,  file = file.path(mybasepath, "utrial_list.Rda" ))
+saveRDS(ufreq_list,   file = file.path(mybasepath, "ufreq_list.Rda"  ))
+saveRDS(tbl_beh,      file = file.path(mybasepath, "tbl_beh.Rda"     ))
+saveRDS(mdat,         file = file.path(mybasepath, "tbl_data.Rda"    ))
+
+}
