@@ -28,6 +28,9 @@ library(sortable)
 #setwd("..")
 #setwd("D:/Programming/dataVIS")
 
+# for quickcor
+#devtools::install_github("hannet91/ggcor")
+
 source("./modules/compare_trials_stats.R")
 source("./functions/get_data.R")
 source("./modules/overview_plot.R")

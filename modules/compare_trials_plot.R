@@ -1,6 +1,10 @@
 library(shiny)
 library(markdown)
-
+library(corrr)
+library(GGally)
+library(ggcorrplot)
+library(ggplot2)
+library(plotly)
 
 compareTrialsPlotUI <- function(id){
   ns <- NS(id)
@@ -26,9 +30,7 @@ compareTrialsPlotServer <- function(id,  freq) {
   moduleServer(
     id,
     function(input, output, session) {
-      #selectInput(NS(id, "var"), "Variable", choices = NULL)
       ns<-session$ns
-
 
       output$fluidRow_oben <- renderUI({
         fluidPage(
@@ -48,9 +50,7 @@ compareTrialsPlotServer <- function(id,  freq) {
                           selectInput(ns("group2"), h5("Select Group 2", align = "center"),
                                       choices = g_groups(), selected = g_groups()[3])
                           )
-
                  )
-
           ),
           column(4,
                  style = "background-color: #fcfcfc;",
@@ -65,22 +65,15 @@ compareTrialsPlotServer <- function(id,  freq) {
                           selectInput(ns("trial2"), h5("Select Trial 2", align = "center"),
                                       choices = g_trials_named(), selected = g_groups()[2])
                    )
-
                  )
           ),
-          # column(3,
-          #        selectInput(ns("mod_group3"), h4("Select Group 3"),
-          #                    choices = group_names, selected = group_names[3])
-          # ),
           column(2,
                  style = "background-color: #fcfcfc;",
                  h4("Visualize", align = "center"),
                  selectInput(ns("method"), h5("method"),
-                             choices = c("Corrplot", "Heatmap", "Circle", "Pheatmap"), selected = 1)
+                             choices = c("Corrplot", "Corrplot_mixed", "Corrplot_clustered", "ggcorr", "Circle", "Pheatmap"), selected = 1)
           ),
           column(2,
-#                 fluidRow(actionButton(ns("saveImage"), "save Image")),
-#                 fluidRow(actionButton(ns("ExportData"), "export Data")),
                  fluidRow(
                    column(6,
                           numericInput(ns("plot_height"),"plot height",800)
@@ -101,7 +94,9 @@ compareTrialsPlotServer <- function(id,  freq) {
         ),
         fluidRow(
           plotOutput(ns("plot"), width = "auto", height = "800px", click = ns("plot_click"))
-          #uiOutput("plot.ui") #ns("plot"), width = "auto", height = "800px", click = ns("plot_click"))
+        ),
+        fluidRow(
+          plotlyOutput(ns("myplotly"))
         ),
         fluidRow(
           column(9,
@@ -127,14 +122,14 @@ compareTrialsPlotServer <- function(id,  freq) {
                  ),
           )
         ),
-        fluidRow(
-          column(2, actionButton(ns("saveImage"), "save Image"),),
-          column(2, textInput(ns("saveimage_filename"),"filename ","mycompplotimage")),
-          column(2, numericInput(ns("saveimage_height"),"height (cm)",8)),
-          column(2, numericInput(ns("saveimage_width"),"width (cm)",8)),
-          column(2, numericInput(ns("saveimage_dpi"),"dpi",600)),
-          column(2, selectInput(ns("saveimage_fileformat"), "file format", choices = c("tiff", "pdf", "png"))),
-        ),
+        # fluidRow(
+        #   column(2, actionButton(ns("saveImage"), "save Image"),),
+        #   column(2, textInput(ns("saveimage_filename"),"filename ","mycompplotimage")),
+        #   column(2, numericInput(ns("saveimage_height"),"height (cm)",8)),
+        #   column(2, numericInput(ns("saveimage_width"),"width (cm)",8)),
+        #   column(2, numericInput(ns("saveimage_dpi"),"dpi",600)),
+        #   column(2, selectInput(ns("saveimage_fileformat"), "file format", choices = c("tiff", "pdf", "png"))),
+        # ),
         fluidRow(
           column(12,
                  box(title = "Plot ..........expand for help (comp_plot_markdown.md)", width = 12, collapsible = TRUE, collapsed = TRUE, htmlOutput(ns("htmlhelp_Comp_Plot"))),
@@ -197,8 +192,7 @@ compareTrialsPlotServer <- function(id,  freq) {
       })
       ####################################################################################
       ####################################################################################
-      save_image1_rval <- reactiveVal(FALSE) # zur Speicherung des Plot Images
-      save_image2_rval <- reactiveVal(FALSE) # zur Speicherung des Histogram Images
+
 
       data_1 <- reactive({
         get_data_group_trial_freqmean(g_data(),input$group1, as.numeric(input$trial1), freq())
@@ -224,160 +218,247 @@ compareTrialsPlotServer <- function(id,  freq) {
       })
 
       plotwidth <- reactive({
-        if (input$plot_width == 0){
-          return("auto")
-        } else{
-          return(input$plot_width)
-        }
+        if (input$plot_width == 0){ return("auto")            }
+        else{                       return(input$plot_width)  }
       })
 
       plotheight <- reactive({
-        if (input$plot_height == 0){
-          return("auto")
-        } else{
-          return(input$plot_height)
-        }
+        if (input$plot_height == 0){ return("auto")}
+        else{ return(input$plot_height) }
       })
+
+
+
+
+
+      ###########################################################
+      ### RENDERPLOT
+      output$myplotly<-renderPlotly({
+        d<-tapply(PlantGrowth$weight,PlantGrowth$group,mean)
+        d<-data.frame(d)
+        d <- curdata()
+        mat_t <<- d$mat_t
+        mat_p <<- d$mat_p
+        # p<-plot_ly(x = rownames(d), y = c(input$ctrl,input$trt1,input$trt2),
+        #            type ="bar"
+        # )
+
+        # p<-layout(p,title = "Mean plantgrowth",
+        #           xaxis = list(
+        #             title = "GROUP",
+        #             titlefont = list(size=16)
+        #           ),
+        #           yaxis = list(
+        #             title = "MEAN GROWTH",
+        #             titlefont = list(size=16),
+        #             ticks="outside",
+        #             ticklen=7,
+        #             zeroline=TRUE,
+        #             showline=TRUE
+        #           )
+        # )
+
+        #data(mtcars)
+        #corr <- round(cor(mtcars), 1)
+        #p.mat <- cor_pmat(mtcars)
+
+        #         ggcorrplot(mat_p)
+
+        # nbreaks=8,
+        # use = "everything",
+        # palette='RdGy',
+        # label=TRUE,
+        # label_size=5,
+        # label_color='white')
+        #p<-ggcorr(data = NULL, cor_matrix=mat_p)
+        #p<-ggcorrplot(data = NULL, cor_matrix=mat_p)
+        #p<-ggcorrplot(corr)
+        #p<-ggcorr(corr, nbreaks = 5)
+        mat_p_sig = mat_p
+        mat_p_sig[mat_p_sig>0.05]=0.05000001
+        p<-ggcorr(
+          data = NULL,
+          cor_matrix = mat_p_sig,
+          nbreaks = 5,
+          label = TRUE,
+          drop = TRUE,
+          limits = FALSE #c(0,0.05)
+          )
+
+        # ggcorr(nba[, 2:15], geom = "blank", label = TRUE, hjust = 0.75) +
+        #   geom_point(size = 10, aes(color = coefficient > 0, alpha = abs(coefficient) > 0.5)) +
+        #   scale_alpha_manual(values = c("TRUE" = 0.25, "FALSE" = 0)) +
+        #   guides(color = FALSE, alpha = FALSE)
+
+
+        p
+      })
+        #width = function() plotwidth(),
+        #height = function() plotheight(),
 
 
       ###########################################################
       ### RENDERPLOT
       output$plot<-renderPlot(
-        #if (input$plot_width == 0){
-        #  width = "auto" #function() input$plot_width,
-        #  height = function() input$plot_height
-        #}else{
-          width = function() plotwidth(),
-          height = function() plotheight(),
-        #},
-        res = input$plot_res,
+        #width = function() plotwidth(),
+        #height = function() plotheight(),
+        #res = input$plot_res,
         {
         req(input$trial1)
         req(input$trial2)
         req(input$group1)
         req(input$group2)
         d <- curdata()
-        # colnames(d$mat_p) = g_regions()
-        # rownames(d$mat_p) = g_regions()
-
+        mat_t <<- d$mat_t
+        mat_p <<- d$mat_p
         ###################
         # CORRPLOT
         if (input$method=="Corrplot"){
-        # colnames(d$mat_p) = g_regions()
-        # rownames(d$mat_p) = vector(mode="character", length=length(g_regions()))
-        # colnames(d$mat_t) = vector(mode="character", length=length(g_regions()))
-        # rownames(d$mat_t) = g_regions()
-        if (g_act_method()=="Coherence") {
-          rownames(d$mat_p) = vector(mode="character", length=length(g_regions()))
-          x1 <<- corrplot(d$mat_p, method="number", tl.cex = 0.9, type = "upper", is.corr = FALSE,
-                          p.mat = d$mat_p, sig.level = g_sig(),
-                          col=colorRampPalette(c("blue","red","green"))(200))
-          colnames(d$mat_t) = vector(mode="character", length=length(g_regions))
-          x2 <<- corrplot(d$mat_t, add = TRUE, method="number", tl.cex = 0.9, type = "lower", is.corr = FALSE,
-                          p.mat = d$mat_p, sig.level = g_sig())
-          #dev.copy(png,'mylocalcorrplot.png')
-          #dev.off()
-        }else if (g_act_method()=="Transferentropy" || g_act_method()=="Granger"){
-          corrplot(d$mat_p, method="number", tl.cex = 0.9, is.corr = FALSE,
-                   p.mat = d$mat_p, sig.level = g_sig(),
-                   col=colorRampPalette(c("blue","red","green"))(200))
+          generate_plot_Corrplot(d$mat_p, d$mat_t)
 
-        }else if (g_act_method()=="Frequency"){
-          print("not implemented")
-        }
         }
 
 
-        if (input$method=="Heatmap"){
+        if (input$method=="Corrplot_mixed"){
           #png("mypng.png")
-          x1 <<- plot(d$mat_t)
+          #x1 <<- plot(d$mat_t)
+          mat_p_sig <- mat_p
+          mat_p_sig[mat_p>g_sig()]<-g_sig()+0.0000000001
+
+          #dev.off()
+          rownames(mat_p) = vector(mode="character", length=length(g_regions()))
+          x1 <<- corrplot(mat_p_sig, method="circle", tl.cex = 0.9, type = "upper", is.corr = FALSE,
+                          p.mat = mat_p_sig, sig.level = g_sig(),
+                          diag=FALSE,
+                          insig = "blank",
+                          tl.srt = 45,
+                          col=colorRampPalette(c("blue","red","green"))(200)
+                          #cl.lim = c(0,g_sig())
+          )
+                          #non_corr.method = "pch",
+                          #col=colorRampPalette(c("blue","red","green"))(200))
+          colnames(mat_t) = vector(mode="character", length=length(g_regions()))
+
+         # myplot_corr <<- corrplot(mat_t, add = TRUE, method="number", tl.cex = 0.9, type = "lower", is.corr = FALSE,
+        #                           p.mat = mat_p, sig.level = g_sig())
+
+
+        }
+        if (input$method=="Corrplot_clustered"){
+          #png("mypng.png")
+          #x1 <<- plot(d$mat_t)
+          #https://cran.r-project.org/web/packages/corrplot/vignettes/corrplot-intro.html order = "AOE"
+          rownames(mat_p) = vector(mode="character", length=length(g_regions()))
+          x1 <<- corrplot(mat_p, method="circle", tl.cex = 0.9, type = "upper", is.corr = FALSE,
+                          p.mat = mat_p, sig.level = g_sig(),
+                          col=colorRampPalette(c("blue","red","green"))(200))
+          colnames(mat_t) = vector(mode="character", length=length(g_regions()))
+
+          myplot_corr <<- corrplot(mat_t, add = TRUE, method="number", tl.cex = 0.9, type = "lower", is.corr = FALSE,
+                                   p.mat = mat_p, sig.level = g_sig())
+
+          #,
+          #               col=colorRampPalette(c("blue","red","green"))(200))
           #dev.off()
 
 
+        }
+        if (input$method=="ggcorr"){
+          #png("mypng.png")
+          #x1 <<- plot(d$mat_t)
+          #https://cran.r-project.org/web/packages/corrplot/vignettes/corrplot-intro.html order = "AOE"
+          #df <- as.data.frame(mat_p)
+          #ggplot(data = df) + geom_point()
+          #df <- as.data.frame(mat_p)
+          #x <-ggplot(data = df, aes(x=frontopolar_A, y = central_A)) + geom_point()
+          #x
+
+
+          # data(mtcars)
+          # corr <- round(cor(mtcars), 1)
+          # p.mat <- cor_pmat(mtcars)
+          # ggcorrplot(corr)
+
+          #x1 <- plot(d$mat_t)
+            #ggcorr(data = NULL, cor_matrix=mat_p)
+           ggcorrplot(corr, hc.order = TRUE,
+                      type = "lower",
+                      lab = TRUE,
+                      lab_size = 3, insig = 'blank',
+                      method="square", p.mat = corr, sig.level = 0.4,
+                      colors = c("tomato2", "white", "springgreen3"),
+                      title="Correlogram of mtcars",
+                      ggtheme=theme_bw) + geom_point(aes(colour = cut(pvalue, c(-Inf, 0.1, 0.2, Inf))),
+                                                      +                                           size = 5) +
+             scale_color_manual(name = "pvalue",
+                                                      values = c("(-Inf,0.1]" = "black",
+                                                                     +                                   "(0.1,0.2]" = "yellow",
+                                                                     +                                   "(0.2, Inf]" = "red"),
+                                                         labels = c("<= 0.1", "0.1 < pval <= 0.2", "> 0.2"))
+
+#
+#           > corr <- matrix(runif(100),nrow=10)
+#           > ggcorrplot(corr, hc.order = TRUE,
+#                                    type = "lower",
+#                                    lab = TRUE,
+#                                    lab_size = 3,
+#                        method="circle",
+#                                   colors = c("tomato2", "white", "springgreen3"),
+#                                   title="Correlogram of mtcars",
+#                                   ggtheme=theme_bw)
+#  #         myplot_corr
+# #          cat(file = stderr(), 'ggcorr\n')
+#  #         ggcorrplot(mat_p)
+#
+#                  # nbreaks=8,
+#                  # use = "everything",
+#                  # palette='RdGy',
+#                  # label=TRUE,
+#                  # label_size=5,
+#                  # label_color='white')
+#           mat_p_sig = mat_p
+#           mat_p_sig[mat_p_sig>0.05]=0.05000001
+#           # xx<-ggcorr(
+#           #   data = NULL,
+#           #   cor_matrix = mat_p_sig,
+#           #   nbreaks = 5,
+#           #   label = TRUE,
+#           #   drop = TRUE,
+#           #   limits = FALSE #c(0,0.05)
+#           # )
+#           df <- as.data.frame(mat_p)
+#
+#           xx <- ggcorr(
+#             data = NULL,
+#             cor_matrix = mat_p,
+#             geom = "blank",
+#             digits = 3,
+#             label = TRUE,
+#             hjust = 0.75,
+#             angle = -45) +
+#
+#             geom_point(
+#               size = 12,
+#               aes(color = coefficient > 0,
+#                   alpha = abs(coefficient) < 0.05)) +
+#             scale_alpha_manual(values = c("TRUE" = 0.25, "FALSE" = 0)) +
+#             geom_mark(data = df)+ #, aes(p.value=mat_p))+
+#             #geom_abline(slope = -1, intercept = dim(mat_p)-1)+
+#             geom_abline(slope = 1, intercept = 0)+
+#             guides(color = FALSE, alpha = FALSE)
+#
+
+         #xx<- generate_histogram_plot_facet(input$group1, input$group2, input$trial1, input$trial2, freq(), level_x_rval(), level_y_rval())
+         return(xx)
         }
         if (input$method=="Circle"){
           myplotcircle = generate_plot_Circle(d$mat_p, d$mat_t, d$data1, d$data2)
 
-          #          chordDiagram(M)
 
-          #
-          # rownames(d$mat_t) = g_regions()
-          # colnames(d$mat_t) = g_regions()
-          # x = d$data1[,1,2]
-          # y = d$data2[,2,3]
-          # z = t.test(x,y)
-          # df = z$parameter
-          #
-          # #M = 1/d$mat_p
-          # M = abs(log(d$mat_p))
-          #
-          # t_threshold = abs(log(g_sig()))
-          # rownames(M) = g_regions()
-          # colnames(M) = g_regions()
-          # M[is.nan(M)]=0
-          # M[upper.tri(M)]=0.001
-          #
-          # # cat(file=stderr(), M)
-          # # RdYlBu hat 11 Farbstufen daher nicht fuer diese Palette veraendern
-          # mycol = map2color4threshold(
-          #   M,brewer.pal(n=11, name = "RdYlBu"),
-          #   threshold = t_threshold,
-          #   invert_col_map = TRUE
-          # )
-          # dim(mycol) = dim(M)
-          #
-          # chordDiagram(M ,col = mycol)
-          #
-          # #dev.copy(png,'mylocalCicleplot.png')
-          # #dev.off()
-          # tiff(paste0("./outputimages/Circleplot.tif"),
-          #      width = 2000, height = 2000,
-          #      units  = "px", res = 600)
-          # chordDiagram(M ,col = mycol)
-          # dev.off()
-          # #          chordDiagram(M)
-          #
         }
         if (input$method=="Pheatmap"){
 
             generate_plot_Pheatmap(d$mat_p, d$mat_t, myfontsize = 18)
-#           colnames(d$mat_p) = g_regions()
-#           rownames(d$mat_p) = g_regions()
-#           #myplot <- reactive({
-# #          mat_p[mat_p>0.05]=0.1
-#           #m <- matrix(c(rnorm(1000)), ncol=100)
-#           #distmat <- dist(t(m))
-#
-#           # Returns a vector of 'num.colors.in.palette'+1 colors. The first 'cutoff.fraction'
-#           # fraction of the palette interpolates between colors[1] and colors[2], the remainder
-#           # between colors[3] and colors[4]. 'num.colors.in.palette' must be sufficiently large
-#           # to get smooth color gradients.
-#           makeColorRampPalette <- function(colors, cutoff.fraction, num.colors.in.palette)
-#           {
-#             stopifnot(length(colors) == 4)
-#             ramp1 <- colorRampPalette(colors[1:2])(num.colors.in.palette * cutoff.fraction)
-#             ramp2 <- colorRampPalette(colors[3:4])(num.colors.in.palette * (1 - cutoff.fraction))
-#             return(c(ramp1, ramp2))
-#           }
-#
-#           cutoff.distance <- 0.05
-#           cols <- makeColorRampPalette(c("red", "orange",    # distances 0 to 3 colored from white to red
-#                                          "gray", "black"), # distances 3 to max(distmat) colored from green to black
-#                                        cutoff.distance / 1, #max(mat_p), #max(distmat),
-#                                        100)
-#
-#           pheatmap(
-#             mat                   = d$mat_p,
-#             display_numbers       = TRUE,
-#             color                 = cols,
-# #            color                 = inferno(20),
-#             fontsize              = 18,
-#             main                  = "P-Values Pheatmap",
-#             show_rownames         = TRUE,
-#             show_colnames         = TRUE,
-#             cluster_cols          = FALSE,
-#             cluster_rows          = FALSE,
-#           )
 
         }
 
@@ -438,7 +519,7 @@ compareTrialsPlotServer <- function(id,  freq) {
           open_device_for_save(filename2)
           myplot = switch(
             input$method,
-            "Corrplot"     = generate_plot_Coherence(d$mat_p, d$mat_t),
+            "Corrplot"     = generate_plot_Corrplot(d$mat_p, d$mat_t),
             "Circle"       = generate_plot_Circle(d$mat_p, d$mat_t, d$data1, d$data2),
             "Pheatmap"     = generate_plot_Pheatmap(d$mat_p, d$mat_t)
           )

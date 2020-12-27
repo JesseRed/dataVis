@@ -103,17 +103,37 @@ generate_plot_Circle<-function(mat_p, mat_t, data1, data2){
   return(myplot)
 }
 
-generate_plot_Coherence<-function(mat_p, mat_t){
+generate_plot_Corrplot<-function(mat_p, mat_t){
+  # colnames(d$mat_p) = g_regions()
+  # rownames(d$mat_p) = vector(mode="character", length=length(g_regions()))
+  # colnames(d$mat_t) = vector(mode="character", length=length(g_regions()))
+  # rownames(d$mat_t) = g_regions()
+
+  if (g_act_method()=="Coherence"){
   # Erstellt einen Histogram plot von mehreren Gruppen mit gleichen Achsenskalen
   #d = get_currently_selected_data(g_data(), group1, group2, trial1, trial2, freq())
+    rownames(mat_p) = vector(mode="character", length=length(g_regions()))
   x1 <<- corrplot(mat_p, method="number", tl.cex = 0.9, type = "upper", is.corr = FALSE,
-                  p.mat = mat_p, sig.level = g_sig(),
+                  p.mat = mat_p, sig.level = g_sig(), tl.srt = 45,
                   col=colorRampPalette(c("blue","red","green"))(200))
-  colnames(d$mat_t) = vector(mode="character", length=length(g_regions))
+  colnames(mat_t) = vector(mode="character", length=length(g_regions()))
 
-  x2 <<- corrplot(mat_t, add = TRUE, method="number", tl.cex = 0.9, type = "lower", is.corr = FALSE,
-                  p.mat = mat_p, sig.level = g_sig())
-  return(x2)
+  myplot_corr <<- corrplot(mat_t, add = TRUE, method="number", tl.cex = 0.9, type = "lower", is.corr = FALSE,
+                  p.mat = mat_p, sig.level = g_sig(), tl.srt = 45)
+  }else if (g_act_method()=="Transferentropy") {
+    myplot_corr <<- corrplot(d$mat_p, method="number", tl.cex = 0.9, is.corr = FALSE,
+                             p.mat = d$mat_p, sig.level = g_sig(),tl.srt = 45,
+                             col=colorRampPalette(c("blue","red","green"))(200))
+  }else if (g_act_method()=="Granger") {
+    cat(file = stderr(), "Corrrplot Granger not implemented")
+    myplot_corr = NULL
+  }else if (g_act_method()=="Frequency") {
+    cat(file = stderr(), "Corrplot Frequency not implemented")
+    myplot_corr = NULL
+  }
+
+  return(myplot_corr)
+
 }
 
 generate_plot_Pheatmap<-function(mat_p, mat_t, myfontsize = g_saveImage_fontsize()){
@@ -148,6 +168,7 @@ generate_plot_Pheatmap<-function(mat_p, mat_t, myfontsize = g_saveImage_fontsize
     show_colnames         = TRUE,
     cluster_cols          = FALSE,
     cluster_rows          = FALSE,
+
   )
   return(myplot)
 }
