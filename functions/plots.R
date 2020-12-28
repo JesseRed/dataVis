@@ -198,3 +198,112 @@ open_device_for_save <- function(filename){
   }
 
 }
+
+generate_plot_ggplot_corrplot_handmade<- function(mat_p, mat_t, myfontsize = g_saveImage_fontsize()){
+
+  rownames(mat_p)<-NULL
+  colnames(mat_p)<-NULL
+  rownames(mat_t)<-NULL
+  colnames(mat_t)<-NULL
+
+ # mat_p <- matrix(runif(196,0,0.1),nrow=14)
+ #mat_t <- matrix(runif(196,0,10),nrow=14)
+
+  # names <- c("frontal_right_A1",
+  #            "frontal_right_B2",
+  #            "frontal_right_A3",
+  #            "frontal_right_A4",
+  #            "frontal_right_A5",
+  #            "frontal_right_A6",
+  #            "frontal_right_A7",
+  #            "frontal_right_A8",
+  #            "frontal_right_A9",
+  #            "frontal_right_A10",
+  #            "frontal_right_A11",
+  #            "frontal_right_A12",
+  #            "frontal_right_A13",
+  #            "frontal_right_A14"
+  # )
+
+
+  A <- mat_p
+  Alt_b = lower.tri(A, diag = FALSE)
+  Aut_b = upper.tri(A, diag = FALSE)
+  Alt <- A[Alt_b]
+  Aut <- A[Aut_b]
+  df_tval <- melt(mat_t)
+  df<-melt(A)
+  df$t_val <- df_tval$value
+
+  tmp <- as.character(df$value)
+  tmp[df$value<3]="1"
+  tmp[df$value<0.05]="2"
+  tmp[df$value<0.01]="3"
+  tmp[df$value<0.001]="4"
+  tmp[df$value<0.0001]="5"
+  # tmp[df$value<3]="pval >0.5"
+  # tmp[df$value<0.05]="0.01 < pval <= 0.05"
+  # tmp[df$value<0.01]="0.001 < pval <= 0.01"
+  # tmp[df$value<0.001]="0.0001 < pval <= 0.001"
+  # tmp[df$value<0.0001]="pval <= 0.0001"
+  sig_level = tmp
+  df$sig_level = tmp
+
+
+
+
+  df$lt<-melt(Alt_b)
+  df$ut<-melt(Aut_b)
+  #dflt <- df[df[,"lt.value"]==TRUE, ]
+  #df<-as_tibble(df)
+  dflt <- df %>% filter(lt$value==TRUE)
+  dfut <- df %>% filter(ut$value==TRUE)
+  #df[df$lt.value==TRUE,]
+
+
+  #dfut<-df[df$value!=0,]
+  #df$V2 <- factor(df$Var2, levels = df$V2)
+
+  cat(file = stderr(), paste0("length(g_regions()",length(g_regions()),"\n"))
+
+
+  regions<<-g_regions()
+
+  #diagonal_elements <- df$Var1==df$Var2
+
+  p<-ggplot(df, aes(x = Var1, y = Var2)) +
+    #geom_raster(aes(fill=value)) +
+    #scale_fill_gradient(low="grey90", high="red") +
+    labs(x="",
+         y="",
+         title="Significance Matrix",
+         caption="handmade with ggplot2") +
+    theme_bw() + theme(axis.text.x=element_text(size=9, angle=45, vjust=0.9, hjust=1.0),
+                       axis.text.y=element_text(size=9),
+                       plot.title=element_text(size=12),
+                       aspect.ratio = 1) +
+    geom_point(data = dflt, aes(x = dflt$Var1, y= dflt$Var2,colour = dflt$sig_level),
+               size = 12,
+               alpha = 0.5,
+               stat = "identity",
+               #position='stack',
+               show.legend = TRUE
+    )+
+    scale_color_manual(name = "p-value coding",
+                       values = c("white", "green", "yellow", "red"   , "pink", "black"),
+                       labels = c(">0.05", "<0.05", "<0.01" , "<0.001", "<0.0001", "not existent"))+
+    geom_text(data = dflt, aes(label= ifelse(value<0.05, sprintf("%0.3f", round(value,digits =3)),"")),
+              hjust=0.5, vjust=0.5, size = 3,
+              stat = "identity")+
+    geom_abline(slope = 1, intercept = 0) +
+    scale_y_continuous(breaks=seq(1, length(g_regions()), 1), labels = g_regions(), minor_breaks = NULL) +
+    scale_x_continuous(breaks=seq(1, length(g_regions()), 1), labels = g_regions(), minor_breaks = NULL)
+
+  cat(file = stderr(), paste0("length(g_regions()",length(g_regions()),"\n"))
+
+  return(p)
+
+
+
+}
+

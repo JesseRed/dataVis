@@ -96,7 +96,7 @@ compareTrialsPlotServer <- function(id,  freq) {
           plotOutput(ns("plot"), width = "auto", height = "800px", click = ns("plot_click"))
         ),
         fluidRow(
-          plotlyOutput(ns("myplotly"))
+          plotlyOutput(ns("myplotly"), width = "1000", height = "800px")
         ),
         fluidRow(
           column(9,
@@ -234,56 +234,59 @@ compareTrialsPlotServer <- function(id,  freq) {
       ###########################################################
       ### RENDERPLOT
       output$myplotly<-renderPlotly({
-        d<-tapply(PlantGrowth$weight,PlantGrowth$group,mean)
-        d<-data.frame(d)
-        d <- curdata()
-        mat_t <<- d$mat_t
-        mat_p <<- d$mat_p
-        # p<-plot_ly(x = rownames(d), y = c(input$ctrl,input$trt1,input$trt2),
-        #            type ="bar"
-        # )
 
-        # p<-layout(p,title = "Mean plantgrowth",
-        #           xaxis = list(
-        #             title = "GROUP",
-        #             titlefont = list(size=16)
-        #           ),
-        #           yaxis = list(
-        #             title = "MEAN GROWTH",
-        #             titlefont = list(size=16),
-        #             ticks="outside",
-        #             ticklen=7,
-        #             zeroline=TRUE,
-        #             showline=TRUE
-        #           )
-        # )
-
-        #data(mtcars)
-        #corr <- round(cor(mtcars), 1)
-        #p.mat <- cor_pmat(mtcars)
-
-        #         ggcorrplot(mat_p)
-
-        # nbreaks=8,
-        # use = "everything",
-        # palette='RdGy',
-        # label=TRUE,
-        # label_size=5,
-        # label_color='white')
-        #p<-ggcorr(data = NULL, cor_matrix=mat_p)
-        #p<-ggcorrplot(data = NULL, cor_matrix=mat_p)
-        #p<-ggcorrplot(corr)
-        #p<-ggcorr(corr, nbreaks = 5)
-        mat_p_sig = mat_p
-        mat_p_sig[mat_p_sig>0.05]=0.05000001
-        p<-ggcorr(
-          data = NULL,
-          cor_matrix = mat_p_sig,
-          nbreaks = 5,
-          label = TRUE,
-          drop = TRUE,
-          limits = FALSE #c(0,0.05)
-          )
+        p <-generate_plot_ggplot_corrplot_handmade(mat_p, mat_t)
+        #
+        # d<-tapply(PlantGrowth$weight,PlantGrowth$group,mean)
+        # d<-data.frame(d)
+        # d <- curdata()
+        # mat_t <<- d$mat_t
+        # mat_p <<- d$mat_p
+        # # p<-plot_ly(x = rownames(d), y = c(input$ctrl,input$trt1,input$trt2),
+        # #            type ="bar"
+        # # )
+        #
+        # # p<-layout(p,title = "Mean plantgrowth",
+        # #           xaxis = list(
+        # #             title = "GROUP",
+        # #             titlefont = list(size=16)
+        # #           ),
+        # #           yaxis = list(
+        # #             title = "MEAN GROWTH",
+        # #             titlefont = list(size=16),
+        # #             ticks="outside",
+        # #             ticklen=7,
+        # #             zeroline=TRUE,
+        # #             showline=TRUE
+        # #           )
+        # # )
+        #
+        # #data(mtcars)
+        # #corr <- round(cor(mtcars), 1)
+        # #p.mat <- cor_pmat(mtcars)
+        #
+        # #         ggcorrplot(mat_p)
+        #
+        # # nbreaks=8,
+        # # use = "everything",
+        # # palette='RdGy',
+        # # label=TRUE,
+        # # label_size=5,
+        # # label_color='white')
+        # #p<-ggcorr(data = NULL, cor_matrix=mat_p)
+        # #p<-ggcorrplot(data = NULL, cor_matrix=mat_p)
+        # #p<-ggcorrplot(corr)
+        # #p<-ggcorr(corr, nbreaks = 5)
+        # mat_p_sig = mat_p
+        # mat_p_sig[mat_p_sig>0.05]=0.05000001
+        # p<-ggcorr(
+        #   data = NULL,
+        #   cor_matrix = mat_p_sig,
+        #   nbreaks = 5,
+        #   label = TRUE,
+        #   drop = TRUE,
+        #   limits = FALSE #c(0,0.05)
+        #   )
 
         # ggcorr(nba[, 2:15], geom = "blank", label = TRUE, hjust = 0.75) +
         #   geom_point(size = 10, aes(color = coefficient > 0, alpha = abs(coefficient) > 0.5)) +
@@ -372,7 +375,7 @@ compareTrialsPlotServer <- function(id,  freq) {
           #df <- as.data.frame(mat_p)
           #x <-ggplot(data = df, aes(x=frontopolar_A, y = central_A)) + geom_point()
           #x
-
+          p <-generate_plot_ggplot_corrplot_handmade(mat_p, mat_t)
 
           # data(mtcars)
           # corr <- round(cor(mtcars), 1)
@@ -381,22 +384,35 @@ compareTrialsPlotServer <- function(id,  freq) {
 
           #x1 <- plot(d$mat_t)
             #ggcorr(data = NULL, cor_matrix=mat_p)
-           ggcorrplot(corr, hc.order = TRUE,
-                      type = "lower",
-                      lab = TRUE,
-                      lab_size = 3, insig = 'blank',
-                      method="square", p.mat = corr, sig.level = 0.4,
-                      colors = c("tomato2", "white", "springgreen3"),
-                      title="Correlogram of mtcars",
-                      ggtheme=theme_bw) + geom_point(aes(colour = cut(pvalue, c(-Inf, 0.1, 0.2, Inf))),
-                                                      +                                           size = 5) +
-             scale_color_manual(name = "pvalue",
-                                                      values = c("(-Inf,0.1]" = "black",
-                                                                     +                                   "(0.1,0.2]" = "yellow",
-                                                                     +                                   "(0.2, Inf]" = "red"),
-                                                         labels = c("<= 0.1", "0.1 < pval <= 0.2", "> 0.2"))
 
-#
+
+           #
+           # ggcorrplot(corr, hc.order = TRUE,
+           #            type = "lower",
+           #            lab = TRUE,
+           #            lab_size = 3, insig = 'blank',
+           #            method="square", p.mat = corr, sig.level = 0.4,
+           #            colors = c("tomato2", "white", "springgreen3"),
+           #            title="Correlogram of mtcars",
+           #            ggtheme=theme_bw) + geom_point(aes(colour = cut(pvalue, c(-Inf, 0.1, 0.2, Inf))),
+           #                                            +                                           size = 5) +
+           #   scale_color_manual(name = "pvalue",
+           #                                            values = c("(-Inf,0.1]" = "black",
+           #                                                           +                                   "(0.1,0.2]" = "yellow",
+           #                                                           +                                   "(0.2, Inf]" = "red"),
+           #                                               labels = c("<= 0.1", "0.1 < pval <= 0.2", "> 0.2"))
+           #
+
+
+
+
+
+
+
+
+
+
+           #
 #           > corr <- matrix(runif(100),nrow=10)
 #           > ggcorrplot(corr, hc.order = TRUE,
 #                                    type = "lower",
@@ -449,7 +465,7 @@ compareTrialsPlotServer <- function(id,  freq) {
 #
 
          #xx<- generate_histogram_plot_facet(input$group1, input$group2, input$trial1, input$trial2, freq(), level_x_rval(), level_y_rval())
-         return(xx)
+         return(p)
         }
         if (input$method=="Circle"){
           myplotcircle = generate_plot_Circle(d$mat_p, d$mat_t, d$data1, d$data2)

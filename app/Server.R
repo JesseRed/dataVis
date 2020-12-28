@@ -23,6 +23,8 @@ library(effects)
 library(pastecs)
 library(compute.es)
 library(sortable)
+library(reshape2)
+library(tidyverse)
 #library(shinyWidgets)
 
 #setwd("..")
