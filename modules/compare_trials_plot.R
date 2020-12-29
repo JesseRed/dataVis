@@ -234,7 +234,9 @@ compareTrialsPlotServer <- function(id,  freq) {
       ###########################################################
       ### RENDERPLOT
       output$myplotly<-renderPlotly({
-
+        d <- curdata()
+        mat_t <<- d$mat_t
+        mat_p <<- d$mat_p
         p <-generate_plot_ggplot_corrplot_handmade(mat_p, mat_t)
         #
         # d<-tapply(PlantGrowth$weight,PlantGrowth$group,mean)

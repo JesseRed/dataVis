@@ -17,14 +17,23 @@ if (method == "Coherence"){
   # }
   tbl_inp = data
   # reduce behavioral data to those that are in the data table
-  tbl_beh <- beha[beha$ID %in% data$ID,]
+  tbl_beh_tmp <- beha[beha$ID %in% data$ID,]
+  # now reorder the tbl_beh that this order match the order of the matix
+  # later on ... the matrix is indexed only by numbers ... there is no further id
+  # therefore it is needed that both are in the same order
+  tbl_beh <- tbl_beh_tmp[match(CohT$ID, tbl_beh_tmp$ID),]
   #if (inshiny){ removeModal()}
+  test_that_IDs_are_the_same(tbl_beh, tbl_inp)
 
+  id_list = tbl_inp[['ID']]
 
   coln = colnames(tbl_inp)
   region_list <- character(length=1)
   trial_list <- integer(length=1)
+
   freq_list <- integer(length=1)
+
+
 
   cat(file = stderr(), "first schleife\n")
   j <- 1
@@ -63,6 +72,7 @@ if (method == "Coherence"){
       j = j + 1
     }
   }
+
   uregion_list = unique(region_list)
   utrial_list = unique(trial_list)
   ufreq_list = unique(freq_list)
@@ -76,7 +86,7 @@ if (method == "Coherence"){
   cat(file = stderr(), "\n\nufreq_list = \n")
   cat(file = stderr(), ufreq_list)
 
-  cat(file = stderr(), "reserving memory")
+  cat(file = stderr(), "reserving memory\n")
   mdat <- array(data = NA,
                 dim = c(nrow(tbl_inp),
                         length(uregion_list),
@@ -94,6 +104,7 @@ if (method == "Coherence"){
       idx = num_subj
       print(cat(sprintf("subject number %d / %d", num_subj, length(subj_list))))
     }
+    #subject_idx_in_beh_table <- get_subject_idx_in_beh_table(tbl_inp_)
     num_region1 = 0
     for (n_region1 in uregion_list){
       num_region2 = 0
@@ -269,6 +280,7 @@ if (method == "Coherence"){
   saveRDS(uregion_list, file = file.path(mybasepath, "uregion_list.Rda"))
   saveRDS(utrial_list,  file = file.path(mybasepath, "utrial_list.Rda" ))
   saveRDS(ufreq_list,   file = file.path(mybasepath, "ufreq_list.Rda"  ))
+  saveRDS(id_list,      file = file.path(mybasepath, "id_list.Rda"     ))
   saveRDS(tbl_beh,      file = file.path(mybasepath, "tbl_beh.Rda"     ))
   saveRDS(mdat,         file = file.path(mybasepath, "tbl_data.Rda"    ))
 
@@ -285,3 +297,17 @@ if (str_sub(mystring,-2,-1)=="_A" || str_sub(mystring,-2,-1)=="_B") {
   return(region_name)
 }
 
+
+test_that_IDs_are_the_same<-function(t1, t2){
+  id1 = t1$ID
+  id2 = t2$ID
+  if (!(length(id1)==length(id2))){
+    stop('error length(id1) not == length(id2)')
+  }
+  for (idx in 1:length(id1)){
+    if (!(id1[idx]==id2[idx])){
+      stop('error in matching tables ids are not matching ')
+    }
+  }
+
+}

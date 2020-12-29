@@ -2,6 +2,7 @@ library(shinydashboard)
 library(shinyalert)
 library(vroom)
 library(xtable)
+library(data.table)
 
 preprocessingUI <- function(id){
   ns <- NS(id)
@@ -94,7 +95,8 @@ preprocessingServer <- function(id) {
 
       data_data <- reactive({
         req(input$file_data)
-        read.csv(input$file_data$datapath, header = TRUE, sep = input$delimiter_data, check.names = FALSE)
+        fread(input$file_data$datapath, header = TRUE, sep = input$delimiter_data, check.names = FALSE)
+        #read.csv(input$file_data$datapath, header = TRUE, sep = input$delimiter_data, check.names = FALSE)
       })
 
 

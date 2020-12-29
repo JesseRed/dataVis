@@ -25,6 +25,7 @@ library(compute.es)
 library(sortable)
 library(reshape2)
 library(tidyverse)
+library(shinyjqui)
 #library(shinyWidgets)
 
 #setwd("..")
