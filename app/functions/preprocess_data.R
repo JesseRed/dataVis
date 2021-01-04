@@ -2,11 +2,13 @@ library(readr)
 library(stringr)
 
 perform_preprocessing <-function(beha, data, savedirname, method = "Coherence", inshiny = TRUE){
-  cat(file = stderr(), "entering perform_preprocessing with method = ")
-  cat(file = stderr(), method)
-  cat(file = stderr(), "\n")
+  #cat(file = stderr(), "entering perform_preprocessing with method = ")
+  #cat(file = stderr(), method)
+  #cat(file = stderr(), "\n")
+  #cat(file = stderr(), paste0("getwd()=",getwd(), "\n"))
+
 if (method == "Coherence"){
-  cat(file = stderr(), "entering perform_preprocessing... with method = Coherence\n")
+  #cat(file = stderr(), "entering perform_preprocessing... with method = Coherence\n")
   cat(file = stderr(), "now reading the data out of the csv file ... no feedback can be given please be patient for large files\n")
 
   # if (inshiny){
@@ -21,7 +23,7 @@ if (method == "Coherence"){
   # now reorder the tbl_beh that this order match the order of the matix
   # later on ... the matrix is indexed only by numbers ... there is no further id
   # therefore it is needed that both are in the same order
-  tbl_beh <- tbl_beh_tmp[match(CohT$ID, tbl_beh_tmp$ID),]
+  tbl_beh <- tbl_beh_tmp[match(tbl_inp$ID, tbl_beh_tmp$ID),]
   #if (inshiny){ removeModal()}
   test_that_IDs_are_the_same(tbl_beh, tbl_inp)
 
@@ -38,7 +40,7 @@ if (method == "Coherence"){
   cat(file = stderr(), "first schleife\n")
   j <- 1
   #withProgress(message = 'parsing columnnames', value = 0, {
-  cat(file = stderr(), paste0("Data read sucessfull with number of columns =",length(coln),"\n"))
+  #cat(file = stderr(), paste0("Data read sucessfull with number of columns =",length(coln),"\n"))
   for (i in coln) {
     if (grepl("__",i)) {
       tmp <- strsplit(i,"__")
@@ -62,7 +64,7 @@ if (method == "Coherence"){
   # zerlege in erstes und 2. Region
   j = 1
   region_list <- character(length=1)
-  cat(file = stderr(), "second schleife\n")
+  #cat(file = stderr(), "second schleife\n")
   for (i in uregion_comp_list){
     if (grepl(">",i)) {
       tmp <- strsplit(i,">")
@@ -79,14 +81,14 @@ if (method == "Coherence"){
   subj_list <- seq(1,nrow(tbl_inp))
   beh_list <- colnames(tbl_beh)
 
-  cat(file = stderr(), "\n\nuregion_list = \n")
-  cat(file = stderr(), uregion_list)
-  cat(file = stderr(), "\n\nutrial_list = \n")
-  cat(file = stderr(), utrial_list)
-  cat(file = stderr(), "\n\nufreq_list = \n")
-  cat(file = stderr(), ufreq_list)
+  # cat(file = stderr(), "\n\nuregion_list = \n")
+  # cat(file = stderr(), uregion_list)
+  # cat(file = stderr(), "\n\nutrial_list = \n")
+  # cat(file = stderr(), utrial_list)
+  # cat(file = stderr(), "\n\nufreq_list = \n")
+  # cat(file = stderr(), ufreq_list)
 
-  cat(file = stderr(), "reserving memory\n")
+  #cat(file = stderr(), "reserving memory\n")
   mdat <- array(data = NA,
                 dim = c(nrow(tbl_inp),
                         length(uregion_list),
@@ -97,12 +99,12 @@ if (method == "Coherence"){
   )
   # nun fuellen des datenarrays mdat
   idx = 1
-  cat(file = stderr(), "entering proress bar\n")
+  #cat(file = stderr(), "entering proress bar\n")
   #withProgress(message = 'Creating Datastructure', value = 0, {
   for (num_subj in subj_list){
     if (idx!=num_subj){
       idx = num_subj
-      print(cat(sprintf("subject number %d / %d", num_subj, length(subj_list))))
+      cat(file= stderr(), paste0("subject number ", num_subj ,"/", length(subj_list),"\n"))
     }
     #subject_idx_in_beh_table <- get_subject_idx_in_beh_table(tbl_inp_)
     num_region1 = 0
@@ -277,6 +279,7 @@ if (method == "Coherence"){
 
 
   mybasepath = file.path("../data", savedirname)
+  cat(file = stderr(),paste0("mybasepath=",mybasepath,"\n"))
   saveRDS(uregion_list, file = file.path(mybasepath, "uregion_list.Rda"))
   saveRDS(utrial_list,  file = file.path(mybasepath, "utrial_list.Rda" ))
   saveRDS(ufreq_list,   file = file.path(mybasepath, "ufreq_list.Rda"  ))

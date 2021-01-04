@@ -9,7 +9,7 @@ preprocessingUI <- function(id){
   # Thanks to the namespacing, we only need to make sure that the IDs
   # are unique within this function, rather than unique across the entire app.
   tagList(
-    box(title = "help", width = 12, collapsible = TRUE, collapsed = TRUE, htmlOutput(ns("htmlhelp"))),
+    box(title = "helpx", width = 12, collapsible = TRUE, collapsed = TRUE, htmlOutput(ns("htmlhelp"))),
 
     # fluidRow(
     #   column(4, actionButton(ns("showhelp"),"showhelp"),

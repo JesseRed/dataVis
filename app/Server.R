@@ -90,7 +90,7 @@ server <- function(input, output) {
     } else if (input$mySidebarMenu == "FrequencyTab")      { return("Frequency")
     } else if (input$mySidebarMenu == "GrangerTab")        { return("Granger")
     } else if (input$mySidebarMenu == "OptionsTab")        { return("Options")
-    } else {   return("CoherenceDDD")  }
+    } else {   return("Coherence")  }
   })
 
   g_act_data_dir <<- reactive({
@@ -100,7 +100,7 @@ server <- function(input, output) {
     if (g_act_method()=="Granger"){         return(input$dataDirGra)}
     if (g_act_method()=="Options"){         return(input$dataDirCoh)}
 
-    return("CoherenceDDDD")
+    return("Coherence")
   })
   mydir <- eventReactive(input$mySidebarMenu,{input$dataDirCoh}, ignoreNULL = FALSE)
   #freq <- eventReactive(input$freq,{input$freq}, ignoreNULL = FALSE)

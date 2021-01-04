@@ -1,5 +1,5 @@
 
-generate_histogram_plot_facet<-function(group1, group2, trial1, trial2, freq, level_x_rval, level_y_rval, d){
+generate_histogram_plot_facet<-function(group1, group2, trial1, trial2, freq, level_x_rval, level_y_rval){
   # Erstellt einen Histogram plot von mehreren Gruppen mit gleichen Achsenskalen
 
   # gedacht fuer tabs in denen gruppen und trials ausgewaehlt werden
@@ -10,9 +10,18 @@ generate_histogram_plot_facet<-function(group1, group2, trial1, trial2, freq, le
   # d$mat_t ... 2D matrix ... t Werte des t-tests ueber alle Regionen
   # d$string1 ... string .... eine beschreibung des durchgefuehrten Vergleiches
   # d$color1 ... col ........ die Color palette die zu den Werten passen
-  d <- get_data_freqmean(g_data(), freq)
-  #cat(file = stderr(), paste0("\n","level_x_rval=",level_x_rval))
 
+  #cat(file = stderr(), "freq=",freq,"\n\n")
+  #cat(file = stderr(), paste0("is.reactive(freq)=",is.reactive(freq),"\n"))
+  #cat(file = stderr(), paste0("is.reactive(freq)=",is.reactive(freq),"\n"))
+  #cat(file = stderr(), paste0("is.reactive(trial1)=",is.reactive(trial1),"\n"))
+  #cat(file = stderr(), paste0("is.reactive(level_x_rval)=",is.reactive(level_x_rval),"\n"))
+  #cat(file = stderr(), "freq()=",freq(),"\n")
+  d <- get_currently_selected_data(g_data(), group1, group2, as.numeric(trial1), as.numeric(trial2), freq)
+  #d <- get_data_freqmean(g_data(), freq)
+  #cat(file = stderr(), "class(d)=",class(d),"\n")
+  #cat(file = stderr(), paste0("\n","level_x_rval=",level_x_rval))
+  #d <- curdata()
   if (trial1 == trial2) {
     #cat(file = stderr(), "trial1 == trial2\n")
     string1 = paste0(group1," vs ", group2, " in trial ", names(g_trials_named())[trial1], "\n")
@@ -34,13 +43,16 @@ generate_histogram_plot_facet<-function(group1, group2, trial1, trial2, freq, le
     string1 = paste0(trial1," vs ", trial2, "in group ", group1, "\n")
     #data1 = data_1()
     #data2 = data_2()
-    data1 = d$data_1
-    data2 = d$data_2
+    data1 = d$data1
+    data2 = d$data2
     x = data1[,level_x_rval, level_y_rval]
     y = data2[,level_x_rval, level_y_rval]
     df <- data.frame(Gruppe=c(rep(g_trials()[as.numeric(trial1)], times=length(x)),
                               rep(g_trials()[as.numeric(trial2)], times=length(y))),
                      val=c(x, y))
+    #cat(file = stderr(), paste0("val=",c(x,y),"\n"))
+    #cat(file = stderr(), paste0("df=",df,"\n"))
+
     df$num <- ave(df$val, df$Gruppe, FUN = seq_along)
     # means for geomline
     df_hline = data.frame(Gruppe = c(g_trials()[as.numeric(trial1)],
