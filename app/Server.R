@@ -34,23 +34,30 @@ library(shinyjqui)
 # for quickcor
 #devtools::install_github("hannet91/ggcor")
 
-source("./modules/compare_trials_stats.R")
-source("./functions/get_data.R")
-source("./modules/overview_plot.R")
-source("./modules/compare_diff_of_diff_stats.R")
-source("./modules/compare_trials_plot.R")
-source("./modules/compare_group_stats.R")
-source("./modules/behavioral_data_stats.R")
-source("./modules/regression_stats.R")
-#source("./modules/anova_stats.R")
-source("./modules/ancova_stats.R")
-source("./modules/options_mod_01.R")
 
-source("./functions/map2colors.R")
-source("./functions/plots.R")
-
-source("./functions/preprocess_data.R")
-source("./modules/preprocessing.R")
+#source("./functions/get_data.R")
+pathnames <- list.files(pattern="[.]R$", path="functions", full.names=TRUE);
+sapply(pathnames, FUN=source);
+pathnames <- list.files(pattern="[.]R$", path="modules", full.names=TRUE);
+sapply(pathnames, FUN=source);
+#
+# source("./modules/compare_trials_stats.R")
+# source("./modules/overview_plot.R")
+# source("./modules/compare_diff_of_diff_stats.R")
+# source("./modules/compare_trials_plot.R")
+# source("./modules/compare_group_stats.R")
+# source("./modules/behavioral_data_stats.R")
+# source("./modules/regression_stats.R")
+# #source("./modules/anova_stats.R")
+# source("./modules/ancova_stats.R")
+# source("./modules/options_mod_order.R")
+# source("./modules/options_mod_name.R")
+#
+# source("./functions/map2colors.R")
+# source("./functions/plots.R")
+#
+# source("./functions/preprocess_data.R")
+# source("./modules/preprocessing.R")
 #
 options(shiny.maxRequestSize=300*1024^2)
 
@@ -60,10 +67,10 @@ server <- function(input, output) {
    ### reactive val ###
   ######################
   initialized = FALSE
-  dir_listCoh <- reactiveVal(value = dir(path = "./data", pattern = "^Coherence", full.names = F, recursive = F))
-  dir_listTra <- reactiveVal(value = dir(path = "./data", pattern = "^Transferentropy", full.names = F, recursive = F))
-  dir_listFre <- reactiveVal(value = dir(path = "./data", pattern = "^Frequency", full.names = F, recursive = F))
-  dir_listGra <- reactiveVal(value = dir(path = "./data", pattern = "^Granger", full.names = F, recursive = F))
+  dir_listCoh <- reactiveVal(value = dir(path = "../data", pattern = "^Coherence", full.names = F, recursive = F))
+  dir_listTra <- reactiveVal(value = dir(path = "../data", pattern = "^Transferentropy", full.names = F, recursive = F))
+  dir_listFre <- reactiveVal(value = dir(path = "../data", pattern = "^Frequency", full.names = F, recursive = F))
+  dir_listGra <- reactiveVal(value = dir(path = "../data", pattern = "^Granger", full.names = F, recursive = F))
 
  # method <- reactive({})
   method <- reactiveVal(value = "Coherence")
@@ -83,7 +90,7 @@ server <- function(input, output) {
     } else if (input$mySidebarMenu == "FrequencyTab")      { return("Frequency")
     } else if (input$mySidebarMenu == "GrangerTab")        { return("Granger")
     } else if (input$mySidebarMenu == "OptionsTab")        { return("Options")
-    } else {   return("CoherenceDDD")  }
+    } else {   return("Coherence")  }
   })
 
   g_act_data_dir <<- reactive({
@@ -93,12 +100,15 @@ server <- function(input, output) {
     if (g_act_method()=="Granger"){         return(input$dataDirGra)}
     if (g_act_method()=="Options"){         return(input$dataDirCoh)}
 
-    return("CoherenceDDDD")
+    return("Coherence")
   })
   mydir <- eventReactive(input$mySidebarMenu,{input$dataDirCoh}, ignoreNULL = FALSE)
   #freq <- eventReactive(input$freq,{input$freq}, ignoreNULL = FALSE)
   #directory <- reactiveVal(value = "Coherence")
 
+  # this reload variable triggers the manual reload of other global variables
+  # best option to change this is g_reload = g_reload(g_reload()+1)
+  g_reload_rVal <<- reactiveVal(0)
   g_data      <<- reactive({ get_data(g_act_data_dir())                })
   g_beh      <<- reactive({ get_global_tbl_beh(g_act_data_dir())      })
   g_regions <<- reactive({ get_global_uregion_list(g_act_data_dir()) })
@@ -113,7 +123,7 @@ server <- function(input, output) {
   g_saveImage_button <<- reactive({input$saveimageButton})
   g_saveImage_width <<- reactive({input$saveimagewidth})
   g_saveImage_height <<- reactive({input$saveimageheight})
-  g_saveImage_filename <<- reactive({input$saveimagefilename})
+  g_saveImage_filename <<- reactive({file.path("outputimages",input$saveimagefilename)})
   g_saveImage_fileext <<- reactive({input$saveimagefileformat})
   g_saveImage_dpi <<- reactive({input$saveimagedpi})
   g_saveImage_fontsize <<- reactive({input$saveimagefontsize})
@@ -237,7 +247,8 @@ server <- function(input, output) {
         # The id lets us use input$tabset1 on the server to find the current tab
         id = "tabset1", height = "250px",
 
-        tabPanel("Regions", options_mod_01UI("Options_01"))
+        tabPanel("Regions order", options_mod_orderUI("Options_order")),
+        tabPanel("Regions name", options_mod_nameUI("Options_name"))
 
       )
     )
@@ -317,12 +328,13 @@ server <- function(input, output) {
     )
   })
 
-  options_mod_01Server("Options_01", reactive(input$glob_sig), reactive(input$freq))
+  options_mod_orderServer("Options_order")
+  options_mod_nameServer("Options_name")
 
 #  compareTrialsStatsServer("CohTrialsStat", g_data(), reactive(glob_sig), reactive(freq), utrial_list(), uregion_list(), group_names())
   overviewPlotServer("CohOverviewPlot", "Coherence", reactive(input$glob_sig), reactive(input$freq))
   compareTrialsStatsServer("CohTrialsStat", reactive(input$glob_sig), reactive(input$freq))
-  compareTrialsPlotServer("CohPlot", reactive(input$freq))
+  compareTrialsPlotServer("CohPlot")
   compareGroupsStatsServer("CohGroupsStats",  reactive(input$glob_sig), reactive(input$freq))
   compareDiffOfDiffStatsServer("CohDiffOfDiffStats", reactive(input$glob_sig), reactive(input$freq))
   behavioralDataStatsServer("CohBehDataStats", reactive(input$glob_sig), reactive(input$freq))
@@ -331,7 +343,7 @@ server <- function(input, output) {
 
   overviewPlotServer("TraOverviewPlot", "Transferentropy", reactive(input$glob_sig), reactive(input$freq))
   compareTrialsStatsServer("TraTrialsStat", reactive(input$glob_sig), reactive(input$freq))
-  compareTrialsPlotServer("TraPlot", reactive(input$freq))
+  compareTrialsPlotServer("TraPlot")
   compareGroupsStatsServer("TraGroupsStats", reactive(input$glob_sig), reactive(input$freq))
   compareDiffOfDiffStatsServer("TraDiffOfDiffStats", reactive(input$glob_sig), reactive(input$freq))
   behavioralDataStatsServer("TraBehDataStats", reactive(input$glob_sig), reactive(input$freq))

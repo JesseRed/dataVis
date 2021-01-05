@@ -1,26 +1,32 @@
 #UI.R
-cat(getwd())
-setwd("..")
+cat(file = stderr(), getwd())
+#setwd("..")
+library(shiny)
+library(shinydashboard)
 #setwd("D:/Programming/dataVIS")
 #source("./app/module_test.R")
-source("./modules/compare_trials_stats.R")
-
-source("./modules/overview_plot.R")
-source("./modules/compare_diff_of_diff_stats.R")
-source("./modules/compare_trials_plot.R")
-source("./modules/compare_group_stats.R")
-source("./functions/map2colors.R")
-source("./functions/get_data.R")
-
-source("./modules/regression_stats.R")
-#source("./modules/anova_stats.R")
-
-#source("./app/preprocess_data.R")
-#source("./app/preprocessing.R")
-
-#source("./app/module_test.R")
-source("./functions/preprocess_data.R")
-source("./modules/preprocessing.R")
+# source("./modules/compare_trials_stats.R")
+#
+# source("./modules/overview_plot.R")
+# source("./modules/compare_diff_of_diff_stats.R")
+# source("./modules/compare_trials_plot.R")
+# source("./modules/compare_group_stats.R")
+# source("./functions/map2colors.R")
+# #source("./functions/get_data.R")
+#
+# source("./modules/regression_stats.R")
+# #source("./modules/anova_stats.R")
+#
+# #source("./app/preprocess_data.R")
+# #source("./app/preprocessing.R")
+#
+# #source("./app/module_test.R")
+# source("./functions/preprocess_data.R")
+#source("./modules/preprocessing.R")
+pathnames <- list.files(pattern="[.]R$", path="functions", full.names=TRUE);
+sapply(pathnames, FUN=source);
+pathnames <- list.files(pattern="[.]R$", path="modules", full.names=TRUE);
+sapply(pathnames, FUN=source);
 
 ui <- dashboardPage(
   dashboardHeader(title = "Biomag Visualizer"),

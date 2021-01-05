@@ -1,9 +1,0 @@
-#Preprocessing
-
-The preprocessing is relatively rigid
-
-You have to deliver your Input data as csv Files.
-Because delimiter setting is a pain, you can choose the delimiter as you like.
-- ;
-- ,
-- |
