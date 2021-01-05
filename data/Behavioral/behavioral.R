@@ -69,14 +69,13 @@ outcome_var_pattern = "Anzahl_Richtige"
 
 
 df <- melt(data = D, id.vars = c("ID","ToInclude","Lektion"),
-           measure.vars = get_columnnames_by_pattern(D, outcome_var_pattern),
-           variable_name = "var_names"
+           measure.vars = get_columnnames_by_pattern(D, outcome_var_pattern)
            )
 
 # exlude those not to include
 df <- subset(df, ToInclude==1)
 
-df <- cbind(df, colsplit(df$var_names, "__", names= c(outcome_var_pattern, "Test_number")))
+df <- cbind(df, colsplit(df$variable, "__", names= c(outcome_var_pattern, "Test_number")))
 
 
 newModel <- lm(Test_number ~ value, data = df, na.action = na.exclude)

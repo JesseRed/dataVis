@@ -33,7 +33,7 @@ my_lexical_sort <- function(x) {
 
 }
 
-get_currently_selected_data<-function(data, g1, g2, t1, t2, freq, trials=g_trials(), regions=g_regions(), tbl_beh = g_beh(), method = g_method()){
+get_currently_selected_data<-function(data, g1, g2, t1, t2, freq, trials=g_trials(), regions=g_regions(), tbl_beh = g_beh(), method = g_act_method()){
 # die funktion gibt eine LIste von mehreren Variablen zurueck
 # gedacht fuer tabs in denen gruppen und trials ausgewaehlt werden
 # d$mypaired ... bool handelt es sich um einen gepaarten oder ungeparrten test
@@ -241,7 +241,7 @@ get_data_group_trial <- function(data, group, trial, tbl_beh = g_beh(),method = 
   return(data_group_trial)
 }
 
-get_data_group_freq <- function(data, group, freq, tbl_beh = g_beh(), method = g_method()){
+get_data_group_freq <- function(data, group, freq, tbl_beh = g_beh(), method = g_act_method()){
   #cat(file = stderr(), paste0("get_data_group_freq dim(data)=",dim(data),"\n"))
   data_group = get_data_group(data, group, tbl_beh = tbl_beh, method = method)
   #cat(file = stderr(), paste0("dim(data_group)=",dim(data_group),"\n"))
@@ -335,7 +335,7 @@ get_freqmean <- function(data, freq, method = g_act_method()){
   return(data_freqmean)
 }
 
-get_data_group_freqmean <- function(data, group, freq, tbl_beh = g_beh(), method = g_method()){
+get_data_group_freqmean <- function(data, group, freq, tbl_beh = g_beh(), method = g_act_method()){
   #cat(file = stderr(), paste0("get_data_group_freqmean dim(data)=",dim(data),"\n"))
   #  dim(Transferentropy) = 46,28,28,2,1
   data_group_freq = get_data_group_freq(data, group, freq, tbl_beh = tbl_beh, method = method)
@@ -352,14 +352,14 @@ get_data_group_freqmean <- function(data, group, freq, tbl_beh = g_beh(), method
 }
 
 
-get_data_group_trial_freq <- function(data, group, trial, freq, tbl_beh = g_beh(), method = g_method()){
+get_data_group_trial_freq <- function(data, group, trial, freq, tbl_beh = g_beh(), method = g_act_method()){
   data_group_trial = get_data_group_trial(data, group, trial, tbl_beh = tbl_beh, method = method)
   data_group_trial_freq = filter_by_selfreq(data_group_trial, freq, method = method)
   return(data_group_trial_freq)
 }
 
 
-get_data_group_trial_freqmean <- function(data, group, trial, freq, tbl_beh = g_beh(), method = g_method()){
+get_data_group_trial_freqmean <- function(data, group, trial, freq, tbl_beh = g_beh(), method = g_act_method()){
   #cat(file = stderr(), paste0("trial = ", trial, "\n"))
   data_group_trial = get_data_group_trial(data, group, trial, tbl_beh = tbl_beh, method = method)
   data_group_trial_freq = filter_by_selfreq(data_group_trial, freq, method = method)
@@ -395,7 +395,7 @@ get_selected_freq_list <- function(freq_list, freq){
   return(selected_freq_list)
 }
 
-get_data_group_region_trial <- function(data, group, region, trial, tbl_beh = g_beh(), method = g_method()){
+get_data_group_region_trial <- function(data, group, region, trial, tbl_beh = g_beh(), method = g_act_method()){
  # cat(file=stderr(),paste0("get_data_group_region_trial - length(dim(data))=",length(dim(data)),"\n"))
   cat(file = stderr(), paste0("dim(data) =", dim(data),"\n"))
   data_group_region = get_data_group_region(data, group, region, tbl_beh = tbl_beh, method = method)
@@ -409,7 +409,7 @@ get_data_group_region_trial <- function(data, group, region, trial, tbl_beh = g_
   return(data_group_region_trial)
 }
 
-get_data_group_region_trial_freq <- function(data, group, region, trial, freq, tbl_beh = g_beh(), method = g_method()){
+get_data_group_region_trial_freq <- function(data, group, region, trial, freq, tbl_beh = g_beh(), method = g_act_method()){
   cat(file=stderr(),paste0("get_data_group_region_trial_freq - length(dim(data))=",length(dim(data)),"\n"))
 
   data_group_region_trial = get_data_group_region_trial(data, group, region, trial, tbl_beh = tbl_beh, method = method)

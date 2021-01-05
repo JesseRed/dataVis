@@ -10,6 +10,7 @@ test_that("Lexical sorting works", {
 test_that("preprocessing works",{
   datapath = file.path("data")
   resultspath = file.path(datapath,"test_results")
+
   method = "Coherence"
 
   coh_csv_filename = file.path(datapath, "test_coh.csv")
@@ -40,22 +41,22 @@ test_that("preprocessing works",{
   expect_equal(sum(D[,1,2,1,1]),sum(D[,1,2,1,1]))
   expect_equal(sum(D[,2,3,2,2]),sum(D[,3,2,2,2]))
   # test that groups are correct
-  Dg0 <- get_data_group(D,"Group0", tbl_beh, "Coherence")
-  Dg1 <- get_data_group(D,"Group1", tbl_beh, "Coherence")
+  Dg0 <- get_data_group(D,"Group0", tbl_behx, "Coherence")
+  Dg1 <- get_data_group(D,"Group1", tbl_behx, "Coherence")
   expect_equal(dim(Dg0)[1],22)
   expect_equal(dim(Dg1)[1],24)
 
   # trial names
-  trial_list <<- list("5248"=1, "5760"=2, "6272"=3)
+  trial_list <- list("5248"=1, "5760"=2, "6272"=3)
   expect_equal(get_global_trial_names("../testthat/data/test_results/Coherence"),trial_list)
   #expect_equal(get_global_trial_names("../testthat/data/test_results/Coherence"),c("5245", "5760", "6272"))
 
   # region names
-  region_list <<- list("frontopolar_A"=1, "central_A"=2, "occipital_A"=3)
+  region_list <- list("frontopolar_A"=1, "central_A"=2, "occipital_A"=3)
   expect_equal(get_global_region_names("../testthat/data/test_results/Coherence"),region_list)
   #expect_equal(get_global_trial_names("../testthat/data/test_results/Coherence"),c("5245", "5760", "6272"))
 
-  tmp<<-get_currently_selected_data(D, "Group0", "Group1",1,2,c(TRUE, TRUE, FALSE),
+  tmp<-get_currently_selected_data(D, "Group0", "Group1",1,2,c(TRUE, TRUE, FALSE),
                                    trials = trial_list, regions = region_list,
                                    tbl_beh = tbl_behx, method = "Coherence")
   # tmp$data1 (subjects of group0 x regions x regions)
@@ -72,8 +73,8 @@ test_that("preprocessing works",{
   # get_data_group_region_trial_freq
   Dg0f = apply(Dg0[,,,,1:2],c(1,2,3,4),mean)
 #  Dt <<- Dg0f[,]
-  Dt <<- Dg0[,2,,2,]
-  De <<- get_data_group_region_trial(D,"Group0",2,2,tbl_beh = tbl_behx, method = "Coherence")
+  Dt <- Dg0[,2,,2,]
+  De <- get_data_group_region_trial(D,"Group0",2,2,tbl_beh = tbl_behx, method = "Coherence")
   expect_equal(De,Dt)
 
 #  De <<- get_data_group_region_trial_freq(D,"Group0",1,c(TRUE,TRUE,FALSE),

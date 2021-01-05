@@ -218,186 +218,97 @@ regressionStatsServer <- function(id, input_glob_sig, freq) {
       ###########################################################
       ### RENDERPLOT
       output$plot<-renderPlot({
-        req(input$trial1)
-        req(input$trial2)
-        req(input$group1)
-        req(input$group2)
-        d <- curdata()
-        ###################
-        # CORRPLOT
-        #if (input$method=="Corrplot"){
-          colnames(d$mat_p) = g_regions()
-          rownames(d$mat_p) = vector(mode="character", length=length(g_regions()))
-          colnames(d$mat_t) = vector(mode="character", length=length(g_regions()))
-          #colnames(mat_t) = g_regions()
-          rownames(d$mat_t) = g_regions()
-          if (g_act_method()=="Coherence") {
-            x1 <<- corrplot(d$mat_p, method="number", tl.cex = 0.9, type = "upper", is.corr = FALSE,
-                            p.mat = d$mat_p, sig.level = input_glob_sig(),
-                            col=colorRampPalette(c("blue","red","green"))(200))
-            x2 <<- corrplot(d$mat_t, add = TRUE, method="number", tl.cex = 0.9, type = "lower", is.corr = FALSE,
-                            p.mat = d$mat_p, sig.level = input_glob_sig())
-            dev.copy(png,'mylocalcorrplot.png')
-            dev.off()
-          }else if (g_act_method()=="Transferentropy" || g_act_method()=="Granger"){
-            corrplot(d$mat_p, method="number", tl.cex = 0.9, is.corr = FALSE,
-                     p.mat = d$mat_p, sig.level = input_glob_sig(),
-                     col=colorRampPalette(c("blue","red","green"))(200))
 
-          }else if (g_act_method()=="Frequency"){
-            print("not implemented")
-          }
+          req(input$trial1)
+          req(input$trial2)
+          req(input$group1)
+          req(input$group2)
+          d <- curdata()
+          mat_t <<- d$mat_t
+          mat_p <<- d$mat_p
+          ###################
+          # CORRPLOT
+          generate_plot_Corrplot(d$mat_p, d$mat_t)
 
       })
 
 #
-#       output$text_bottom <- renderPrint({
-#         req(input$plot_click)
-#         req(input$trial1)
-#         req(input$trial2)
-#         req(input$group1)
-#         req(input$group2)
-#         req(input$statsMethod)
-#         my_paired = FALSE
-#         if (input$trial1 == input$trial2) {
-#           string1 = paste0(input$group1," vs ", input$group2, " in trial ", names(g_trials_named())[input$trial1], "\n", #utrial_list[input$trial1], "\n",
-#                            "independent t-test\n")
-#           my_paired = FALSE
-#
-#         }
-#         if (input$group1 == input$group2){
-#           string1 = paste0(g_trials()[input$trial1]," vs ", input$trial2, "in group ", input$group1, "\n",
-#                            "paired t-test\n")
-#           my_paired = TRUE
-#         }
-#
-#         #lvls <- levels(g_regions())
-#         data1 = data_1()
-#         data2 = data_2()
+#       output$hist <- renderPlot({
+#         req(input$plot_click$x)
+#         req(input$plot_click$y)
+#         region_x = g_regions()[level_x()]
+#         #cat(file = stderr(), region_x)
 #         #level_x = round(input$plot_click$x)
 #         #level_y = abs(round(input$plot_click$y)-length(g_regions())-1)
 #         region_x = g_regions()[level_x()]
 #         region_y = g_regions()[level_y()]
+#         #        level_x = 1
+#         #        level_y = 2
+#         #df = g_beh()
+#         d = data_freqmean()
 #
+#         if (input$trial1 == input$trial2) {
+#           cat(file = stderr(), "trial1 == trial2\n")
+#           string1 = paste0(input$group1," vs ", input$group2, " in trial ", names(g_trials_named())[input$trial1], "\n") #utrial_list[input$trial1], "\n")
+#           d1 = get_data_group_freqmean(g_data(), input$group1, freq())
+#           d2 = get_data_group_freqmean(g_data(), input$group2, freq())
+#           x = d1[,level_x(), level_y(), as.numeric(input$trial1)]
+#           y = d2[,level_x(), level_y(), as.numeric(input$trial1)]
+#           df <- data.frame(Gruppe=c(rep(input$group1, times=length(x)),
+#                                     rep(input$group2, times=length(y))),
+#                            val=c(x, y))
+#           df$num <- ave(df$val, df$Gruppe, FUN = seq_along)
+#           # means for geomline
+#           df_hline = data.frame(Gruppe = c(input$group1,input$group2), Means=c(mean(x), mean(y)))
+#           # df$val = d[,level_x, level_y, as.numeric(input$trial1)]
+#           # df$num <- ave(df$val, df$Gruppe, FUN = seq_along)
+#           # dummy2 = data.frame(Gruppe = c(0,1), Means=c(0.4, 0.5))
 #
-#         x = data1[,level_y(),level_x()]
-#         y = data2[,level_y(),level_x()]
-#         z = t.test(x,y, paired = my_paired)
-#         #cat( paste0("Analysis of regions ",region_x," vs. ", region_y ," \n ", string1))
-#
-#         #print(z)
-#         if (is.null(input$plot_click$x)) return("null")
-#         else {
-#           lvls <- levels(g_regions())
-#           name <- lvls[round(input$plot_click$x)]
 #         }
-#         t = z$statistic
-#         df = z$parameter
-#         r = sqrt((t^2)/((t^2)+df))
-#         out <- paste0(z$method,"\n\n",
-#                       region_x, "\n        vs. \n", region_y, " \n\n",
-#                       "meaXn= ", round(z$estimate[2],3), " vs. ", round(z$estimate[1],3)," \n",
-#                       "t=", round(z$statistic,2), " \n",
-#                       "p=", z$p.value, "  \n",
-#                       "df=", round(z$parameter,1),"  \n",
-#                       "CI(",attributes(z$conf.int),")= ",round(z$conf.int[1],3)," ; ",round(z$conf.int[2],3)," \n",
-#                       "effect size r = ", round(r,4), "\n",
-#                       "r = [sqrt((t^2)/((t^2)+df))]"
-#         )
-#         cat(out)
-#       })
-
-
-
+#         if (input$group1 == input$group2){
+#           string1 = paste0(g_trials()[input$trial1]," vs ", g_trials()[input$trial2], "in group ", input$group1, "\n")
+#           data1 = data_1()
+#           data2 = data_2()
+#           x = data1[,level_x(), level_y()]
+#           y = data2[,level_x(), level_y()]
+#           df <- data.frame(Gruppe=c(rep(g_trials()[as.numeric(input$trial1)], times=length(x)),
+#                                     rep(g_trials()[as.numeric(input$trial2)], times=length(y))),
+#                            val=c(x, y))
+#           df$num <- ave(df$val, df$Gruppe, FUN = seq_along)
+#           # means for geomline
+#           df_hline = data.frame(Gruppe = c(g_trials()[as.numeric(input$trial1)],
+#                                            g_trials()[as.numeric(input$trial2)]),
+#                                 Means=c(mean(x), mean(y)))
 #
-#       output$html_text <- renderUI({
-#         # x <- paste0("sdf")
-#         # HTML("You've selected <code>", x, "</code>",
-#         #      "<br><br>Here are the first 10 rows that ",
-#         #      "match that category:")
-#         x = 5
-#         HTML(markdownToHTML(fragment.only=TRUE, text=c(
-#           "This is an absolutePanel that uses `bottom` and `right` attributes.
-#             It also has `draggable = TRUE`",x
-#         )))
+#           #p<-ggplot(df, aes(num, val, fill=Gruppe))
+#           #p + geom_bar(stat="identity") + facet_wrap(~Gruppe)
+#         }
+#
+#         ##########later delete
+#         # temporary
+#         string1 = paste0(g_trials()[input$trial1]," vs ", g_trials()[input$trial2], "in group ", input$group1, "\n")
+#         data1 = data_1()
+#         data2 = data_2()
+#         x = data1[,level_x(), level_y()]
+#         y = data2[,level_x(), level_y()]
+#         df <- data.frame(Gruppe=c(rep(g_trials()[as.numeric(input$trial1)], times=length(x)),
+#                                   rep(g_trials()[as.numeric(input$trial2)], times=length(y))),
+#                          val=c(x, y))
+#         df$num <- ave(df$val, df$Gruppe, FUN = seq_along)
+#         # means for geomline
+#         df_hline = data.frame(Gruppe = c(g_trials()[as.numeric(input$trial1)],
+#                                          g_trials()[as.numeric(input$trial2)]),
+#                               Means=c(mean(x), mean(y)))
+#
+#
+#         ###################################
+#
+#         ggplot(df, aes(num, val, fill=Gruppe)) +
+#           geom_bar(stat="identity") +
+#           facet_wrap(~Gruppe) +
+#           geom_hline(data = df_hline, aes(yintercept = Means))
 #
 #       })
-      output$hist <- renderPlot({
-        req(input$plot_click$x)
-        req(input$plot_click$y)
-        region_x = g_regions()[level_x()]
-        #cat(file = stderr(), region_x)
-        #level_x = round(input$plot_click$x)
-        #level_y = abs(round(input$plot_click$y)-length(g_regions())-1)
-        region_x = g_regions()[level_x()]
-        region_y = g_regions()[level_y()]
-        #        level_x = 1
-        #        level_y = 2
-        #df = g_beh()
-        d = data_freqmean()
-
-        if (input$trial1 == input$trial2) {
-          cat(file = stderr(), "trial1 == trial2\n")
-          string1 = paste0(input$group1," vs ", input$group2, " in trial ", names(g_trials_named())[input$trial1], "\n") #utrial_list[input$trial1], "\n")
-          d1 = get_data_group_freqmean(g_data(), input$group1, freq())
-          d2 = get_data_group_freqmean(g_data(), input$group2, freq())
-          x = d1[,level_x(), level_y(), as.numeric(input$trial1)]
-          y = d2[,level_x(), level_y(), as.numeric(input$trial1)]
-          df <- data.frame(Gruppe=c(rep(input$group1, times=length(x)),
-                                    rep(input$group2, times=length(y))),
-                           val=c(x, y))
-          df$num <- ave(df$val, df$Gruppe, FUN = seq_along)
-          # means for geomline
-          df_hline = data.frame(Gruppe = c(input$group1,input$group2), Means=c(mean(x), mean(y)))
-          # df$val = d[,level_x, level_y, as.numeric(input$trial1)]
-          # df$num <- ave(df$val, df$Gruppe, FUN = seq_along)
-          # dummy2 = data.frame(Gruppe = c(0,1), Means=c(0.4, 0.5))
-
-        }
-        if (input$group1 == input$group2){
-          string1 = paste0(g_trials()[input$trial1]," vs ", g_trials()[input$trial2], "in group ", input$group1, "\n")
-          data1 = data_1()
-          data2 = data_2()
-          x = data1[,level_x(), level_y()]
-          y = data2[,level_x(), level_y()]
-          df <- data.frame(Gruppe=c(rep(g_trials()[as.numeric(input$trial1)], times=length(x)),
-                                    rep(g_trials()[as.numeric(input$trial2)], times=length(y))),
-                           val=c(x, y))
-          df$num <- ave(df$val, df$Gruppe, FUN = seq_along)
-          # means for geomline
-          df_hline = data.frame(Gruppe = c(g_trials()[as.numeric(input$trial1)],
-                                           g_trials()[as.numeric(input$trial2)]),
-                                Means=c(mean(x), mean(y)))
-
-          #p<-ggplot(df, aes(num, val, fill=Gruppe))
-          #p + geom_bar(stat="identity") + facet_wrap(~Gruppe)
-        }
-
-        ##########later delete
-        # temporary
-        string1 = paste0(g_trials()[input$trial1]," vs ", g_trials()[input$trial2], "in group ", input$group1, "\n")
-        data1 = data_1()
-        data2 = data_2()
-        x = data1[,level_x(), level_y()]
-        y = data2[,level_x(), level_y()]
-        df <- data.frame(Gruppe=c(rep(g_trials()[as.numeric(input$trial1)], times=length(x)),
-                                  rep(g_trials()[as.numeric(input$trial2)], times=length(y))),
-                         val=c(x, y))
-        df$num <- ave(df$val, df$Gruppe, FUN = seq_along)
-        # means for geomline
-        df_hline = data.frame(Gruppe = c(g_trials()[as.numeric(input$trial1)],
-                                         g_trials()[as.numeric(input$trial2)]),
-                              Means=c(mean(x), mean(y)))
-
-
-        ###################################
-
-        ggplot(df, aes(num, val, fill=Gruppe)) +
-          geom_bar(stat="identity") +
-          facet_wrap(~Gruppe) +
-          geom_hline(data = df_hline, aes(yintercept = Means))
-
-      })
 
 
 
@@ -463,121 +374,105 @@ regressionStatsServer <- function(id, input_glob_sig, freq) {
 
 
 
-#
-#       output$facet <- renderPlot({
-#         #level_x = round(input$plot_click$x)
-#         #level_y = abs(round(input$plot_click$y)-length(g_regions())-1)
-#         region_x = g_regions()[level_x()]
-#         region_y = g_regions()[level_y()]
-#
-#         df = tbl_beh
-#         d = data_freqmean()
-#         df$data1 = d[,level_x(), level_y(), input$trial1]
-#         df$num <- ave(df$data1, df$Gruppe, FUN = seq_along)
-#
-#       })
-
-
-
-      ###########################################
-      # the newly created statistics section
-      output$simple_correlation <- renderPrint({
-        req(input$plot_click)
-        req(input$trial1)
-        req(input$trial2)
-        req(input$group1)
-        req(input$group2)
-        req(input$statsMethod)
-        my_paired = FALSE
-        if (input$trial1 == input$trial2) {
-          string1 = paste0(input$group1," vs ", input$group2, " in trial ", names(g_trials_named())[input$trial1], "\n", #utrial_list[input$trial1], "\n",
-                           "independent t-test\n")
-          my_paired = FALSE
-
-        }
-        if (input$group1 == input$group2){
-          string1 = paste0(input$trial1," vs ", input$trial2, "in group ", input$group1, "\n",
-                           "paired t-test\n")
-          my_paired = TRUE
-        }
-
-        #lvls <- levels(g_regions())
-        data1 = data_1()
-        data2 = data_2()
-        #level_x = round(input$plot_click$x)
-        #level_y = abs(round(input$plot_click$y)-length(g_regions())-1)
-        region_x = g_regions()[level_x()]
-        region_y = g_regions()[level_y()]
-
-
-        x = data1[,level_y(),level_x()]
-        y = data2[,level_y(),level_x()]
-        z = t.test(x,y, paired = my_paired)
-        cat("\ninput_regressors = ")
-        cat(input$regressors)
-        cat("\n")
-        cat(file = stderr(), input$regressors[1])
-        cat(file = stderr(), "\n")
-        cat(file = stderr(), get_beh_tbl_data_by_group(input$group2, input$regressors[1]))
-        cat(file = stderr(), "\n")
-        cat(file = stderr(), get_beh_tbl_data_by_group(input$group1, input$regressors[1]))
-        cat(file = stderr(), "\n")
-        cat(file = stderr(), "length(input$regressors=")
-        cat(file = stderr(), length(input$regressors))
-        b1xxx <- get_beh_tbl_data_by_group(input$group1, input$regessors[1])
-        mycor = cor(b1xxx, x)
-        cat(file = stderr(), "\nb1 = ")
-        cat(file = stderr(), b1xxx)
-        cat(file = stderr(), "\n")
-
-        c1 = 0
-        c2 = 0
-        name = "Template"
-        for ( i in 1:length(input$regressors)){
-          b1 = get_beh_tbl_data_by_group(input$group1, input$regressors[i])
-          b2 = get_beh_tbl_data_by_group(input$group2, input$regressors[i])
-
-          c1 = c(c1, cor(x,b1))
-          c2 = c(c2,cor(y,b2))
-          name = c(name, input$regressors[i])
-        }
-        c1 = c1[-c(1)]
-        c2 = c2[-c(1)]
-        name = name[-c(1)]
-
-        cat("\n\nc1 =")
-        cat(c1)
-        cat("\n\nc2=")
-        cat(c2)
-        cat("\n\n")
-        df <- data.frame("regressor"= name, "cor2G1"= c1, "cor2G2" = c2)
-        print(file = stderr(), df)
-
-        cat("input_regressors = ")
-        cat(input$regessors)
-        out <- paste0(z$method,"\n\n",
-                      region_x, "\n        vs. \n", region_y, " \n\n",
-                      "meanX2= ", round(z$estimate[2],3), " vs. ", round(z$estimate[1],3)," \n",
-                      "t=", round(z$statistic,2), " \n",
-                      "p=", z$p.value, "  \n",
-                      "df=", round(z$parameter,1),"  \n",
-                      "CI(",attributes(z$conf.int),")= ",round(z$conf.int[1],3)," ; ",round(z$conf.int[2],3)," \n"
-        )
-        cat(out)
-        out <- paste0(z$method,"\n\n",
-                      region_x, "\n        vs. \n", region_y, " \n\n",
-                      "meanX3= ", round(z$estimate[2],3), " vs. ", round(z$estimate[1],3)," \n",
-                      "t=", round(z$statistic,2), " \n",
-                      "p=", z$p.value, "  \n",
-                      "df=", round(z$parameter,1),"  \n",
-                      "CI(",attributes(z$conf.int),")= ",round(z$conf.int[1],3)," ; ",round(z$conf.int[2],3)," \n"
-        )
-
-
-        #        keeprows <- round(input$plot_click$x) == as.numeric(g_regions())
-
-      })
-      ####
+      # ###########################################
+      # # the newly created statistics section
+      # output$simple_correlation <- renderPrint({
+      #   req(input$plot_click)
+      #   req(input$trial1)
+      #   req(input$trial2)
+      #   req(input$group1)
+      #   req(input$group2)
+      #   req(input$statsMethod)
+      #   my_paired = FALSE
+      #   if (input$trial1 == input$trial2) {
+      #     string1 = paste0(input$group1," vs ", input$group2, " in trial ", names(g_trials_named())[input$trial1], "\n", #utrial_list[input$trial1], "\n",
+      #                      "independent t-test\n")
+      #     my_paired = FALSE
+      #
+      #   }
+      #   if (input$group1 == input$group2){
+      #     string1 = paste0(input$trial1," vs ", input$trial2, "in group ", input$group1, "\n",
+      #                      "paired t-test\n")
+      #     my_paired = TRUE
+      #   }
+      #
+      #   #lvls <- levels(g_regions())
+      #   data1 = data_1()
+      #   data2 = data_2()
+      #   #level_x = round(input$plot_click$x)
+      #   #level_y = abs(round(input$plot_click$y)-length(g_regions())-1)
+      #   region_x = g_regions()[level_x()]
+      #   region_y = g_regions()[level_y()]
+      #
+      #
+      #   x = data1[,level_y(),level_x()]
+      #   y = data2[,level_y(),level_x()]
+      #   z = t.test(x,y, paired = my_paired)
+      #   cat("\ninput_regressors = ")
+      #   cat(input$regressors)
+      #   cat("\n")
+      #   cat(file = stderr(), input$regressors[1])
+      #   cat(file = stderr(), "\n")
+      #   cat(file = stderr(), get_beh_tbl_data_by_group(input$group2, input$regressors[1]))
+      #   cat(file = stderr(), "\n")
+      #   cat(file = stderr(), get_beh_tbl_data_by_group(input$group1, input$regressors[1]))
+      #   cat(file = stderr(), "\n")
+      #   cat(file = stderr(), "length(input$regressors=")
+      #   cat(file = stderr(), length(input$regressors))
+      #   b1xxx <- get_beh_tbl_data_by_group(input$group1, input$regessors[1])
+      #   mycor = cor(b1xxx, x)
+      #   cat(file = stderr(), "\nb1 = ")
+      #   cat(file = stderr(), b1xxx)
+      #   cat(file = stderr(), "\n")
+      #
+      #   c1 = 0
+      #   c2 = 0
+      #   name = "Template"
+      #   for ( i in 1:length(input$regressors)){
+      #     b1 = get_beh_tbl_data_by_group(input$group1, input$regressors[i])
+      #     b2 = get_beh_tbl_data_by_group(input$group2, input$regressors[i])
+      #
+      #     c1 = c(c1, cor(x,b1))
+      #     c2 = c(c2,cor(y,b2))
+      #     name = c(name, input$regressors[i])
+      #   }
+      #   c1 = c1[-c(1)]
+      #   c2 = c2[-c(1)]
+      #   name = name[-c(1)]
+      #
+      #   cat("\n\nc1 =")
+      #   cat(c1)
+      #   cat("\n\nc2=")
+      #   cat(c2)
+      #   cat("\n\n")
+      #   df <- data.frame("regressor"= name, "cor2G1"= c1, "cor2G2" = c2)
+      #   print(file = stderr(), df)
+      #
+      #   cat("input_regressors = ")
+      #   cat(input$regessors)
+      #   out <- paste0(z$method,"\n\n",
+      #                 region_x, "\n        vs. \n", region_y, " \n\n",
+      #                 "meanX2= ", round(z$estimate[2],3), " vs. ", round(z$estimate[1],3)," \n",
+      #                 "t=", round(z$statistic,2), " \n",
+      #                 "p=", z$p.value, "  \n",
+      #                 "df=", round(z$parameter,1),"  \n",
+      #                 "CI(",attributes(z$conf.int),")= ",round(z$conf.int[1],3)," ; ",round(z$conf.int[2],3)," \n"
+      #   )
+      #   cat(out)
+      #   out <- paste0(z$method,"\n\n",
+      #                 region_x, "\n        vs. \n", region_y, " \n\n",
+      #                 "meanX3= ", round(z$estimate[2],3), " vs. ", round(z$estimate[1],3)," \n",
+      #                 "t=", round(z$statistic,2), " \n",
+      #                 "p=", z$p.value, "  \n",
+      #                 "df=", round(z$parameter,1),"  \n",
+      #                 "CI(",attributes(z$conf.int),")= ",round(z$conf.int[1],3)," ; ",round(z$conf.int[2],3)," \n"
+      #   )
+      #
+      #
+      #   #        keeprows <- round(input$plot_click$x) == as.numeric(g_regions())
+      #
+      # })
+      # ####
       #################################################################
 
 
@@ -889,6 +784,7 @@ regressionStatsServer <- function(id, input_glob_sig, freq) {
         region_x = g_regions()[level_x()]
         region_y = g_regions()[level_y()]
 
+        #cat(file = stderr(), "create_df_for_histplot\n")
         #string1 = paste0(input$trial1," vs ", input$trial2, "in group ", input$group1, "\n")
         if (compare == "groups"){
           if (input$group1 == input$group2){
@@ -955,10 +851,10 @@ append_correlation_row <- function(x1 = NULL, b1 = NULL, x2 = NULL, b2 = NULL,
                                    df = NULL) {
   m1 = cor.test(x1,b1, method = method)
   m2 = cor.test(x2,b2, method = method)
-  cat(file = stderr(), m1$estimate)
-  cat(file = stderr(), m2$estimate)
-  cat(file = stderr(), length(x1))
-  cat(file = stderr(), length(x2))
+  #cat(file = stderr(), m1$estimate)
+  #cat(file = stderr(), m2$estimate)
+  #cat(file = stderr(), length(x1))
+  #cat(file = stderr(), length(x2))
   r_ind = comparing_independent_rs(m1$estimate, m2$estimate, length(x1),length(x2))
   df2 <- data.frame(regname = reg_name,
                     cor_method = method,

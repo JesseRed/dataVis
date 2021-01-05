@@ -10,13 +10,6 @@ perform_preprocessing <-function(beha, data, savedirname, method = "Coherence", 
 if (method == "Coherence"){
   #cat(file = stderr(), "entering perform_preprocessing... with method = Coherence\n")
   cat(file = stderr(), "now reading the data out of the csv file ... no feedback can be given please be patient for large files\n")
-
-  # if (inshiny){
-  # showModal(modalDialog(
-  #   title = "Please wait",
-  #   "... reading the csv file"
-  # ))
-  # }
   tbl_inp = data
   # reduce behavioral data to those that are in the data table
   tbl_beh_tmp <- beha[beha$ID %in% data$ID,]
@@ -24,23 +17,17 @@ if (method == "Coherence"){
   # later on ... the matrix is indexed only by numbers ... there is no further id
   # therefore it is needed that both are in the same order
   tbl_beh <- tbl_beh_tmp[match(tbl_inp$ID, tbl_beh_tmp$ID),]
-  #if (inshiny){ removeModal()}
+
   test_that_IDs_are_the_same(tbl_beh, tbl_inp)
 
   id_list = tbl_inp[['ID']]
 
+  # Create trial_list, region_list and freq_list
   coln = colnames(tbl_inp)
   region_list <- character(length=1)
   trial_list <- integer(length=1)
-
   freq_list <- integer(length=1)
-
-
-
-  cat(file = stderr(), "first schleife\n")
   j <- 1
-  #withProgress(message = 'parsing columnnames', value = 0, {
-  #cat(file = stderr(), paste0("Data read sucessfull with number of columns =",length(coln),"\n"))
   for (i in coln) {
     if (grepl("__",i)) {
       tmp <- strsplit(i,"__")
@@ -50,15 +37,6 @@ if (method == "Coherence"){
       j <- j+1
     }
   }
-
-  #cat(file = stderr(), "\n\nregion_list = \n")
-  #cat(file = stderr(), region_list)
-  #cat(file = stderr(), "\n\ntrial_list = \n")
-  #cat(file = stderr(), trial_list)
-  #cat(file = stderr(), "\n\nfreq_list = \n")
-  #cat(file = stderr(), freq_list)
-  #  incProgress(1/length(coln), detail = paste("part", j))
-  #}) # Progress bar
 
   uregion_comp_list = unique(region_list)
   # zerlege in erstes und 2. Region
@@ -81,14 +59,7 @@ if (method == "Coherence"){
   subj_list <- seq(1,nrow(tbl_inp))
   beh_list <- colnames(tbl_beh)
 
-  # cat(file = stderr(), "\n\nuregion_list = \n")
-  # cat(file = stderr(), uregion_list)
-  # cat(file = stderr(), "\n\nutrial_list = \n")
-  # cat(file = stderr(), utrial_list)
-  # cat(file = stderr(), "\n\nufreq_list = \n")
-  # cat(file = stderr(), ufreq_list)
-
-  #cat(file = stderr(), "reserving memory\n")
+  # reserviere den Speicher fuer das Datenarray
   mdat <- array(data = NA,
                 dim = c(nrow(tbl_inp),
                         length(uregion_list),
@@ -99,8 +70,6 @@ if (method == "Coherence"){
   )
   # nun fuellen des datenarrays mdat
   idx = 1
-  #cat(file = stderr(), "entering proress bar\n")
-  #withProgress(message = 'Creating Datastructure', value = 0, {
   for (num_subj in subj_list){
     if (idx!=num_subj){
       idx = num_subj
@@ -159,8 +128,15 @@ if (method == "Coherence"){
     # }
     tbl_inp = data
     # reduce behavioral data to those that are in the data table
-    tbl_beh <- beha[beha$ID %in% data$ID,]
-    #if (inshiny){ removeModal()}
+    tbl_beh_tmp <- beha[beha$ID %in% data$ID,]
+    # now reorder the tbl_beh that this order match the order of the matix
+    # later on ... the matrix is indexed only by numbers ... there is no further id
+    # therefore it is needed that both are in the same order
+    tbl_beh <- tbl_beh_tmp[match(tbl_inp$ID, tbl_beh_tmp$ID),]
+
+    test_that_IDs_are_the_same(tbl_beh, tbl_inp)
+
+    id_list = tbl_inp[['ID']]
 
 
     coln = colnames(tbl_inp)
@@ -181,14 +157,8 @@ if (method == "Coherence"){
         j <- j+1
       }
     }
-    # cat(file = stderr(), "\n\nregion_list = \n")
-    # cat(file = stderr(), region_list)
-    # cat(file = stderr(), "\n\ntrial_list = \n")
-    # cat(file = stderr(), trial_list)
-    # cat(file = stderr(), "\n\nfreq_list = \n")
-    # cat(file = stderr(), freq_list)
-    #  incProgress(1/length(coln), detail = paste("part", j))
-    #}) # Progress bar
+
+
 
     uregion_comp_list = unique(region_list)
     # zerlege in erstes und 2. Region
@@ -292,11 +262,16 @@ if (method == "Coherence"){
 
 delete_A_B_if_possible <- function(mystring){
   # wenn der String mit "_A" oder "_B" endet dann loesche diese beiden Buchstaben
-if (str_sub(mystring,-2,-1)=="_A" || str_sub(mystring,-2,-1)=="_B") {
-  region_name<-str_sub(mystring,1,-3)
-}else{
-  region_name<-mystring
-}
+  if (str_sub(mystring,-2,-1)=="_A" || str_sub(mystring,-2,-1)=="_B") {
+    region_name<-str_sub(mystring,1,-3)
+  }else if (str_sub(mystring,-3,-1)=="_to") {
+    region_name<-str_sub(mystring,1,-4)
+
+  }else if (str_sub(mystring,-5,-1)=="_from"){
+    region_name<-str_sub(mystring,1,-6)
+  }else {
+    region_name<-mystring
+  }
   return(region_name)
 }
 
