@@ -3,7 +3,7 @@ library(data.table)
 library(reshape2)
 D <- read.csv("./data/Behavioral/Tipp10_Auswertung3.csv", header = TRUE, sep = ";", check.names = FALSE)
 
-
+D <- read.csv("./data/Behavioral/Table_TAB.sav", header = TRUE, sep = ";", check.names = FALSE)
 #Christianes Fragen
 # Gibt es einen linearen Trend in der Anzahl der richtigen Anschläge über die Tage hinweg
 #   (jeweils im Vergleich zu Lektion 1 = gain)
