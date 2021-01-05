@@ -306,14 +306,18 @@ compareTrialsPlotServer <- function(id) {
       ###########################################################
       ### RENDERPLOT
       output$plot<-renderPlot(
-        #width = function() plotwidth(),
-        #height = function() plotheight(),
-        #res = input$plot_res,
+        width = function() plotwidth(),
+        height = function() plotheight(),
+        res = input$plot_res,
         {
         req(input$trial1)
         req(input$trial2)
         req(input$group1)
         req(input$group2)
+        req(input$method)
+#        dev.off()
+        cur_dev <- dev.cur()
+        cat(file = stderr(), cur_dev)
         d <- curdata()
         mat_t <<- d$mat_t
         mat_p <<- d$mat_p
@@ -477,7 +481,13 @@ compareTrialsPlotServer <- function(id) {
         }
         if (input$method=="Pheatmap"){
 
-            generate_plot_Pheatmap(d$mat_p, d$mat_t, myfontsize = 18)
+          cur_dev <- dev.cur()
+          # Pheatmat setzt das dev.cur() um ... daher manuelles zuruck setzen
+          myplotpheatmap = generate_plot_Pheatmap(d$mat_p, d$mat_t, myfontsize = 18)
+          #cur_dev <- dev.cur()
+          #cat(file = stderr(), paste0("cur_dev=", cur_dev,"\n"))
+          dev.set(cur_dev)
+          return(myplotpheatmap)
 
         }
 
