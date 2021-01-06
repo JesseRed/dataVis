@@ -2,21 +2,43 @@ library(readr)
 library(stringr)
 library(rjson)
 
-perform_preprocessing2 <-function(beha, data = NULL, savedirname="tmp",inshiny = TRUE){
+perform_preprocessing2 <-function(outdir, df_beha, data_file = NULL, postfix="tmp",inshiny = TRUE){
+  # Funktion um die DAten von Stefan und die Behavioralen Daten in
+  # ein zur Weiterverarbeitung geeignetes Format zusammen zu bringen
+  # uebergeben wird ein
+  # outdir               ...  Verzeichnis in das geschrieben werden soll
+  # df_beha (data.frame) mit dem inhalt des behavioralen csv
+  # data_file (character) ... ein filename von dem Datenfile von Stefan das
+  #                           weiter vorverarbeitet werden soll
+  # postfix               ... ein individueller Name der Analyse
+  #
+  # Die Funktion legt am Ende in das Verzeichnis
+
+
   #cat(file = stderr(), "entering perform_preprocessing with method = ")
   #cat(file = stderr(), method)
   #cat(file = stderr(), "\n")
   #cat(file = stderr(), paste0("getwd()=",getwd(), "\n"))
 
 if (is.null(data)){
-  data = fromJSON(file = "../dataVisdata/stefanTest/export_conn_granger.json")
+  data = fromJSON(file = "../dataVisdata/prepro/CoherenceSt/export_conn_coh.json")
 
 }
+  if (data$type=="conn_coh"){method = "Coherence"}
+  else if (data$type=="conn_coh"){method = "Transferentropy"}
+  else if (data$type=="conn_freq"){method = "Frequency"}
+  else if (data$type=="conn_granger"){method = "Granger"}
+  else if (data$type=="conn_erp"){method = ""}
+  else if (data$type=="conn_rs"){method = "RS"}
+  else {
+    stop(paste0("unknown datatype detected with type=",data$type,"\n"))
+  }
+
 
 if (method == "Coherence"){
   #cat(file = stderr(), "entering perform_preprocessing... with method = Coherence\n")
   cat(file = stderr(), "now reading the data out of the csv file ... no feedback can be given please be patient for large files\n")
-  tbl_inp = data
+  #tbl_inp = data
   # reduce behavioral data to those that are in the data table
   tbl_beh_tmp <- beha[beha$ID %in% data$subjects_id,]
   # now reorder the tbl_beh that this order match the order of the matix

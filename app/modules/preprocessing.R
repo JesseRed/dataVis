@@ -96,7 +96,7 @@ preprocessingServer <- function(id) {
 
       data_data <- reactive({
         req(input$file_data)
-        fread(input$file_data$datapath, header = TRUE, sep = input$delimiter_data, check.names = FALSE)
+        #fread(input$file_data$datapath, header = TRUE, sep = input$delimiter_data, check.names = FALSE)
         #read.csv(input$file_data$datapath, header = TRUE, sep = input$delimiter_data, check.names = FALSE)
       })
 
@@ -129,8 +129,9 @@ preprocessingServer <- function(id) {
           dir.create(file.path(mainDir, myDirName))
         }
         # diese Funktion fuert das preprocessing durch und speichert alle Dateien
-        cat(file = stderr(), "perform_preprocessing now... please wait ...\n")
-        perform_preprocessing(data_beha(), data_data(), myDirName, method = input$dataMethod)
+        cat(file = stderr(), "perform_preprocessing2 now... please wait ...\n")
+        perform_preprocessing2(g_datarootpath(), data_beha(), input$file_data$datapath, myDirName)
+       # perform_preprocessing(data_beha(), data_data(), myDirName, method = input$dataMethod)
       })
 
 

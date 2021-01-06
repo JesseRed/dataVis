@@ -67,11 +67,11 @@ server <- function(input, output) {
    ### reactive val ###
   ######################
   selecteddatadir<-datarootdirServer("datarootdir")
-  datarootpath <-reactiveVal(getwd())
+  g_datarootpath <<-reactiveVal(getwd())
   observeEvent(selecteddatadir(),{
     #cat(file = stderr(),paste0("change in selecteddatadir detected","\n"))
     val <- selecteddatadir()
-    datarootpath(val)
+    g_datarootpath(val)
   })
   initialized = FALSE
   dir_listCoh <- reactive({dir(path = datarootpath(), pattern = "^Coherence", full.names = F, recursive = F)})
@@ -172,7 +172,7 @@ server <- function(input, output) {
     selectInput("dataDirGra", "Granger",choices = dir_listGra(),selected = dir_listGra()[2])})
   output$selectDirERP <- renderUI({
     selectInput("dataDirERP", "ERP",choices = dir_listERP(),selected = dir_listERP()[2])})
-  output$selectDirGra <- renderUI({
+  output$selectDirRS <- renderUI({
     selectInput("dataDirRS", "RS",choices = dir_listRS(),selected = dir_listRS()[2])})
 
 
