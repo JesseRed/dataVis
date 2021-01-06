@@ -66,12 +66,25 @@ server <- function(input, output) {
   ######################
    ### reactive val ###
   ######################
+  selecteddatadir<-datarootdirServer("datarootdir")
+  datarootpath <-reactiveVal(getwd())
+  observeEvent(selecteddatadir(),{
+    #cat(file = stderr(),paste0("change in selecteddatadir detected","\n"))
+    val <- selecteddatadir()
+    datarootpath(val)
+  })
   initialized = FALSE
-  dir_listCoh <- reactiveVal(value = dir(path = "../data", pattern = "^Coherence", full.names = F, recursive = F))
-  dir_listTra <- reactiveVal(value = dir(path = "../data", pattern = "^Transferentropy", full.names = F, recursive = F))
-  dir_listFre <- reactiveVal(value = dir(path = "../data", pattern = "^Frequency", full.names = F, recursive = F))
-  dir_listGra <- reactiveVal(value = dir(path = "../data", pattern = "^Granger", full.names = F, recursive = F))
-
+  dir_listCoh <- reactive({dir(path = datarootpath(), pattern = "^Coherence", full.names = F, recursive = F)})
+  dir_listTra <- reactive({dir(path = datarootpath(), pattern = "^Transferentropy", full.names = F, recursive = F)})
+  dir_listFre <- reactive({dir(path = datarootpath(), pattern = "^Frequency", full.names = F, recursive = F)})
+  dir_listGra <- reactive({dir(path = datarootpath(), pattern = "^Granger", full.names = F, recursive = F)})
+  dir_listERP <- reactive({dir(path = datarootpath(), pattern = "^ERP", full.names = F, recursive = F)})
+  dir_listRS  <- reactive({dir(path = datarootpath(), pattern = "^RS", full.names = F, recursive = F)})
+  # dir_listCoh <- reactiveVal(value = dir(path = "../data", pattern = "^Coherence", full.names = F, recursive = F))
+  # dir_listTra <- reactiveVal(value = dir(path = "../data", pattern = "^Transferentropy", full.names = F, recursive = F))
+  # dir_listFre <- reactiveVal(value = dir(path = "../data", pattern = "^Frequency", full.names = F, recursive = F))
+  # dir_listGra <- reactiveVal(value = dir(path = "../data", pattern = "^Granger", full.names = F, recursive = F))
+  #
  # method <- reactive({})
   method <- reactiveVal(value = "Coherence")
   directory <- reactiveVal(value = "Coherence")
@@ -89,6 +102,8 @@ server <- function(input, output) {
     } else if (input$mySidebarMenu == "TransferentropyTab"){ return("Transferentropy")
     } else if (input$mySidebarMenu == "FrequencyTab")      { return("Frequency")
     } else if (input$mySidebarMenu == "GrangerTab")        { return("Granger")
+    } else if (input$mySidebarMenu == "ERPTab")            { return("ERP")
+    } else if (input$mySidebarMenu == "RSTab")             { return("RS")
     } else if (input$mySidebarMenu == "OptionsTab")        { return("Options")
     } else {   return("Coherence")  }
   })
@@ -98,6 +113,8 @@ server <- function(input, output) {
     if (g_act_method()=="Transferentropy"){ return(input$dataDirTra)}
     if (g_act_method()=="Frequency"){       return(input$dataDirFre)}
     if (g_act_method()=="Granger"){         return(input$dataDirGra)}
+    if (g_act_method()=="ERP"){             return(input$dataDirERP)}
+    if (g_act_method()=="RS"){              return(input$dataDirRS)}
     if (g_act_method()=="Options"){         return(input$dataDirCoh)}
 
     return("Coherence")
@@ -128,9 +145,6 @@ server <- function(input, output) {
   g_saveImage_dpi <<- reactive({input$saveimagedpi})
   g_saveImage_fontsize <<- reactive({input$saveimagefontsize})
 
-  set.seed(122)
-  histdata <- rnorm(500)
-
 
 
 
@@ -156,6 +170,10 @@ server <- function(input, output) {
     selectInput("dataDirFre", "Frequency",choices = dir_listFre(), selected = dir_listFre()[2])})
   output$selectDirGra <- renderUI({
     selectInput("dataDirGra", "Granger",choices = dir_listGra(),selected = dir_listGra()[2])})
+  output$selectDirERP <- renderUI({
+    selectInput("dataDirERP", "ERP",choices = dir_listERP(),selected = dir_listERP()[2])})
+  output$selectDirGra <- renderUI({
+    selectInput("dataDirRS", "RS",choices = dir_listRS(),selected = dir_listRS()[2])})
 
 
 
@@ -351,5 +369,6 @@ server <- function(input, output) {
   ancovaStatsServer("CohAncovaStats", reactive(input$glob_sig), reactive(input$freq))
 
   preprocessingServer("preprocessing")
+
 
 }
