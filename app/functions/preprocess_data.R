@@ -73,7 +73,7 @@ if (method == "Coherence"){
   for (num_subj in subj_list){
     if (idx!=num_subj){
       idx = num_subj
-      cat(file= stderr(), paste0("subject number ", num_subj ,"/", length(subj_list),"\n"))
+      #cat(file= stderr(), paste0("subject number ", num_subj ,"/", length(subj_list),"\n"))
     }
     #subject_idx_in_beh_table <- get_subject_idx_in_beh_table(tbl_inp_)
     num_region1 = 0

@@ -1,319 +1,209 @@
 library(readr)
 library(stringr)
 library(rjson)
+library(shinyalert)
 
-perform_preprocessing2 <-function(outdir, df_beha, data_file = NULL, postfix="tmp",inshiny = TRUE){
+perform_preprocessing2 <-function(outdir, df_BD=NULL, datafilename = NULL, postfix="tmp",inshiny = TRUE){
   # Funktion um die DAten von Stefan und die Behavioralen Daten in
   # ein zur Weiterverarbeitung geeignetes Format zusammen zu bringen
   # uebergeben wird ein
   # outdir               ...  Verzeichnis in das geschrieben werden soll
-  # df_beha (data.frame) mit dem inhalt des behavioralen csv
+  # df_BD (data.frame) mit dem inhalt des behavioralen csv
   # data_file (character) ... ein filename von dem Datenfile von Stefan das
   #                           weiter vorverarbeitet werden soll
   # postfix               ... ein individueller Name der Analyse
   #
   # Die Funktion legt am Ende in das Verzeichnis
+  start_time <- Sys.time()
+  cat(file = stderr(), paste0("outdir = ", outdir,"\n"))
+
+  if (is.null(datafilename)){datafilename =  "./app/tests/testthat/data/MEG/export_conn_coh.json"}
+  data <<- fromJSON(file = datafilename)
 
 
-  #cat(file = stderr(), "entering perform_preprocessing with method = ")
-  #cat(file = stderr(), method)
-  #cat(file = stderr(), "\n")
-  #cat(file = stderr(), paste0("getwd()=",getwd(), "\n"))
+  if (is.null(data)){ data = fromJSON(file = "./app/tests/testthat/data/MEG/export_conn_coh.json")}
+  #if (is.null(data)){ data = fromJSON(file = "../dataVisdata/prepro/MEG/export_conn_coh.json")}
+  #data2$subjects= data$subjects[1:3]
+  if (is.null(df_BD)){ df_BD = read.csv(file = "./app/tests/testthat/data/MEG/bd.csv", header = TRUE, sep = ';', check.names = FALSE)}
+  #if (is.null(df_BD)){ df_BD = read.csv(file = "../dataVisdata/prepro/MEG/bd.csv", header = TRUE, sep = ';', check.names = FALSE)}
+  cat(file = stderr(), "get_methodname\n")
+  cat(file = stderr(), paste0("class(data)=",class(data), "\n"))
 
-if (is.null(data)){
-  data = fromJSON(file = "../dataVisdata/prepro/CoherenceSt/export_conn_coh.json")
+  method <- get_methodname(data)
+
+  cat(file = stderr(), "extract_data_array\n")
+  mdat <- extract_data_array(data, df_BD, method)
+
+  cat(file = stderr(), "create_new_data_structure\n")
+  D <- create_new_data_structure(data, df_BD, mdat, method)
+
+  cat(file = stderr(), "save_data_structure\n")
+  save_data_structure(outdir, D)
+  cat(file = stderr(), "preprocessing finished in \n")
+  preprocessing_time = Sys.time()-start_time
+  shinyalert("Yeaahhh!", paste0("preprocessing finished afer ",round(preprocessing_time,3)," sec."), type = "success")
+return(D)
+}
+
+
+
+create_new_data_structure <- function(data, df_BD, mdat, method){
+
+  # die Frage ist hier ob ich wirklich die Dateninformationen
+  # nehmen kann oder ob ich noch Funktionen schreiben muss
+  # die ggf. Daten rauswerfen und dann auch diese Liste anpassen
+  #
+
+  ugroup_list = paste("Group",as.character(unique(df_BD$Gruppe)),sep="")
+  ugroup_list = as.character(unique(df_BD$Gruppe))
+  #cat(file = stderr(), paste0("ugroup_list = ",ugroup_list,"\n"))
+  uregion_list = data$channels
+  uregion_list_named = list()
+  uregion_list_named[uregion_list] = 1:length(uregion_list)
+
+  utrial_list = as.character(data$trials)
+  utrial_list_named = list()
+  utrial_list_named[utrial_list] = 1:length(utrial_list)
+
+  ufreq_list = as.character(data$freq)
+  ufreq_list_named = list()
+  ufreq_list_named[ufreq_list] = 1:length(ufreq_list)
+
+  ufreq_list_num = data$freq
+
+  dimcontent = c("sub","reg","reg","tri","fre")
+
+  # anpassen der behavioralen Daten so dass sie zu der neuen DAtenstruktur passen
+  df_BD <- df_BD[df_BD$ID %in% data$subjects_id,]
+  df_BD <- df_BD[match(data$subjects_id, df_BD$ID),]
+
+  id_list = df_BD[['ID']]
+
+  if (!identical(id_list,data$subjects_id)){
+    cat(file = stderr(), "filtered id_list from the behavioral data and data$subjects_id are not identical\n")
+    cat(file = stderr(), "most probably: IDs in the data file are not in the behavioral table\n")
+    cat(file = stderr(), "... here commes the id_list from the behavioral file\n")
+    cat(file = stderr(), paste0(id_list,"\n"))
+    cat(file = stderr(), "\n\n... here commes the id_list from stefans file\n")
+    cat(file = stderr(), paste0(data$subjects_id,"\n"))
+    stop("end now\n")
+  }
+
+D <- list(method              = method,
+          ugroup_list         = ugroup_list,
+          dimcontent          = dimcontent,
+          uregion_list        = uregion_list,
+          uregion_list_named  = uregion_list_named,
+          utrial_list         = utrial_list,
+          utrial_list_named   = utrial_list_named,
+          ufreq_list          = ufreq_list,
+          ufreq_list_named    = ufreq_list_named,
+          ufreq_list_num      = ufreq_list_num,
+          id_list             = id_list,
+          df_BD               = df_BD,
+          mdat                = mdat
+          )
 
 }
-  if (data$type=="conn_coh"){method = "Coherence"}
-  else if (data$type=="conn_coh"){method = "Transferentropy"}
-  else if (data$type=="conn_freq"){method = "Frequency"}
-  else if (data$type=="conn_granger"){method = "Granger"}
-  else if (data$type=="conn_erp"){method = ""}
-  else if (data$type=="conn_rs"){method = "RS"}
-  else {
-    stop(paste0("unknown datatype detected with type=",data$type,"\n"))
-  }
+
+save_data_structure<- function(outdir, D){
+
+cat(file = stderr(),paste0("saving to outdir=",outdir,"\n"))
+saveRDS(D$uregion_list,   file = file.path(outdir, "uregion_list.Rda"))
+saveRDS(D$utrial_list,    file = file.path(outdir, "utrial_list.Rda" ))
+saveRDS(D$ufreq_list,     file = file.path(outdir, "ufreq_list.Rda"  ))
+saveRDS(D$ufreq_list_num, file = file.path(outdir, "ufreq_list.Rda"  ))
+saveRDS(D$id_list,        file = file.path(outdir, "id_list.Rda"     ))
+saveRDS(D$df_BD,          file = file.path(outdir, "df_BD.Rda"     ))
+saveRDS(D$mdat,           file = file.path(outdir, "matrix_data.Rda"    ))
+saveRDS(D,                file = file.path(outdir, "D.Rda"    ))
 
 
-if (method == "Coherence"){
-  #cat(file = stderr(), "entering perform_preprocessing... with method = Coherence\n")
-  cat(file = stderr(), "now reading the data out of the csv file ... no feedback can be given please be patient for large files\n")
-  #tbl_inp = data
-  # reduce behavioral data to those that are in the data table
-  tbl_beh_tmp <- beha[beha$ID %in% data$subjects_id,]
-  # now reorder the tbl_beh that this order match the order of the matix
-  # later on ... the matrix is indexed only by numbers ... there is no further id
-  # therefore it is needed that both are in the same order
-  tbl_beh <- tbl_beh_tmp[match(tbl_inp$ID, tbl_beh_tmp$ID),]
 
-  test_that_IDs_are_the_same(tbl_beh, tbl_inp)
+}
 
-  id_list = tbl_inp[['ID']]
 
-  # Create trial_list, region_list and freq_list
-  coln = colnames(tbl_inp)
-  region_list <- character(length=1)
-  trial_list <- integer(length=1)
-  freq_list <- integer(length=1)
-  j <- 1
-  for (i in coln) {
-    if (grepl("__",i)) {
-      tmp <- strsplit(i,"__")
-      region_list[j]<-tmp[[1]][1]
-      trial_list[j]<-tmp[[1]][2]
-      freq_list[j]<-tmp[[1]][3]
-      j <- j+1
-    }
-  }
 
-  uregion_comp_list = unique(region_list)
-  # zerlege in erstes und 2. Region
-  j = 1
-  region_list <- character(length=1)
-  #cat(file = stderr(), "second schleife\n")
-  for (i in uregion_comp_list){
-    if (grepl(">",i)) {
-      tmp <- strsplit(i,">")
-      region_list[j]<-tmp[[1]][1]
-      j = j + 1
-      region_list[j]<-tmp[[1]][2]
-      j = j + 1
-    }
-  }
+extract_data_array<-function(data, df_BD, method){
+  #This function takes the data and behavioral data
+  # to create the data matrix
+  # the dimensions are named
 
-  uregion_list = unique(region_list)
-  utrial_list = unique(trial_list)
-  ufreq_list = unique(freq_list)
-  subj_list <- seq(1,nrow(tbl_inp))
-  beh_list <- colnames(tbl_beh)
+
+
+  # create data$channelcmb$from_num und data$channelcmb$to_num
+  # die Datachannels sind als Strings abgelegt ... wir brauchen sie aber als Nummern
+  data$channelcmb$from_num = match(data$channelcmb$from, data$channels)
+  data$channelcmb$to_num = match(data$channelcmb$to, data$channels)
+
+  # an dieser Stelle werden die uebergebenen INformationen
+  # genutzt
+  # es kann jedoch sein, dass sich hieran noch etwas aendert
+  # z.B. wenn ein Subject komplett leer ist und er noch
+  # raus genommen werden muss
+  uregion_list = data$channels
+  utrial_list = as.character(data$trials)
+  ufreq_list = as.character(data$freq)
 
   # reserviere den Speicher fuer das Datenarray
   mdat <- array(data = NA,
-                dim = c(nrow(tbl_inp),
+                dim = c(length(data$subjects_id),
                         length(uregion_list),
                         length(uregion_list),
                         length(utrial_list),
                         length(ufreq_list)
+                ),
+                dimnames = list(data$subjects_id,
+                                uregion_list,
+                                uregion_list,
+                                utrial_list,
+                                ufreq_list
                 )
   )
-  # nun fuellen des datenarrays mdat
-  idx = 1
-  for (num_subj in subj_list){
-    if (idx!=num_subj){
-      idx = num_subj
-      cat(file= stderr(), paste0("subject number ", num_subj ,"/", length(subj_list),"\n"))
-    }
-    #subject_idx_in_beh_table <- get_subject_idx_in_beh_table(tbl_inp_)
-    num_region1 = 0
-    for (n_region1 in uregion_list){
-      num_region2 = 0
-      num_region1 = num_region1 + 1
-      for (n_region2 in uregion_list){
-        num_trial = 0
-        num_region2 = num_region2 + 1
-        for (n_trial in utrial_list){
-          num_freq = 0
-          num_trial = num_trial + 1
-          for (n_freq in ufreq_list){
-            num_freq = num_freq + 1
 
-            if (n_region1==n_region2){ tmp = 0
-            } else{
+  # fuellen des datenarrays mdat
+  for (num_subj in seq(1,length(data$subjects_id))){
+    cat(file= stderr(), paste0("subject number ", num_subj ,"/", length(data$subjects_id),"\n"))
+    dat_subj = data$subjects[[num_subj]]
+    if (dat_subj$subject_id != data$subjects_id[num_subj]) {stop("error in compare subject_id")}
 
-              region_name = paste0(n_region1,">",n_region2)
-              col_name <- paste(region_name,toString(n_trial),toString(n_freq),sep = "__")
-              tmp =  tbl_inp[[col_name]][num_subj]
-              if (is.null(tmp)){
-                region_name = paste0(n_region2,">",n_region1)
-                col_name <- paste(region_name,toString(n_trial),toString(n_freq),sep = "__")
-                tmp =  tbl_inp[[col_name]][num_subj]
-              }
 
-              if (is.null(tmp)){
-                tmp = NaN
-              }
-            }
-            mdat[num_subj, num_region1, num_region2, num_trial, num_freq] = tmp
-          }
+    for (num_trial in 1:length(dat_subj$trials)){
+      dat_trial = dat_subj$trials[[num_trial]]
+      #if (dat_trial$trial_id != n_trial) {stop("error in compare trial_id")}
+
+      for (i in 1:length(dat_trial$dat)){
+        # die Daten koennen numerisch sein, wenn aber NULL drin steht sind es listen
+        if (class(dat_trial$dat[[i]])=="numeric"){
+          #cat(file = stderr(), paste0("num_subj = ", num_subj, "\nfrom_num=",data$channelcmb$from_num[i],"\nto_num=",data$channelcmb$to_num[i], "\nnumtrial=",i,"\n dim(dat)=",dim(dat_trial$dat[[i]]),"\n" ))
+          mdat[num_subj, data$channelcmb$from_num[i], data$channelcmb$to_num[i], num_trial, ] = dat_trial$dat[[i]]
+        }
+        if (class(dat_trial$dat[[i]])=="list"){
+          mdat[num_subj, data$channelcmb$from_num[i], data$channelcmb$to_num[i], num_trial, ] = NA
+        }
+        # erzeuge Symmetrie der Matrix
+        if (method == "Coherence"){
+          mdat[num_subj, data$channelcmb$to_num[i], data$channelcmb$from_num[i], num_trial, ] = mdat[num_subj, data$channelcmb$from_num[i], data$channelcmb$to_num[i], num_trial, ]
         }
       }
+
     }
   }
-  # Increment the progress bar, and update the detail text.
-  #  incProgress(1/length(subj_list), detail = paste("Doing part", num_subj))
-  #}) # Progress bar
-}
-
-  #####################################
-  # Transferentropy
-  if (method == "Transferentropy"){
-    cat(file = stderr(), "entering perform_preprocessing for Transferentropy\n")
-    # if (inshiny){
-    # showModal(modalDialog(
-    #   title = "Please wait",
-    #   "... reading the csv file"
-    # ))
-    # }
-    tbl_inp = data
-    # reduce behavioral data to those that are in the data table
-    tbl_beh_tmp <- beha[beha$ID %in% data$ID,]
-    # now reorder the tbl_beh that this order match the order of the matix
-    # later on ... the matrix is indexed only by numbers ... there is no further id
-    # therefore it is needed that both are in the same order
-    tbl_beh <- tbl_beh_tmp[match(tbl_inp$ID, tbl_beh_tmp$ID),]
-
-    test_that_IDs_are_the_same(tbl_beh, tbl_inp)
-
-    id_list = tbl_inp[['ID']]
-
-
-    coln = colnames(tbl_inp)
-    region_list <- character(length=1)
-    trial_list <- integer(length=1)
-    freq_list <- integer(length=1)
-
-    cat(file = stderr(), "first schleife\n")
-    j <- 1
-    #withProgress(message = 'parsing columnnames', value = 0, {
-    cat(file = stderr(), paste0("length(coln)=",length(coln),"\n"))
-    for (i in coln) {
-      if (grepl("__",i)) {
-        tmp <- strsplit(i,"__")
-        region_list[j]<-tmp[[1]][1]
-        trial_list[j]<-tmp[[1]][2]
-        freq_list[j]<-tmp[[1]][3]
-        j <- j+1
-      }
-    }
-
-
-
-    uregion_comp_list = unique(region_list)
-    # zerlege in erstes und 2. Region
-    j = 1
-    region_list <- character(length=1)
-    cat(file = stderr(), "second schleife\n")
-
-    for (i in uregion_comp_list){
-      if (grepl(">",i)) {
-        tmp <- strsplit(i,">")
-        region_list[j]<-delete_A_B_if_possible(tmp[[1]][1])
-        j = j + 1
-        region_list[j]<-delete_A_B_if_possible(tmp[[1]][2])
-        j = j + 1
-      }
-    }
-    uregion_list = unique(region_list)
-    utrial_list = unique(trial_list)
-    ufreq_list = unique(freq_list)
-    subj_list <- seq(1,nrow(tbl_inp))
-    beh_list <- colnames(tbl_beh)
-
-    cat(file = stderr(), "\n\nuregion_list = \n")
-    cat(file = stderr(), uregion_list)
-    cat(file = stderr(), "\n\nutrial_list = \n")
-    cat(file = stderr(), utrial_list)
-    cat(file = stderr(), "\n\nufreq_list = \n")
-    cat(file = stderr(), ufreq_list)
-
-    cat(file = stderr(), "reserving memory")
-    mdat <- array(data = NA,
-                  dim = c(nrow(tbl_inp),
-                          length(uregion_list),
-                          length(uregion_list),
-                          length(utrial_list),
-                          length(ufreq_list)
-                  )
-    )
-    # nun fuellen des datenarrays mdat
-    idx = 1
-    cat(file = stderr(), "entering proress bar\n")
-    cat(file = stderr(), paste0("length(uregion_list)=",length(uregion_list),"\n"))
-    #withProgress(message = 'Creating Datastructure', value = 0, {
-    for (num_subj in subj_list){
-      if (idx!=num_subj){
-        idx = num_subj
-       # print(cat(sprintf("subject number %d / %d", num_subj, length(subj_list))))
-      }
-      num_region1 = 0
-      for (n_region1 in uregion_list){
-        num_region2 = 0
-        num_region1 = num_region1 + 1
-        for (n_region2 in uregion_list){
-          num_trial = 0
-          num_region2 = num_region2 + 1
-          for (n_trial in utrial_list){
-            num_freq = 0
-            num_trial = num_trial + 1
-            for (n_freq in ufreq_list){
-              num_freq = num_freq + 1
-
-              if (n_region1==n_region2){ tmp = 0
-              } else{
-
-                region_name = paste0(n_region1,"_A>",n_region2,"_B")
-                col_name <- paste(region_name,toString(n_trial),toString(n_freq),sep = "__")
-                tmp =  tbl_inp[[col_name]][num_subj]
-                if (is.null(tmp)){
-                  region_name = paste0(n_region2,"_A",">",n_region1,"_B")
-                  col_name <- paste(region_name,toString(n_trial),toString(n_freq),sep = "__")
-                  tmp =  tbl_inp[[col_name]][num_subj]
-                }
-
-                if (is.null(tmp)){
-                  tmp = NaN
-                }
-              }
-              mdat[num_subj, num_region1, num_region2, num_trial, num_freq] = tmp
-            }
-          }
-        }
-      }
-    }
-    # Increment the progress bar, and update the detail text.
-    #  incProgress(1/length(subj_list), detail = paste("Doing part", num_subj))
-    #}) # Progress bar
-  }
-
-
-  mybasepath = file.path("../data", savedirname)
-  cat(file = stderr(),paste0("mybasepath=",mybasepath,"\n"))
-  saveRDS(uregion_list, file = file.path(mybasepath, "uregion_list.Rda"))
-  saveRDS(utrial_list,  file = file.path(mybasepath, "utrial_list.Rda" ))
-  saveRDS(ufreq_list,   file = file.path(mybasepath, "ufreq_list.Rda"  ))
-  saveRDS(id_list,      file = file.path(mybasepath, "id_list.Rda"     ))
-  saveRDS(tbl_beh,      file = file.path(mybasepath, "tbl_beh.Rda"     ))
-  saveRDS(mdat,         file = file.path(mybasepath, "tbl_data.Rda"    ))
-
+  return(mdat)
 }
 
 
-delete_A_B_if_possible <- function(mystring){
-  # wenn der String mit "_A" oder "_B" endet dann loesche diese beiden Buchstaben
-  if (str_sub(mystring,-2,-1)=="_A" || str_sub(mystring,-2,-1)=="_B") {
-    region_name<-str_sub(mystring,1,-3)
-  }else if (str_sub(mystring,-3,-1)=="_to") {
-    region_name<-str_sub(mystring,1,-4)
 
-  }else if (str_sub(mystring,-5,-1)=="_from"){
-    region_name<-str_sub(mystring,1,-6)
-  }else {
-    region_name<-mystring
-  }
-  return(region_name)
+get_methodname<-function(data){
+
+  if (data$type=="conn_coh"){method = "Coherence"
+  }else if (data$type=="conn_coh"){method = "Transferentropy"
+  }else if (data$type=="conn_freq"){method = "Frequency"
+  }else if (data$type=="conn_granger"){method = "Granger"
+  }else if (data$type=="conn_erp"){method = "ERP"
+  }else if (data$type=="fmri"){method = "RS"
+  }else { stop(paste0("unknown datatype detected with type=",data$type,"\n")) }
+
+  return(method)
 }
 
-
-test_that_IDs_are_the_same<-function(t1, t2){
-  id1 = t1$ID
-  id2 = t2$ID
-  if (!(length(id1)==length(id2))){
-    stop('error length(id1) not == length(id2)')
-  }
-  for (idx in 1:length(id1)){
-    if (!(id1[idx]==id2[idx])){
-      stop('error in matching tables ids are not matching ')
-    }
-  }
-
-}

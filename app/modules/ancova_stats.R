@@ -135,6 +135,9 @@ ancovaStatsServer <- function(id, input_glob_sig, freq) {
   })
 
 
+      curdata <- reactive({
+        get_currently_selected_data(g_data(), input$group1, input$group2, as.numeric(input$trial1), as.numeric(input$trial1), g_sel_freqs())
+      })
 
       ############################################
       ##########################################
@@ -240,23 +243,26 @@ ancovaStatsServer <- function(id, input_glob_sig, freq) {
         req(input$group1)
         req(input$group2)
 
-                #data1 = get_data_group_trial_freqmean(data,input$group1, as.numeric(input$trial1), freq())
-        #data2 = get_data_group_trial_freqmean(data,input$group2, as.numeric(input$trial2), freq())
-        data1 = data_g1_t1()
-        data2 = data_g2_t1()
-        mat_p = matrix(data=NA, nrow=dim(data1)[2], ncol=dim(data1)[3])
-        mat_t = matrix(data=NA, nrow=dim(data1)[2], ncol=dim(data1)[3])
-        color1 = colorRampPalette(c("blue","red","green"))
-
-        for (i in 1:(dim(data1)[2])){
-          for (j in 1:(dim(data1)[3])){
-            x = data1[,i,j]
-            y = data2[,i,j]
-            z = t.test(x,y, paired = FALSE)
-            mat_p[i,j] = z$p.value
-            mat_t[i,j] = z$statistic
-          }
-        }
+        d <- curdata()
+        mat_t <- d$mat_t
+        mat_p <- d$mat_p
+        #         #data1 = get_data_group_trial_freqmean(data,input$group1, as.numeric(input$trial1), freq())
+        # #data2 = get_data_group_trial_freqmean(data,input$group2, as.numeric(input$trial2), freq())
+        # data1 = data_g1_t1()
+        # data2 = data_g2_t1()
+        # mat_p = matrix(data=NA, nrow=dim(data1)[2], ncol=dim(data1)[3])
+        # mat_t = matrix(data=NA, nrow=dim(data1)[2], ncol=dim(data1)[3])
+        # color1 = colorRampPalette(c("blue","red","green"))
+        #
+        # for (i in 1:(dim(data1)[2])){
+        #   for (j in 1:(dim(data1)[3])){
+        #     x = data1[,i,j]
+        #     y = data2[,i,j]
+        #     z = t.test(x,y, paired = FALSE)
+        #     mat_p[i,j] = z$p.value
+        #     mat_t[i,j] = z$statistic
+        #   }
+        # }
 
         ###################
         # CORRPLOT

@@ -1,4 +1,8 @@
 library(testthat)
+# pathnames <- list.files(pattern="[.]R$", path="functions", full.names=TRUE);
+# sapply(pathnames, FUN=source);
+# pathnames <- list.files(pattern="[.]R$", path="modules", full.names=TRUE);
+# sapply(pathnames, FUN=source);
 
 test_dir(
   "./testthat",

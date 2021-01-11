@@ -74,12 +74,12 @@ server <- function(input, output) {
     g_datarootpath(val)
   })
   initialized = FALSE
-  dir_listCoh <- reactive({dir(path = datarootpath(), pattern = "^Coherence", full.names = F, recursive = F)})
-  dir_listTra <- reactive({dir(path = datarootpath(), pattern = "^Transferentropy", full.names = F, recursive = F)})
-  dir_listFre <- reactive({dir(path = datarootpath(), pattern = "^Frequency", full.names = F, recursive = F)})
-  dir_listGra <- reactive({dir(path = datarootpath(), pattern = "^Granger", full.names = F, recursive = F)})
-  dir_listERP <- reactive({dir(path = datarootpath(), pattern = "^ERP", full.names = F, recursive = F)})
-  dir_listRS  <- reactive({dir(path = datarootpath(), pattern = "^RS", full.names = F, recursive = F)})
+  dir_listCoh <- reactive({dir(path = g_datarootpath(), pattern = "^Coherence", full.names = F, recursive = F)})
+  dir_listTra <- reactive({dir(path = g_datarootpath(), pattern = "^Transferentropy", full.names = F, recursive = F)})
+  dir_listFre <- reactive({dir(path = g_datarootpath(), pattern = "^Frequency", full.names = F, recursive = F)})
+  dir_listGra <- reactive({dir(path = g_datarootpath(), pattern = "^Granger", full.names = F, recursive = F)})
+  dir_listERP <- reactive({dir(path = g_datarootpath(), pattern = "^ERP", full.names = F, recursive = F)})
+  dir_listRS  <- reactive({dir(path = g_datarootpath(), pattern = "^RS", full.names = F, recursive = F)})
   # dir_listCoh <- reactiveVal(value = dir(path = "../data", pattern = "^Coherence", full.names = F, recursive = F))
   # dir_listTra <- reactiveVal(value = dir(path = "../data", pattern = "^Transferentropy", full.names = F, recursive = F))
   # dir_listFre <- reactiveVal(value = dir(path = "../data", pattern = "^Frequency", full.names = F, recursive = F))
@@ -109,7 +109,7 @@ server <- function(input, output) {
   })
 
   g_act_data_dir <<- reactive({
-    if (g_act_method()=="Coherence"){       return(input$dataDirCoh)}
+    if (g_act_method()=="Coherence"){       return(file.path(g_datarootpath(),input$dataDirCoh))}
     if (g_act_method()=="Transferentropy"){ return(input$dataDirTra)}
     if (g_act_method()=="Frequency"){       return(input$dataDirFre)}
     if (g_act_method()=="Granger"){         return(input$dataDirGra)}
@@ -125,18 +125,31 @@ server <- function(input, output) {
 
   # this reload variable triggers the manual reload of other global variables
   # best option to change this is g_reload = g_reload(g_reload()+1)
-  g_reload_rVal <<- reactiveVal(0)
-  g_data      <<- reactive({ get_data(g_act_data_dir())                })
-  g_beh      <<- reactive({ get_global_tbl_beh(g_act_data_dir())      })
-  g_regions <<- reactive({ get_global_uregion_list(g_act_data_dir()) })
-  g_trials  <<- reactive({ get_global_utrial_list(g_act_data_dir())  })
-  g_groups  <<- reactive({ get_global_group_names(g_act_data_dir())  })
-  g_freqs   <<- reactive({ get_global_ufreq_list(g_act_data_dir())   })
-  g_regions_named <<- reactive({ get_global_region_names(g_act_data_dir()) })
-  g_trials_named  <<- reactive({ get_global_trial_names(g_act_data_dir())  })
-  g_sel_freqs<<- reactive({ get_selected_freq_list(g_freqs(), input$freq) })
-  g_sig<<- reactive({input$glob_sig})
 
+  g_reload_rVal   <<- reactiveVal(0)
+  g_D             <<- reactive({get_global_D(g_act_data_dir())                })
+  g_data          <<- reactive({ g_D()$mdat                                   })
+  g_beh           <<- reactive({ g_D()$df_BD                                  })
+  g_regions       <<- reactive({ g_D()$uregion_list                           })
+  g_trials        <<- reactive({ g_D()$utrial_list                            })
+  g_groups        <<- reactive({ c("all_groups",g_D()$ugroup_list)            })
+  g_freqs         <<- reactive({ g_D()$ufreq_list                             })
+  g_regions_named <<- reactive({ g_D()$uregion_list_named                     })
+  g_trials_named  <<- reactive({ g_D()$utrial_list_named                      })
+  g_sel_freqs     <<- reactive({ get_selected_freq_list(g_freqs(),input$freq) })
+  g_sig           <<- reactive({ input$glob_sig                               })
+
+  # g_data      <<- reactive({ get_data(g_act_data_dir())                })
+  # g_beh      <<- reactive({ get_global_tbl_beh(g_act_data_dir())      })
+  # g_regions <<- reactive({ get_global_uregion_list(g_act_data_dir()) })
+  # g_trials  <<- reactive({ get_global_utrial_list(g_act_data_dir())  })
+  # g_groups  <<- reactive({ get_global_group_names(g_act_data_dir())  })
+  # g_freqs   <<- reactive({ get_global_ufreq_list(g_act_data_dir())   })
+  # g_regions_named <<- reactive({ get_global_region_names(g_act_data_dir()) })
+  # g_trials_named  <<- reactive({ get_global_trial_names(g_act_data_dir())  })
+  # g_sel_freqs<<- reactive({ get_selected_freq_list(g_freqs(), input$freq) })
+  # g_sig<<- reactive({input$glob_sig})
+  #
   g_saveImage_button <<- reactive({input$saveimageButton})
   g_saveImage_width <<- reactive({input$saveimagewidth})
   g_saveImage_height <<- reactive({input$saveimageheight})
@@ -146,12 +159,6 @@ server <- function(input, output) {
   g_saveImage_fontsize <<- reactive({input$saveimagefontsize})
 
 
-
-
-  output$plot1 <- renderPlot({
-    data <- histdata[seq_len(input$slider)]
-    hist(data)
-  })
 
   ##################
    #### Sidebar ###
@@ -346,6 +353,51 @@ server <- function(input, output) {
     )
   })
 
+
+  ##################
+  #### Tabs ERP ###
+  ##################
+  output$tabsERP <- renderUI({
+    fluidRow(
+      tabBox(
+        title = NULL, width = 12,
+        # The id lets us use input$tabset1 on the server to find the current tab
+        id = "tabset1", height = "250px",
+
+        tabPanel("Plot", ERPPlotUI("ERPPlot"))
+
+      )
+    )
+  })
+
+  #ERPPlotUI("ERPPlot")
+  ERPPlotServer("ERPPlot")
+
+
+  ##################
+  #### Tabs RS ###
+  ##################
+  output$tabsRS <- renderUI({
+    fluidRow(
+      tabBox(
+        title = NULL, width = 12,
+        # The id lets us use input$tabset1 on the server to find the current tab
+        id = "tabset1", height = "250px",
+
+        tabPanel("Plot", RSPlotUI("RSPlot")),
+        # tabPanel("Comp Plot", compareTrialsPlotUI("CohPlot")),
+        # tabPanel("Trials Stat", compareTrialsStatsUI("CohTrialsStat")),
+        # tabPanel("Groups Stat", compareGroupsStatsUI("CohGroupsStats")),
+        # tabPanel("Diff Stat", compareDiffOfDiffStatsUI("CohDiffOfDiffStats")),
+        # tabPanel("Regression", regressionStatsUI("CohRegStats")),
+        # tabPanel("ANCOVA", ancovaStatsUI("CohAncovaStats"))
+      )
+    )
+  })
+  #RSPlotUI("ERPPlot")
+  RSPlotServer("RSPlot")
+
+
   options_mod_orderServer("Options_order")
   options_mod_nameServer("Options_name")
 
@@ -369,6 +421,7 @@ server <- function(input, output) {
   ancovaStatsServer("CohAncovaStats", reactive(input$glob_sig), reactive(input$freq))
 
   preprocessingServer("preprocessing")
+
 
 
 }

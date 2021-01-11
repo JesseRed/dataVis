@@ -30,7 +30,7 @@ preprocessingUI <- function(id){
     #box(title = "table head", collapsible = TRUE, collapsed = TRUE, tableOutput(ns("head_beha"))),
 
     fluidRow(
-      column(8, fileInput(ns("file_data"), label = "data file", accept = c(".csv", ".tsv"))),
+      column(8, fileInput(ns("file_data"), label = "data file", accept = c(".csv", ".tsv", ".json"))),
       column(2, textInput(ns("delimiter_data"),"csv sep", value = ";")),
       #column(2, div(style = "background-color:yellow; text-align:center;", "Bottomright", actionButton(ns("showbeha"),"show beha"),
       column(2, div(style = "text-align:center; margin-top: 25px;", actionButton(ns("showdata"),"show Tab"),
@@ -102,10 +102,13 @@ preprocessingServer <- function(id) {
 
 
       observeEvent(input$estimate, {
-        mainDir = "../data"
+        cat(file=stderr(), paste0("dir in which data dir will be created = ",g_datarootpath(),"\n" ))
         req(input$outputname)
         myDirName = paste0(input$dataMethod,"_",input$outputname)
-        if (dir.exists(file.path(mainDir, myDirName))){
+        dir_to_save = file.path(g_datarootpath(), myDirName)
+
+
+        if (dir.exists(dir_to_save)){
           showNotification("A directory with this name already exist\n please choose a differnt or delete by hand", type= "error")
           shinyalert(title = "Warning",
                      text = "Directory already exist\n if you procede, all content in this directory will be deleted",
@@ -118,19 +121,19 @@ preprocessingServer <- function(id) {
                        cat(file = stderr(), paste0("\nx=",x,"\n"))
 
                        if(x) {
-                         cat(file = stderr(), paste0("delet ... ",file.path(mainDir, myDirName),"\n"))
+                         cat(file = stderr(), paste0("delet ... ", dir_to_save,"\n"))
                          cat(file = stderr(), paste0("delete all\n"))
-                         unlink(file.path(mainDir, myDirName,"*"))
+                         unlink(file.path(dir_to_save,"*"))
                        }
                      }
           )
 
         }else{
-          dir.create(file.path(mainDir, myDirName))
+          dir.create(dir_to_save)
         }
         # diese Funktion fuert das preprocessing durch und speichert alle Dateien
         cat(file = stderr(), "perform_preprocessing2 now... please wait ...\n")
-        perform_preprocessing2(g_datarootpath(), data_beha(), input$file_data$datapath, myDirName)
+        perform_preprocessing2(dir_to_save, data_beha(), input$file_data$datapath, myDirName)
        # perform_preprocessing(data_beha(), data_data(), myDirName, method = input$dataMethod)
       })
 

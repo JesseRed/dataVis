@@ -1,0 +1,165 @@
+{
+  "input": {
+    "datarootdir-dir": 0,
+    "datarootdir-dirtextinput": "",
+    "mySidebarMenu": "datarootdir",
+    "preprocessing-dataMethod": "Coherence",
+    "preprocessing-delimiter_beha": ";",
+    "preprocessing-delimiter_data": ";",
+    "preprocessing-estimate": 0,
+    "preprocessing-file_beha": null,
+    "preprocessing-file_data": null,
+    "preprocessing-hidebeha": 0,
+    "preprocessing-hidedata": 0,
+    "preprocessing-outputname": "01",
+    "preprocessing-showbeha": 0,
+    "preprocessing-showdata": 0,
+    "sidebarCollapsed": false,
+    "sidebarItemExpanded": null,
+    "slider": 50
+  },
+  "output": {
+    "datarootdir-dir": "character(0)",
+    "freq": {
+      "html": "<div class=\"form-group shiny-input-container\">\n  <label class=\"control-label\" for=\"freq\">Frequency range<\/label>\n  <input class=\"js-range-slider\" id=\"freq\" data-type=\"double\" data-min=\"0\" data-max=\"40\" data-from=\"8\" data-to=\"14\" data-step=\"1\" data-grid=\"true\" data-grid-num=\"10\" data-grid-snap=\"false\" data-prettify-separator=\",\" data-prettify-enabled=\"true\" data-keyboard=\"true\" data-drag-interval=\"true\" data-data-type=\"number\"/>\n<\/div>",
+      "deps": [
+        {
+          "name": "ionrangeslider",
+          "version": "2.1.6",
+          "src": {
+            "href": "shared/ionrangeslider"
+          },
+          "meta": null,
+          "script": "js/ion.rangeSlider.min.js",
+          "stylesheet": [
+            "css/ion.rangeSlider.css",
+            "css/ion.rangeSlider.skinShiny.css"
+          ],
+          "head": null,
+          "attachment": null,
+          "package": null,
+          "all_files": true
+        },
+        {
+          "name": "strftime",
+          "version": "0.9.2",
+          "src": {
+            "href": "shared/strftime"
+          },
+          "meta": null,
+          "script": "strftime-min.js",
+          "stylesheet": null,
+          "head": null,
+          "attachment": null,
+          "package": null,
+          "all_files": true
+        }
+      ]
+    },
+    "glob_sig": {
+      "html": "<div class=\"form-group shiny-input-container\">\n  <label class=\"control-label\" for=\"glob_sig\">\n    <h4>sig threshold<\/h4>\n  <\/label>\n  <input id=\"glob_sig\" type=\"number\" class=\"form-control\" value=\"0.05\" min=\"0\" max=\"1\" step=\"1e-05\"/>\n<\/div>",
+      "deps": [
+
+      ]
+    },
+    "res": "You've selected: datarootdir",
+    "selectDirCoh": {
+      "html": "<div class=\"form-group shiny-input-container\">\n  <label class=\"control-label\" for=\"dataDirCoh\">Coherence<\/label>\n  <div>\n    <select id=\"dataDirCoh\"><\/select>\n    <script type=\"application/json\" data-for=\"dataDirCoh\" data-nonempty=\"\">{}<\/script>\n  <\/div>\n<\/div>",
+      "deps": [
+        {
+          "name": "selectize",
+          "version": "0.11.2",
+          "src": {
+            "href": "shared/selectize"
+          },
+          "meta": null,
+          "script": null,
+          "stylesheet": "css/selectize.bootstrap3.css",
+          "head": "<!--[if lt IE 9]>\n<script src=\"shared/selectize/js/es5-shim.min.js\"><\/script>\n<![endif]-->\n<script src=\"shared/selectize/js/selectize.min.js\"><\/script>",
+          "attachment": null,
+          "package": null,
+          "all_files": true
+        }
+      ]
+    },
+    "selectDirERP": {
+      "html": "<div class=\"form-group shiny-input-container\">\n  <label class=\"control-label\" for=\"dataDirERP\">ERP<\/label>\n  <div>\n    <select id=\"dataDirERP\"><\/select>\n    <script type=\"application/json\" data-for=\"dataDirERP\" data-nonempty=\"\">{}<\/script>\n  <\/div>\n<\/div>",
+      "deps": [
+        {
+          "name": "selectize",
+          "version": "0.11.2",
+          "src": {
+            "href": "shared/selectize"
+          },
+          "meta": null,
+          "script": null,
+          "stylesheet": "css/selectize.bootstrap3.css",
+          "head": "<!--[if lt IE 9]>\n<script src=\"shared/selectize/js/es5-shim.min.js\"><\/script>\n<![endif]-->\n<script src=\"shared/selectize/js/selectize.min.js\"><\/script>",
+          "attachment": null,
+          "package": null,
+          "all_files": true
+        }
+      ]
+    },
+    "selectDirFre": {
+      "html": "<div class=\"form-group shiny-input-container\">\n  <label class=\"control-label\" for=\"dataDirFre\">Frequency<\/label>\n  <div>\n    <select id=\"dataDirFre\"><\/select>\n    <script type=\"application/json\" data-for=\"dataDirFre\" data-nonempty=\"\">{}<\/script>\n  <\/div>\n<\/div>",
+      "deps": [
+        {
+          "name": "selectize",
+          "version": "0.11.2",
+          "src": {
+            "href": "shared/selectize"
+          },
+          "meta": null,
+          "script": null,
+          "stylesheet": "css/selectize.bootstrap3.css",
+          "head": "<!--[if lt IE 9]>\n<script src=\"shared/selectize/js/es5-shim.min.js\"><\/script>\n<![endif]-->\n<script src=\"shared/selectize/js/selectize.min.js\"><\/script>",
+          "attachment": null,
+          "package": null,
+          "all_files": true
+        }
+      ]
+    },
+    "selectDirGra": {
+      "html": "<div class=\"form-group shiny-input-container\">\n  <label class=\"control-label\" for=\"dataDirGra\">Granger<\/label>\n  <div>\n    <select id=\"dataDirGra\"><\/select>\n    <script type=\"application/json\" data-for=\"dataDirGra\" data-nonempty=\"\">{}<\/script>\n  <\/div>\n<\/div>",
+      "deps": [
+        {
+          "name": "selectize",
+          "version": "0.11.2",
+          "src": {
+            "href": "shared/selectize"
+          },
+          "meta": null,
+          "script": null,
+          "stylesheet": "css/selectize.bootstrap3.css",
+          "head": "<!--[if lt IE 9]>\n<script src=\"shared/selectize/js/es5-shim.min.js\"><\/script>\n<![endif]-->\n<script src=\"shared/selectize/js/selectize.min.js\"><\/script>",
+          "attachment": null,
+          "package": null,
+          "all_files": true
+        }
+      ]
+    },
+    "selectDirTra": {
+      "html": "<div class=\"form-group shiny-input-container\">\n  <label class=\"control-label\" for=\"dataDirTra\">Transferentropy<\/label>\n  <div>\n    <select id=\"dataDirTra\"><\/select>\n    <script type=\"application/json\" data-for=\"dataDirTra\" data-nonempty=\"\">{}<\/script>\n  <\/div>\n<\/div>",
+      "deps": [
+        {
+          "name": "selectize",
+          "version": "0.11.2",
+          "src": {
+            "href": "shared/selectize"
+          },
+          "meta": null,
+          "script": null,
+          "stylesheet": "css/selectize.bootstrap3.css",
+          "head": "<!--[if lt IE 9]>\n<script src=\"shared/selectize/js/es5-shim.min.js\"><\/script>\n<![endif]-->\n<script src=\"shared/selectize/js/selectize.min.js\"><\/script>",
+          "attachment": null,
+          "package": null,
+          "all_files": true
+        }
+      ]
+    }
+  },
+  "export": {
+
+  }
+}

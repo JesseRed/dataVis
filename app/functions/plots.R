@@ -25,8 +25,8 @@ generate_histogram_plot_facet<-function(group1, group2, trial1, trial2, freq, le
   if (trial1 == trial2) {
     #cat(file = stderr(), "trial1 == trial2\n")
     string1 = paste0(group1," vs ", group2, " in trial ", names(g_trials_named())[trial1], "\n")
-    d1 = get_data_group_freqmean(g_data(), group1)
-    d2 = get_data_group_freqmean(g_data(), group2)
+    d1 = get_data_group_freqmean(g_data(), group1, freq)
+    d2 = get_data_group_freqmean(g_data(), group2, freq)
     x = d1[,level_x_rval, level_y_rval, as.numeric(trial1)]
     y = d2[,level_x_rval, level_y_rval, as.numeric(trial1)]
     df <- data.frame(Gruppe=c(rep(group1, times=length(x)),

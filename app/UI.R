@@ -40,7 +40,7 @@ ui <- dashboardPage(
                menuSubItem(icon = NULL, uiOutput("selectDirFre")),
                menuSubItem(icon = NULL, uiOutput("selectDirGra")),
                menuSubItem(icon = NULL, uiOutput("selectDirERP")),
-               menuSubItem(icon = NULL, uiOutput("selectDirRST"))
+               menuSubItem(icon = NULL, uiOutput("selectDirRS"))
       ),
       menuItem(id = "xxx1", "show data", tabName = "showdata", icon = icon("th"), startExpanded = TRUE,
                menuSubItem("Coherence",
