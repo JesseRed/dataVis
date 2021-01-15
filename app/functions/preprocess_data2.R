@@ -53,6 +53,21 @@ return(D)
 check_data_structure<-function(data, df_BD, method){
   # create data$channelcmb$from_num und data$channelcmb$to_num
   # die Datachannels sind als Strings abgelegt ... wir brauchen sie aber als Nummern
+
+  # wenn das Feld "channelcmb" fehlt dann werden alle mit allen kombiniert
+  if (!("channelcmb" %in% names(data))) {
+    channelcmb = list("from"=c(), "to"=c())
+    idx = 0
+    for (i in 1:length(data$channels)){
+      for (j in i+1:length(data$channels)){
+        data$channelcmb$from[idx] = data$channels[i]
+        data$channelcmb$to[idx]   = data$channels[j]
+        idx = idx + 1
+      }
+    }
+    data$channelcmb = channelcmb
+  }
+
   data$channelcmb$from_num = match(data$channelcmb$from, data$channels)
   data$channelcmb$to_num = match(data$channelcmb$to, data$channels)
 

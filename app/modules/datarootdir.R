@@ -44,11 +44,12 @@ datarootdirServer <- function(id) {
     function(input, output, session) {
       #selectInput(NS(id, "var"), "Variable", choices = NULL)
       ns<-session$ns
-      disks <- system("wmic logicaldisk get caption", inter = TRUE)
-      d <- read.fwf(textConnection(disks[2:(length(disks)-1)]),
-                                       widths=c(4), strip.white=TRUE, stringsAsFactors=FALSE)
-      mydisks = d$V1
-      names(mydisks) <- mydisks
+      # nur fuer Windows
+      #disks <- system("wmic logicaldisk get caption", inter = TRUE)
+      #d <- read.fwf(textConnection(disks[2:(length(disks)-1)]),
+      #                                 widths=c(4), strip.white=TRUE, stringsAsFactors=FALSE)
+      #mydisks = d$V1
+      #names(mydisks) <- mydisks
 
 
 
