@@ -75,8 +75,8 @@ ui <- dashboardPage(
                menuSubItem(icon = NULL, uiOutput("saveimagefontsize")),
                menuSubItem(icon = NULL, uiOutput("saveimagefileformat"))
 
-      ),
-      menuItem("Options", tabName = "OptionsTab", icon = icon("wrench")),
+      )
+      #menuItem("Options", tabName = "OptionsTab", icon = icon("wrench")),
 
       # menuItem("load data", tabName = "loaddata1", icon = icon("th"),
       #          menuSubItem(icon = NULL, uiOutput("freq")),
@@ -84,7 +84,7 @@ ui <- dashboardPage(
       # ),
       #selectInput("HumanTrafficking", "Choose a trafficking type: ", list("Victim", "Trafficker")),
 
-      textOutput("res")
+      #textOutput("res")
     )
   ),
   dashboardBody(

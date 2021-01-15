@@ -104,18 +104,18 @@ server <- function(input, output) {
     } else if (input$mySidebarMenu == "GrangerTab")        { return("Granger")
     } else if (input$mySidebarMenu == "ERPTab")            { return("ERP")
     } else if (input$mySidebarMenu == "RSTab")             { return("RS")
-    } else if (input$mySidebarMenu == "OptionsTab")        { return("Options")
+    #} else if (input$mySidebarMenu == "OptionsTab")        { return("Options")
     } else {   return("Coherence")  }
   })
 
   g_act_data_dir <<- reactive({
     if (g_act_method()=="Coherence"){       return(file.path(g_datarootpath(),input$dataDirCoh))}
-    if (g_act_method()=="Transferentropy"){ return(input$dataDirTra)}
-    if (g_act_method()=="Frequency"){       return(input$dataDirFre)}
-    if (g_act_method()=="Granger"){         return(input$dataDirGra)}
-    if (g_act_method()=="ERP"){             return(input$dataDirERP)}
-    if (g_act_method()=="RS"){              return(input$dataDirRS)}
-    if (g_act_method()=="Options"){         return(input$dataDirCoh)}
+    if (g_act_method()=="Transferentropy"){ return(file.path(g_datarootpath(),input$dataDirTra))}
+    if (g_act_method()=="Frequency"){       return(file.path(g_datarootpath(),input$dataDirFre))}
+    if (g_act_method()=="Granger"){         return(file.path(g_datarootpath(),input$dataDirGra))}
+    if (g_act_method()=="ERP"){             return(file.path(g_datarootpath(),input$dataDirERP))}
+    if (g_act_method()=="RS"){              return(file.path(g_datarootpath(),input$dataDirRS))}
+    #if (g_act_method()=="Options"){         return(file.path(g_datarootpath(),input$dataDirCoh))}
 
     return("Coherence")
   })
@@ -127,7 +127,7 @@ server <- function(input, output) {
   # best option to change this is g_reload = g_reload(g_reload()+1)
 
   g_reload_rVal   <<- reactiveVal(0)
-  g_D             <<- reactive({get_global_D(g_act_data_dir())                })
+  g_D             <<- reactive({g_reload_rVal(); get_global_D(g_act_data_dir())                })
   g_data          <<- reactive({ g_D()$mdat                                   })
   g_beh           <<- reactive({ g_D()$df_BD                                  })
   g_regions       <<- reactive({ g_D()$uregion_list                           })
@@ -184,48 +184,6 @@ server <- function(input, output) {
 
 
 
-  # # Show modal when button is clicked.
-  # observeEvent(input$mySidebarMenu, {
-  #   #dir_list(list.dirs(path = "./data", full.names = F, recursive = F))
-  #   cat(file = stderr(), paste0("observeEvent:", input$mySidebarMenu, "\n"))
-  #   cat(file = stderr(), paste0("method:", method(), "\n"))
-  #   cat(file = stderr(), paste0("directory:", directory(), "\n"))
-  #   cat(file = stderr(), paste0("input$dataDirTra:", input$dataDirTra, "\n"))
-  #   cat(file = stderr(), paste0("g_act_method:", g_act_method(), "\n"))
-  #   cat(file = stderr(), paste0("g_act_data_dir:", g_act_data_dir(), "\n"))
-  #
-  #   # if (input$mySidebarMenu == "CoherenceTab"){
-  #   #   method("Coherence")
-  #   #   directory(input$dataDirCoh)
-  #   # } else if (input$mySidebarMenu == "TranferentropyTab"){
-  #   #   method("Transferentropy")
-  #   #   directory(input$dataDirTra)
-  #   #
-  #   # } else if (input$mySidebarMenu == "FrequencyTab"){
-  #   #   method("Frequency")
-  #   #   directory(input$dataDirFre)
-  #   #
-  #   # } else if (input$mySidebarMenu == "GrangerTab"){
-  #   #   method("Granger")
-  #   #   directory(input$dataDirGra)
-  #   #
-  #   # } else if (input$mySidebarMenu == "OptionsTab"){
-  #   #   method("Options")
-  #   #   directory(input$dataDirCoh)
-  #   #
-  #   # } else {
-  #   #   # default ... initially called
-  #   #   method("Coherence")
-  #   #   directory("Coherence")
-  #   #
-  #   # }
-  #   cat(file = stderr(), paste0("directory:", directory(), "\n"))
-  #   cat(file = stderr(), paste0("input$dataDirTra:", input$dataDirTra, "\n"))
-  #   cat(file = stderr(), paste0("g_act_method:", g_act_method(), "\n"))
-  #   cat(file = stderr(), paste0("g_act_data_dir:", g_act_data_dir(), "\n"))
-  #   cat(file = stderr(), paste0("_________________________\n"))
-  # })
-
   output$freq <- renderUI({
     sliderInput(inputId = "freq",
                 label = "Frequency range",
@@ -261,23 +219,21 @@ server <- function(input, output) {
 
 
 
-
-  #####################
-  #### Tabs Options ###
-  #####################
-  output$tabsOpt <- renderUI({
-    fluidRow(
-      tabBox(
-        title = NULL, width = 12,
-        # The id lets us use input$tabset1 on the server to find the current tab
-        id = "tabset1", height = "250px",
-
-        tabPanel("Regions order", options_mod_orderUI("Options_order")),
-        tabPanel("Regions name", options_mod_nameUI("Options_name"))
-
-      )
-    )
-  })
+#
+#   #####################
+#   #### Tabs Options ###
+#   #####################
+#   output$tabsOpt <- renderUI({
+#     fluidRow(
+#       tabBox(
+#         title = NULL, width = 12,
+#         # The id lets us use input$tabset1 on the server to find the current tab
+#         id = "tabset1", height = "250px",
+#         tabPanel("Regions order", options_mod_orderUI("Options_order")),
+#         tabPanel("Regions name", options_mod_nameUI("Options_name"))
+#       )
+#     )
+#   })
 
 
   ##################
@@ -296,7 +252,11 @@ server <- function(input, output) {
         tabPanel("Groups Stat", compareGroupsStatsUI("CohGroupsStats")),
         tabPanel("Diff Stat", compareDiffOfDiffStatsUI("CohDiffOfDiffStats")),
         tabPanel("Regression", regressionStatsUI("CohRegStats")),
-        tabPanel("ANCOVA", ancovaStatsUI("CohAncovaStats"))
+        tabPanel("ANCOVA", ancovaStatsUI("CohAncovaStats")),
+        tabPanel("Options Regions", optionsUI("Options")),
+        tabPanel("Regions order", options_mod_orderUI("Options_order")),
+        tabPanel("Regions name", options_mod_nameUI("Options_name"))
+
       )
     )
   })
@@ -378,6 +338,7 @@ server <- function(input, output) {
   #### Tabs RS ###
   ##################
   output$tabsRS <- renderUI({
+    cat(file = stderr(), "into output$tabsRS \n")
     fluidRow(
       tabBox(
         title = NULL, width = 12,
@@ -385,6 +346,7 @@ server <- function(input, output) {
         id = "tabset1", height = "250px",
 
         tabPanel("Plot", RSPlotUI("RSPlot")),
+        tabPanel("Plot2",  compareTrialsPlotUI("RSPlot2"))
         # tabPanel("Comp Plot", compareTrialsPlotUI("CohPlot")),
         # tabPanel("Trials Stat", compareTrialsStatsUI("CohTrialsStat")),
         # tabPanel("Groups Stat", compareGroupsStatsUI("CohGroupsStats")),
@@ -396,8 +358,10 @@ server <- function(input, output) {
   })
   #RSPlotUI("ERPPlot")
   RSPlotServer("RSPlot")
+  compareTrialsPlotServer("RSPlot2")
 
 
+  optionsServer("Options")
   options_mod_orderServer("Options_order")
   options_mod_nameServer("Options_name")
 

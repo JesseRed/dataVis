@@ -30,11 +30,11 @@ preprocessingUI <- function(id){
     #box(title = "table head", collapsible = TRUE, collapsed = TRUE, tableOutput(ns("head_beha"))),
 
     fluidRow(
-      column(8, fileInput(ns("file_data"), label = "data file", accept = c(".csv", ".tsv", ".json"))),
-      column(2, textInput(ns("delimiter_data"),"csv sep", value = ";")),
-      #column(2, div(style = "background-color:yellow; text-align:center;", "Bottomright", actionButton(ns("showbeha"),"show beha"),
-      column(2, div(style = "text-align:center; margin-top: 25px;", actionButton(ns("showdata"),"show Tab"),
-                    actionButton(ns("hidedata"),"hide Tab"))),
+      column(12, fileInput(ns("file_data"), label = "data json file", accept = c(".csv", ".tsv", ".json"))),
+      #column(2, textInput(ns("delimiter_data"),"csv sep", value = ";")),
+
+#      column(2, div(style = "text-align:center; margin-top: 25px;", actionButton(ns("showdata"),"show Tab"),
+#                    actionButton(ns("hidedata"),"hide Tab"))),
     ),
     #box(title = "table head", collapsible = TRUE, collapsed = TRUE, tableOutput(ns("head_beha"))),
 
@@ -47,13 +47,15 @@ preprocessingUI <- function(id){
 
 
     fluidRow(
-      column(4,
-             selectInput(ns("dataMethod"), h4("Select Method"),
-                choices = c("Coherence","Transferentropy","Frequency", "Granger"))
-             ),
+      # column(4,
+      #        selectInput(ns("dataMethod"), h4("Select Method"),
+      #           choices = c("Coherence","Transferentropy","Frequency", "Granger"))
+      #        ),
       column(4,
              textInput(ns("outputname"),"enter output name", value = "01"),
              ),
+    ),
+fluidRow(
       column(4, actionButton(ns("estimate"),"perform preprocessing")
              ),
     ),
@@ -104,36 +106,15 @@ preprocessingServer <- function(id) {
       observeEvent(input$estimate, {
         cat(file=stderr(), paste0("dir in which data dir will be created = ",g_datarootpath(),"\n" ))
         req(input$outputname)
-        myDirName = paste0(input$dataMethod,"_",input$outputname)
-        dir_to_save = file.path(g_datarootpath(), myDirName)
 
-
-        if (dir.exists(dir_to_save)){
-          showNotification("A directory with this name already exist\n please choose a differnt or delete by hand", type= "error")
-          shinyalert(title = "Warning",
-                     text = "Directory already exist\n if you procede, all content in this directory will be deleted",
-                     type = "warning",
-                     showCancelButton = TRUE,
-                     cancelButtonText = "Cancel",
-                     showConfirmButton = TRUE,
-                     confirmButtonText = "delete",
-                     callbackR = function(x) {
-                       cat(file = stderr(), paste0("\nx=",x,"\n"))
-
-                       if(x) {
-                         cat(file = stderr(), paste0("delet ... ", dir_to_save,"\n"))
-                         cat(file = stderr(), paste0("delete all\n"))
-                         unlink(file.path(dir_to_save,"*"))
-                       }
-                     }
-          )
-
-        }else{
-          dir.create(dir_to_save)
-        }
         # diese Funktion fuert das preprocessing durch und speichert alle Dateien
         cat(file = stderr(), "perform_preprocessing2 now... please wait ...\n")
-        perform_preprocessing2(dir_to_save, data_beha(), input$file_data$datapath, myDirName)
+        perform_preprocessing2(g_datarootpath(),
+                               df_BD = data_beha(),
+                               datafilename = input$file_data$datapath,
+                               postfix = input$outputname,
+                               inshiny = TRUE)
+
        # perform_preprocessing(data_beha(), data_data(), myDirName, method = input$dataMethod)
       })
 

@@ -31,12 +31,12 @@ RSPlotServer <- function(id) {
     id,
     function(input, output, session) {
       ns<-session$ns
-
+      cat(file=stderr(),"starte RSPlotServer\n")
       output$fluidRow_oben <- renderUI({
         fluidPage(
           fluidRow(
             column(12,
-                   h4("ERP Plots", align = "center")
+                   h2("RS Plots", align = "center")
             )
           )
         )

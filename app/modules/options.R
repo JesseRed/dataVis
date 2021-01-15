@@ -2,14 +2,14 @@ library(shiny)
 library(markdown)
 
 
-options_mod_orderUI <- function(id){
+optionsUI <- function(id){
   ns <- NS(id)
   tagList(
     uiOutput(ns("fluidRow_oben")),
   )
 }
 
-options_mod_orderServer <- function(id) {
+optionsServer <- function(id) {
   moduleServer(
     id,
     function(input, output, session) {
@@ -19,7 +19,7 @@ options_mod_orderServer <- function(id) {
 
       output$fluidRow_oben <- renderUI({
         fluidPage(
-
+          fluidRow(column(6,
           h1("Order of Regions"), hr(),
           #h5("for the Circle Plot, the first regions is positioned at the 12 o clock position"),
           #h5("all other regions are then spaced clockwise "),
@@ -32,17 +32,79 @@ options_mod_orderServer <- function(id) {
             #verbatimTextOutput(ns('orderregions'))
           ),
           fluidRow(
-            actionButton(ns("btn"),"save"),
           ),
-          fluidRow(
+
           ),
+          column(6,
+
+
+
+
+          h1("Naming of Regions"), hr(),
+          #h5("for the Circle Plot, the first regions is positioned at the 12 o clock position"),
+          #h5("all other regions are then spaced clockwise "),
+
           fluidRow(
-            column(12,
-                   box(title = "Options Regions ..........expand for help (options_regions.md)", width = 12, collapsible = TRUE, collapsed = TRUE, htmlOutput(ns("htmlhelp_options_regions"))),
+            column(5,
+                   selectInput(ns("selename"), h5("Select Region", align = "center"),
+                               choices = g_regions())
+            ),
+            column(5,
+                   textInput(ns("textname"), h5("enter new name", align = "center"))
+            ),
+            column(2,
+
             )
           ),
 
-          )})
+)
+        ),
+fluidRow(
+  style = "padding-top:20px",
+  column(6,
+         fluidRow(column(3),column(2, actionButton(ns("btn"),"save")))),
+  column(6,
+         fluidRow(column(4),column(2, actionButton(ns("btn_naming"),"save")))
+        )
+  ),
+fluidRow(
+  style = "padding-top:20px",
+  column(12,
+         box(title = "Options Regions ..........expand for help (options_regions.md)", width = 12, collapsible = TRUE, collapsed = TRUE, htmlOutput(ns("htmlhelp_options_regions_names"))),
+  )
+)
+
+
+)
+      })
+
+
+
+
+
+      observeEvent(input$btn_naming,{
+
+        D <- readRDS(file = file.path(g_act_data_dir(),"D.Rda"))
+        uregion_list <<- g_regions()
+
+        uregion_list[match(input$selename,uregion_list)]<-input$textname
+        D$uregion_list <- uregion_list
+
+
+        # cat(file=stderr(), paste0("new uregion_list=",uregion_list,"\n"))
+        saveRDS(D, file = file.path(g_act_data_dir(),"D.Rda"))
+        #saveRDS(uregion_list, file = file.path("../data", g_act_data_dir(),"uregion_list.Rda"))
+        g_reload_rVal(g_reload_rVal()+1)
+
+
+
+
+      })
+
+
+
+
+
 
 
 
@@ -81,28 +143,6 @@ options_mod_orderServer <- function(id) {
         saveRDS(D, file = file.path(g_act_data_dir(),"D.Rda"))
 #        saveRDS(mdat,         file = file.path("../data", g_act_data_dir(), "tbl_data.Rda"))
         g_reload_rVal(g_reload_rVal()+1)
-
-
-
-        #    old
-        #
-        #
-        #
-        # uregion_list_org <<- readRDS(file.path("../data",g_act_data_dir(),"uregion_list.Rda"))
-        # mdatc_org = readRDS(file.path("../data", g_act_data_dir(), "tbl_data.Rda"))
-        # # estimate the changes
-        # uregion_list <<- input$regions_order
-        #
-        # #cat(file=stderr(), paste0("uregion_list_org=",uregion_list_org,"\n"))
-        # #cat(file=stderr(), paste0("uregion_list=",uregion_list,"\n"))
-        # #cat(file=stderr(), paste0("class(uregion_list_org)=",class(uregion_list_org),"\n"))
-        # #cat(file=stderr(), paste0("class(uregion_list)=",class(uregion_list),"\n"))
-        #
-        # cx <<- match(uregion_list, uregion_list_org)
-        # mdat = mdatc_org[,cx,cx,,]
-        # saveRDS(uregion_list, file = file.path("../data", g_act_data_dir(),"uregion_list.Rda"))
-        # saveRDS(mdat,         file = file.path("../data", g_act_data_dir(), "tbl_data.Rda"))
-        # g_reload_rVal(g_reload_rVal()+1)
 
       })
 

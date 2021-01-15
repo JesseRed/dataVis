@@ -31,6 +31,11 @@ perform_preprocessing2 <-function(outdir, df_BD=NULL, datafilename = NULL, postf
 
   method <- get_methodname(data)
 
+  outdir<- check_and_create_data_dir(method = method, postfix = postfix)
+
+  # check for consistency and eleminate empty trials and frequencies
+  data<-check_data_structure(data, df_BD, method)
+
   cat(file = stderr(), "extract_data_array\n")
   mdat <- extract_data_array(data, df_BD, method)
 
@@ -45,7 +50,34 @@ perform_preprocessing2 <-function(outdir, df_BD=NULL, datafilename = NULL, postf
 return(D)
 }
 
+check_data_structure<-function(data, df_BD, method){
+  # create data$channelcmb$from_num und data$channelcmb$to_num
+  # die Datachannels sind als Strings abgelegt ... wir brauchen sie aber als Nummern
+  data$channelcmb$from_num = match(data$channelcmb$from, data$channels)
+  data$channelcmb$to_num = match(data$channelcmb$to, data$channels)
 
+  # an dieser Stelle werden die uebergebenen INformationen
+  # genutzt
+  # es kann jedoch sein, dass sich hieran noch etwas aendert
+  # z.B. wenn ein Subject komplett leer ist und er noch
+  # raus genommen werden muss
+  uregion_list = data$channels
+  utrial_list = as.character(data$trials)
+  if (length(utrial_list)==0){
+    utrial_list = c("no_desc_given")
+    data$channels = utrial_list
+
+  }
+
+  ufreq_list = as.character(data$freq)
+  if (length(ufreq_list)==0){
+    cat(file = stderr(),"ufreq_list length = 0")
+    ufreq_list = c("0")
+    data$freq = utrial_list
+  }
+
+ return(data)
+}
 
 create_new_data_structure <- function(data, df_BD, mdat, method){
 
@@ -54,7 +86,7 @@ create_new_data_structure <- function(data, df_BD, mdat, method){
   # die ggf. Daten rauswerfen und dann auch diese Liste anpassen
   #
 
-  ugroup_list = paste("Group",as.character(unique(df_BD$Gruppe)),sep="")
+  #ugroup_list = paste("Group",as.character(unique(df_BD$Gruppe)),sep="")
   ugroup_list = as.character(unique(df_BD$Gruppe))
   #cat(file = stderr(), paste0("ugroup_list = ",ugroup_list,"\n"))
   uregion_list = data$channels
@@ -62,14 +94,18 @@ create_new_data_structure <- function(data, df_BD, mdat, method){
   uregion_list_named[uregion_list] = 1:length(uregion_list)
 
   utrial_list = as.character(data$trials)
+  if (length(utrial_list)==0){ utrial_list = c("no_desc_given") }
+
   utrial_list_named = list()
   utrial_list_named[utrial_list] = 1:length(utrial_list)
 
   ufreq_list = as.character(data$freq)
+  if (length(ufreq_list)==0){ ufreq_list = c("0") }
   ufreq_list_named = list()
   ufreq_list_named[ufreq_list] = 1:length(ufreq_list)
 
   ufreq_list_num = data$freq
+  if (length(ufreq_list_num)==0){ ufreq_list_num = c(0) }
 
   dimcontent = c("sub","reg","reg","tri","fre")
 
@@ -88,6 +124,8 @@ create_new_data_structure <- function(data, df_BD, mdat, method){
     cat(file = stderr(), paste0(data$subjects_id,"\n"))
     stop("end now\n")
   }
+
+
 
 D <- list(method              = method,
           ugroup_list         = ugroup_list,
@@ -143,7 +181,16 @@ extract_data_array<-function(data, df_BD, method){
   # raus genommen werden muss
   uregion_list = data$channels
   utrial_list = as.character(data$trials)
+  if (length(utrial_list)==0){
+       utrial_list = c("no_desc_given")
+
+  }
+
   ufreq_list = as.character(data$freq)
+  if (length(ufreq_list)==0){
+    cat(file = stderr(),"ufreq_list length = 0")
+    ufreq_list = c("0")
+  }
 
   # reserviere den Speicher fuer das Datenarray
   mdat <- array(data = NA,
@@ -189,6 +236,7 @@ extract_data_array<-function(data, df_BD, method){
 
     }
   }
+  mdat_save <<- mdat
   return(mdat)
 }
 
@@ -201,9 +249,46 @@ get_methodname<-function(data){
   }else if (data$type=="conn_freq"){method = "Frequency"
   }else if (data$type=="conn_granger"){method = "Granger"
   }else if (data$type=="conn_erp"){method = "ERP"
-  }else if (data$type=="fmri"){method = "RS"
+  }else if (data$type=="fmri_corr"){method = "RS"
   }else { stop(paste0("unknown datatype detected with type=",data$type,"\n")) }
 
   return(method)
 }
+
+
+
+check_and_create_data_dir<-function(method = method, postfix = postfix){
+
+  myDirName = paste0(method,"_",postfix)
+  dir_to_save = file.path(g_datarootpath(), myDirName)
+
+
+  if (dir.exists(dir_to_save)){
+    showNotification("A directory with this name already exist\n please choose a differnt or delete by hand", type= "error")
+    shinyalert(title = "Warning",
+               text = "Directory already exist\n if you procede, all content in this directory will be deleted",
+               type = "warning",
+               showCancelButton = TRUE,
+               cancelButtonText = "Cancel",
+               showConfirmButton = TRUE,
+               confirmButtonText = "delete",
+               callbackR = function(x) {
+                 cat(file = stderr(), paste0("\nx=",x,"\n"))
+
+                 if(x) {
+                   cat(file = stderr(), paste0("delet ... ", dir_to_save,"\n"))
+                   cat(file = stderr(), paste0("delete all\n"))
+                   unlink(file.path(dir_to_save,"*"))
+                 }
+               }
+    )
+
+  }else{
+    dir.create(dir_to_save)
+  }
+  return(dir_to_save)
+
+}
+
+
 

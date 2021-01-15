@@ -64,6 +64,7 @@ options_mod_nameServer <- function(id) {
         # uregion_list_org <- readRDS(file.path("./data",g_act_data_dir(),"uregion_list.Rda"))
         #mdatc_org = readRDS(file.path("./data", g_act_data_dir(), "tbl_data.Rda"))
         # estimate the changes
+        D <- readRDS(file = file.path(g_act_data_dir(),"D.Rda"))
         uregion_list <<- g_regions()
         # cat(file=stderr(), paste0("uregion_list_org=",uregion_list_org,"\n"))
         # cat(file=stderr(), paste0("uregion_list=",uregion_list,"\n"))
@@ -71,10 +72,12 @@ options_mod_nameServer <- function(id) {
         # cat(file=stderr(), paste0("input$textname=",input$textname,"\n"))
 
         uregion_list[match(input$selename,uregion_list)]<-input$textname
+        D$uregion_list <- uregion_list
 
 
         # cat(file=stderr(), paste0("new uregion_list=",uregion_list,"\n"))
-        saveRDS(uregion_list, file = file.path("../data", g_act_data_dir(),"uregion_list.Rda"))
+        saveRDS(D, file = file.path(g_act_data_dir(),"D.Rda"))
+        #saveRDS(uregion_list, file = file.path("../data", g_act_data_dir(),"uregion_list.Rda"))
         g_reload_rVal(g_reload_rVal()+1)
 
 

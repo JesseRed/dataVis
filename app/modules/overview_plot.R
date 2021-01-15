@@ -33,6 +33,7 @@ overviewPlotServer <- function(id, datatype, input_glob_sig, freq) {
       # sel_freq_list<<-
 
       ns<-session$ns
+      #cat(file=stderr(),"starte OverviewPlotServer\n")
       f_utrial_list_all <- reactive({ c("all", g_trials()) })
       output$underplotOutput <- renderUI({
         fluidRow(

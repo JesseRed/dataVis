@@ -84,7 +84,13 @@ get_currently_selected_data<-function(data, g1, g2, t1, t2, freq, trials=g_trial
       if ((length(y)<=1 && length(x)<=1)) {
         d$mat_p[i,j] = 1
         d$mat_t[i,j] = 0
-      }else{
+      }else if(length(unique(x))==1) {
+        d$mat_p[i,j] = 1
+        d$mat_t[i,j] = 0
+      } else if(length(unique(y))==1) {
+        d$mat_p[i,j] = 1
+        d$mat_t[i,j] = 0
+      }else {
         if ((length(x)==0) && (length(y)>1)){
           z = t.test(y, mu=0)
         }
@@ -391,6 +397,8 @@ read_data_from_dir<- function(directory){
 
 
 get_global_D <- function(dirname){
+  cat(file = stderr(),"get_global_D ... loading DAta from file\n" )
+
   D <- readRDS(file.path(dirname,"D.Rda"))
   return(D)
 }
