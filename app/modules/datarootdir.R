@@ -74,7 +74,7 @@ datarootdirServer <- function(id) {
       #   mydisks <- c(mydisks, d[i]=d[i])
       # }
       #home = c('my home'= getwd(),"C:"= "C:\\")
-      home = mydisks
+      #home = mydisks
       # observeEvent(input$drive,{
       #   home = c('my home'= input$drive)
       # })
