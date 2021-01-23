@@ -142,6 +142,16 @@ generate_plot_Corrplot<-function(mat_p, mat_t){
   }else if (g_act_method()=="Frequency") {
     cat(file = stderr(), "Corrplot Frequency not implemented")
     myplot_corr = NULL
+  }else if (g_act_method()=="RS") {
+    cat(file = stderr(), "RS in corrplot\n")
+    rownames(mat_p) = vector(mode="character", length=length(g_regions()))
+    x1 <<- corrplot(mat_p, method="number", tl.cex = 0.4, type = "upper", is.corr = FALSE,
+                    p.mat = mat_p, sig.level = g_sig(), insig="blank", tl.srt = 45,
+                    col=colorRampPalette(c("blue","red","green"))(200))
+    colnames(mat_t) = vector(mode="character", length=length(g_regions()))
+
+    myplot_corr <<- corrplot(mat_t, add = TRUE, method="number", tl.cex = 0.4, type = "lower", is.corr = FALSE,
+                             p.mat = mat_p, sig.level = g_sig(), insig = "blank", tl.srt = 45)
   }
 
   return(myplot_corr)

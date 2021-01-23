@@ -74,13 +74,19 @@ get_currently_selected_data<-function(data, g1, g2, t1, t2, freq, trials=g_trial
   d$color1 = colorRampPalette(c("blue","red","green"))
 
   x <<- d
+  start_time <- Sys.time()
   #cat(file = stderr(), "entering for loop ... now \n")
   for (i in 1:(dim(d$data1)[2])){
     for (j in 1:(dim(d$data1)[3])){
-      x = na.omit(d$data1[,i,j])
-      y = na.omit(d$data2[,i,j])
-      #cat(file = stderr(), paste0("x=",x,"\n"))
-      #cat(file = stderr(), paste0("y=",y,"\n"))
+      x <<- na.omit(d$data1[,i,j])
+      y <<- na.omit(d$data2[,i,j])
+      if (i==j){
+        d$mat_p[i,j] = 1
+        d$mat_t[i,j] = 0
+      }else{
+
+      out<- tryCatch(
+        {
       if ((length(y)<=1 && length(x)<=1)) {
         d$mat_p[i,j] = 1
         d$mat_t[i,j] = 0
@@ -90,6 +96,9 @@ get_currently_selected_data<-function(data, g1, g2, t1, t2, freq, trials=g_trial
       } else if(length(unique(y))==1) {
         d$mat_p[i,j] = 1
         d$mat_t[i,j] = 0
+     # } else if(length(unique(x-y))==1){
+    #    d$mat_p[i,j] = 1
+    #    d$mat_t[i,j] = 0
       }else {
         if ((length(x)==0) && (length(y)>1)){
           z = t.test(y, mu=0)
@@ -109,6 +118,20 @@ get_currently_selected_data<-function(data, g1, g2, t1, t2, freq, trials=g_trial
         d$mat_p[i,j] = z$p.value
         d$mat_t[i,j] = z$statistic
       }
+        },
+    error = function(cond){
+      cat(file = stderr(), paste0("error ttest estimation of in i=",i," j=",j,"\n"))
+      cat(file = stderr(), paste0("error message =",cond,"\n"))
+      d$mat_p[i,j] = 1
+      d$mat_t[i,j] = 0
+    },
+    warning= function(cond){
+      cat(file = stderr(), paste0("warning ttest estimation of in i=",i," j=",j,"\n"))
+      cat(file = stderr(), paste0("warning message =",cond,"\n"))
+      d$mat_p[i,j] = 1
+      d$mat_t[i,j] = 0
+    })
+    }
     }
   }
   colnames(d$mat_p) = regions
@@ -119,6 +142,7 @@ get_currently_selected_data<-function(data, g1, g2, t1, t2, freq, trials=g_trial
   # rownames(d$mat_p) = g_regions()
   # colnames(d$mat_t) = g_regions()
   # rownames(d$mat_t) = g_regions()
+  cat(file = stderr(),paste0("time=",Sys.time()-start_time,"\n"))
   return(d)
 }
 
@@ -225,11 +249,14 @@ get_data_group_region <- function(data, group, region, tbl_beh = g_beh(), method
 get_data_group_trial <- function(data, group, trial, tbl_beh = g_beh(),method = g_act_method()){
   #cat(file = stderr(), paste0("get_data_group_trial dim(data)=",dim(data),"\n"))
   data_group = get_data_group(data, group, tbl_beh = tbl_beh, method = method)
-  #cat(file = stderr(), paste0("get_data_groupPtrial dim(data_group)=",dim(data_group),"\n"))
+  #cat(file = stderr(), paste0("in get_data_group_trial dim(data_group)=",dim(data_group),"\n"))
 
   # verhindere das die gruppe gedroppt wird wenn sie nur ein Subject hat
-  data_group_trial = drop_except(data_group[,,,trial,,drop=FALSE], 1)
-  #cat(file = stderr(), paste0("get_data_group_trial dim(data_group_trial)=",dim(data_group_trial),"\n"))
+  #cat(file = stderr(), paste0("before drop_except dim(data_group)=",dim(data_group),"\n"))
+  data_group_trial = drop_except(data_group[,,,trial,,drop=FALSE], c(1,2,3,5))
+  #cat(file = stderr(), paste0("after drop_except dim(data_group_trial)=",dim(data_group_trial),"\n"))
+
+    #cat(file = stderr(), paste0("get_data_group_trial dim(data_group_trial)=",dim(data_group_trial),"\n"))
 #  data_group_trial = data_group[,,,trial,]
   #cat(file=stderr(),paste0("data_group in get_data_group_trial - dim(data_group)=",dim(data_group),"\n"))
   # if (method == "Transferentropy"){
@@ -280,6 +307,7 @@ get_data_group_freq <- function(data, group, freq, tbl_beh = g_beh(), method = g
 filter_by_selfreq <- function(data, freq, method = g_act_method()){
 
   # das drop=F ist hier sehr wichtig weil andere funtionen ueber die letzte Dimension mitteln
+  #cat(file = stderr(), paste0("in filter_by_selfreq freq=",freq,"\n"))
   data_selfreq = asub(data, list(freq), length(dim(data)), drop=F)
   #
   # num_dims = length(dim(data))
@@ -330,15 +358,22 @@ get_data_group_trial_freq <- function(data, group, trial, freq, tbl_beh = g_beh(
 
 # has tests
 get_data_group_trial_freqmean <- function(data, group, trial, freq, tbl_beh = g_beh(), method = g_act_method()){
+  #cat(file = stderr(), paste0("start get_data_group_trial_freqmean with dim(data)=",dim(data),"\n"))
   data_group_trial = get_data_group_trial(data, group, trial, tbl_beh = tbl_beh, method = method)
+  #cat(file = stderr(), paste0("in get_data_group_trial_freqmean with dim(data_group_trial)=",dim(data_group_trial),"\n"))
+
   data_group_trial_freq = filter_by_selfreq(data_group_trial, freq, method = method)
+  #cat(file = stderr(), paste0("in get_data_group_trial_freqmean with dim(data_group_trial_freq)=",dim(data_group_trial_freq),"\n"))
+
   data_group_trial_freqmean = get_freqmean(data_group_trial_freq, method = method)
+ #cat(file = stderr(), paste0("in get_data_group_trial_freqmean with dim(data_group_trial_freqmean)=",dim(data_group_trial_freqmean),"\n"))
+
   return(data_group_trial_freqmean)
 }
 
 
 get_selected_freq_list <- function(freq_list, freq){
-  selected_freq_list = (as.numeric(freq_list)>freq[1]) == (as.numeric(freq_list)<freq[2])
+  selected_freq_list = (as.numeric(freq_list)>=freq[1]) == (as.numeric(freq_list)<=freq[2])
   return(selected_freq_list)
 }
 
