@@ -66,6 +66,10 @@ ui <- dashboardPage(
                menuSubItem(icon = NULL, uiOutput("freq")),
                menuSubItem(icon = NULL, uiOutput("glob_sig"))
       ),
+      menuItem("visulizing properties", tabName = "xxx", icon = icon("image"), startExpanded = TRUE,
+               menuSubItem(icon = NULL, uiOutput("visprop_onlysig")),
+               menuSubItem(icon = NULL, uiOutput("visprop_inlinenumbers"))
+      ),
       menuItem("Image Save", tabName = "xxx", icon = icon("save"), startExpanded = FALSE,
                menuSubItem(icon = NULL, uiOutput("saveimageButton")),
                menuSubItem(icon = NULL, uiOutput("saveimagefilename")),

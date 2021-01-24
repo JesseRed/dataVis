@@ -63,7 +63,7 @@ get_sum_subj<- function(data, subject){
 
 test_that("preprocessing works",{
   datapath = file.path(".","data","MEG")
-  resultspath = file.path(datapath,"test_results","Coherence")
+  resultspath = file.path(datapath,"test_results","Coherence_test")
 
   cat(file = stderr(), paste0("\n current working dir = ", getwd(),"\n"))
 
@@ -74,7 +74,11 @@ test_that("preprocessing works",{
 
   cat(file = stderr(), paste0("result saved in ... resultspath =",resultspath,"\n"))
 
-  perform_preprocessing2(resultspath, df_BD, data)
+  perform_preprocessing2(resultspath, df_BD=df_BD,
+                         datafilename = coh_json_filename,
+                         postfix = "test",
+                         istest = TRUE,
+                         datarootpath = file.path(datapath,"test_results"))
 
 
   uregion_list <- readRDS(file.path(resultspath,"uregion_list.Rda"))
@@ -82,8 +86,8 @@ test_that("preprocessing works",{
   ufreq_list <- readRDS(file.path(resultspath,"ufreq_list.Rda"))
   tbl_behx <- readRDS(file.path(resultspath,"df_BD.Rda"))
   Ms <- readRDS(file.path(resultspath, "matrix_data.Rda"))
-  D<<-readRDS(file.path(resultspath, "D.Rda"))
-
+  D<-readRDS(file.path(resultspath, "D.Rda"))
+  Dsave <<-D
   tbl_behx <- D$df_BD
 
   M <<- D$mdat
@@ -125,14 +129,14 @@ test_that("preprocessing works",{
   ####################Test 1 ################
   # summe ueber die 2. Frequenz aller Daten
 
-  expect_equal(sum(M[,,,,2],na.rm=T), get_sum_freq(data,2))
-  expect_equal(sum(M[,,,,5],na.rm=T), get_sum_freq(data,5))
-  expect_equal(sum(M[,,,,12],na.rm=T), get_sum_freq(data,12))
+  expect_equal(sum(M[,,,,2],na.rm=T), get_sum_freq(data,2)*2)
+  expect_equal(sum(M[,,,,5],na.rm=T), get_sum_freq(data,5)*2)
+  expect_equal(sum(M[,,,,12],na.rm=T), get_sum_freq(data,12)*2)
 
-  expect_equal(sum(M[1,,,,],na.rm=T), get_sum_subj(data,1))
+  expect_equal(sum(M[1,,,,],na.rm=T), get_sum_subj(data,1)*2)
   #cat(file = stderr(), paste0("sum subj1 = ", get_sum_subj(data,1),"\n"))
-  expect_equal(sum(M[2,,,,],na.rm=T), get_sum_subj(data,2))
-  expect_equal(sum(M[3,,,,],na.rm=T), get_sum_subj(data,3))
+  expect_equal(sum(M[2,,,,],na.rm=T), get_sum_subj(data,2)*2)
+  expect_equal(sum(M[3,,,,],na.rm=T), get_sum_subj(data,3)*2)
 
   # test get_data_group_mean
   tmp = get_data_groupmean(M, "all_groups", tbl_beh = D$df_BD, method = D$method)

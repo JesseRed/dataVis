@@ -6,7 +6,7 @@ library(ggcorrplot)
 library(ggplot2)
 library(plotly)
 
-compareTrialsPlotUI <- function(id){
+longitudinalPlotUI <- function(id){
   ns <- NS(id)
   tagList(
     uiOutput(ns("fluidRow_oben")),
@@ -26,7 +26,7 @@ compareTrialsPlotUI <- function(id){
   )
 }
 
-compareTrialsPlotServer <- function(id) {
+longitudinalPlotServer <- function(id, dir_listRS) {
   moduleServer(
     id,
     function(input, output, session) {
@@ -35,7 +35,7 @@ compareTrialsPlotServer <- function(id) {
       output$fluidRow_oben <- renderUI({
         fluidPage(
         fluidRow(
-          column(4,
+          column(2,
 
                  style = "background-color: #fcfcfc;",
                  #style = 'border-bottom: 2px solid gray',
@@ -52,7 +52,7 @@ compareTrialsPlotServer <- function(id) {
                           )
                  )
           ),
-          column(4,
+          column(2,
                  style = "background-color: #fcfcfc;",
                  style = 'border-right: 2px solid gray',
                  h4("trial comparison", align = "center"),
@@ -69,9 +69,38 @@ compareTrialsPlotServer <- function(id) {
           ),
           column(2,
                  style = "background-color: #fcfcfc;",
+                 style = 'border-right: 2px solid gray',
+                 h4("longitudinal data", align = "center"),
+                 fluidRow(
+                   column(6,
+                          selectInput(ns("comp_dir"), h5("longitudinal data"),
+                                      choices = dir_listRS, selected = dir_listRS[2]),
+                   ),
+                   column(6,
+                          checkboxInput(ns("longtimefirst"), "estimate time first", value = TRUE)
+                   )
+                 )
+          ),
+          column(1,
+                 style = "background-color: #fcfcfc;",
+                 style = 'border-right: 2px solid gray',
                  h4("Visualize", align = "center"),
                  selectInput(ns("method"), h5("method"),
                              choices = c("Corrplot", "Corrplot_mixed", "Corrplot_clustered", "ggcorr", "Circle", "Pheatmap"), selected = 1)
+          ),
+          column(2,
+                 style = "background-color: #fcfcfc;",
+                 style = 'border-right: 2px solid gray',
+                 h4("Clustering", align = "center"),
+                 fluidRow(
+                    column(6,
+                          selectInput(ns("clustering"), h5("method"),
+                             choices = c("original", "FPC","PCA", "hclust"), selected = 1)
+                    ),
+                    column(6,
+                         numericInput(ns("num_hclust"),h5("num hclust"), 3)
+                    )
+                 )
           ),
           column(2,
                  fluidRow(
@@ -93,7 +122,32 @@ compareTrialsPlotServer <- function(id) {
           )
         ),
         fluidRow(
-        #  plotOutput(ns("plot"), width = "auto", height = "800px", click = ns("plot_click"))
+          column(12,
+                 box(title = "Was wurde berechnet?...", width = 12, collapsible = TRUE, collapsed = TRUE, verbatimTextOutput(ns("text_explanation"))),
+          )
+        ),
+        fluidRow(
+          column(12,
+                 box(title = "... need skippy mode?...", width = 12, collapsible = TRUE, collapsed = TRUE,
+                     fluidRow(
+                       column(6,
+                              numericInput(ns("xx"),"xxx",0)
+                       ),
+                       column(6,
+                              numericInput(ns("own cluster algo"),"yyy",0)
+                       )
+                     ),
+                     )
+          )
+
+        ),
+
+        # fluidRow(
+        #   #  plotOutput(ns("plot"), width = "auto", height = "800px", click = ns("plot_click"))
+        #   verbatimTextOutput(ns("text_explanation"))
+        # ),
+        fluidRow(
+          #  plotOutput(ns("plot"), width = "auto", height = "800px", click = ns("plot_click"))
           plotOutput(ns("plot"), width = "auto", height = "auto", click = ns("plot_click"))
         ),
 
@@ -195,28 +249,43 @@ compareTrialsPlotServer <- function(id) {
       ####################################################################################
       ####################################################################################
 
+#
+#       data_1 <- reactive({
+#         get_data_group_trial_freqmean(g_data(),input$group1, as.numeric(input$trial1), g_sel_freqs())
+#       })
+#       data_2 <- reactive({
+#         get_data_group_trial_freqmean(g_data(),input$group2, as.numeric(input$trial2), g_sel_freqs())
+#       })
+#       data_g1t1 <- reactive({
+#         get_data_group_trial_freqmean(g_data(),input$group1, as.numeric(input$trial1), g_sel_freqs())
+#       })
+#       data_g1t2 <- reactive({
+#         get_data_group_trial_freqmean(g_data(),input$group1, as.numeric(input$trial2), g_sel_freqs())
+#       })
+#       data_g2t1 <- reactive({
+#         get_data_group_trial_freqmean(g_data(),input$group2, as.numeric(input$trial1), g_sel_freqs())
+#       })
+#       data_g2t2 <- reactive({
+#         get_data_group_trial_freqmean(g_data(),input$group2, as.numeric(input$trial2), g_sel_freqs())
+#       })
 
-      data_1 <- reactive({
-        get_data_group_trial_freqmean(g_data(),input$group1, as.numeric(input$trial1), g_sel_freqs())
-      })
-      data_2 <- reactive({
-        get_data_group_trial_freqmean(g_data(),input$group2, as.numeric(input$trial2), g_sel_freqs())
-      })
-      data_g1t1 <- reactive({
-        get_data_group_trial_freqmean(g_data(),input$group1, as.numeric(input$trial1), g_sel_freqs())
-      })
-      data_g1t2 <- reactive({
-        get_data_group_trial_freqmean(g_data(),input$group1, as.numeric(input$trial2), g_sel_freqs())
-      })
-      data_g2t1 <- reactive({
-        get_data_group_trial_freqmean(g_data(),input$group2, as.numeric(input$trial1), g_sel_freqs())
-      })
-      data_g2t2 <- reactive({
-        get_data_group_trial_freqmean(g_data(),input$group2, as.numeric(input$trial2), g_sel_freqs())
-      })
+      #g_D             <<- reactive({g_reload_rVal(); get_global_D(g_act_data_dir())                })
+      #g_data          <<- reactive({ g_D()$mdat
+      D2    <- reactive({get_global_D(file.path(g_datarootpath(),input$comp_dir))})
+      data2 <- reactive({D2()$mdat})
+      estimate_time_first <- reactive({input$longtimefirst})
 
       curdata <- reactive({
-        get_currently_selected_data(g_data(), input$group1, input$group2, as.numeric(input$trial1), as.numeric(input$trial2), g_sel_freqs())
+        M <- get_longitudinal_currently_selected_data(g_D(), D2(),
+                                                       input$group1,
+                                                       input$group2,
+                                                       as.numeric(input$trial1),
+                                                       as.numeric(input$trial2),
+                                                       g_sel_freqs(),
+                                                       estimate_time_first = estimate_time_first())
+#        M1 = get_currently_selected_data(g_data(), input$group1, input$group2, as.numeric(input$trial1), as.numeric(input$trial2), g_sel_freqs())
+#        M2 = get_currently_selected_data(data2(), input$group1, input$group2, as.numeric(input$trial1), as.numeric(input$trial2), g_sel_freqs())
+        return(M)
       })
 
       plotwidth <- reactive({
@@ -230,8 +299,12 @@ compareTrialsPlotServer <- function(id) {
       })
 
 
-
-
+      # description of what is shown
+      output$text_explanation<- renderPrint({
+        d<-curdata()
+        out <- d$explanation
+        cat(out)
+      })
 
       ###########################################################
       ### RENDERPLOT
@@ -239,12 +312,12 @@ compareTrialsPlotServer <- function(id) {
         start_time = Sys.time()
         cat(file=stderr(), "before curdata() in myplotly\n")
 
-        d <- curdata()
-        mat_t <<- d$mat_t
-        mat_p <<- d$mat_p
-        p <-generate_plot_ggplot_corrplot_handmade(mat_p, mat_t)
-        p
-        cat(file = stderr(),paste0("renderPlotly duration =",Sys.time()-start_time,"\n"))
+        # d <- curdata()
+        # mat_t <<- d$mat_t
+        # mat_p <<- d$mat_p
+        # p <-generate_plot_ggplot_corrplot_handmade(mat_p, mat_t)
+        # p
+        # cat(file = stderr(),paste0("renderPlotly duration =",Sys.time()-start_time,"\n"))
 
       })
 
@@ -273,7 +346,9 @@ compareTrialsPlotServer <- function(id) {
         ###################
         # CORRPLOT
         if (input$method=="Corrplot"){
-          generate_plot_Corrplot(d$mat_p, d$mat_t)
+          generate_plot_Corrplot(d$mat_p, d$mat_t, regions = colnames(d$mat_p),
+                                 clustering_method = input$clustering,
+                                 num_hclust = input$num_hclust) #D$uregion_list)
 
         }
 
@@ -362,7 +437,7 @@ compareTrialsPlotServer <- function(id) {
       output$text_bottom <- renderPrint({
         cat(file = stderr(),paste0("level_y_rval()=",level_y_rval(),"\n"))
         cat(file = stderr(),paste0("level_x_rval()=",level_x_rval(),"\n"))
-
+        glob_text_d <<- curdata()
         x = curdata()$data1[, level_y_rval(), level_x_rval()]
         y = curdata()$data2[, level_y_rval(), level_x_rval()]
         z = t.test(x,y, paired = curdata()$my_paired)
@@ -371,8 +446,12 @@ compareTrialsPlotServer <- function(id) {
       })
 
       output$hist <- renderPlot({
-
-        generate_histogram_plot_facet(input$group1, input$group2, input$trial1, input$trial2, g_sel_freqs(), level_x_rval(), level_y_rval())
+        glob_hist_d <<- curdata()
+        generate_histogram_plot_facet(input$group1, input$group2,
+                                      input$trial1, input$trial2,
+                                      g_sel_freqs(),
+                                      level_x_rval(), level_y_rval(),
+                                      data = curdata())
 
       })
 
@@ -387,7 +466,7 @@ compareTrialsPlotServer <- function(id) {
 
       output$htmlhelp_Comp_Plot <- renderUI({
         # if (showhtml()){
-        includeMarkdown(rmarkdown::render("./documentation/comp_plot_markdown.md"))
+        includeMarkdown(rmarkdown::render("./documentation/longitudinal_group_trials_plot_markdown.md"))
         # }
       })
 

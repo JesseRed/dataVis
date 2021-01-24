@@ -26,6 +26,8 @@ library(sortable)
 library(reshape2)
 library(tidyverse)
 library(shinyjqui)
+library(optimbase)
+library(rlang)
 #library(shinyWidgets)
 
 #setwd("..")
@@ -61,7 +63,7 @@ sapply(pathnames, FUN=source);
 #
 options(shiny.maxRequestSize=300*1024^2)
 
-server <- function(input, output) {
+server <- function(input, output, session) {
 
   ######################
    ### reactive val ###
@@ -103,7 +105,10 @@ server <- function(input, output) {
     } else if (input$mySidebarMenu == "FrequencyTab")      { return("Frequency")
     } else if (input$mySidebarMenu == "GrangerTab")        { return("Granger")
     } else if (input$mySidebarMenu == "ERPTab")            { return("ERP")
-    } else if (input$mySidebarMenu == "RSTab")             { return("RS")
+    } else if (input$mySidebarMenu == "RSTab")             {
+      cat(file=stderr(),"updateSliderInput\n")
+      updateSliderInput(session,"freq", value = c(0,5))
+      return("RS")
     #} else if (input$mySidebarMenu == "OptionsTab")        { return("Options")
     } else {   return("Coherence")  }
   })
@@ -158,7 +163,8 @@ server <- function(input, output) {
   g_saveImage_dpi <<- reactive({input$saveimagedpi})
   g_saveImage_fontsize <<- reactive({input$saveimagefontsize})
 
-
+  g_visprop_onlysig         <<- reactive({input$visprop_onlysig})
+  g_visprop_inlinenumbers   <<- reactive({input$visprop_inlinenumbers})
 
   ##################
    #### Sidebar ###
@@ -180,7 +186,7 @@ server <- function(input, output) {
   output$selectDirERP <- renderUI({
     selectInput("dataDirERP", "ERP",choices = dir_listERP(),selected = dir_listERP()[2])})
   output$selectDirRS <- renderUI({
-    selectInput("dataDirRS", "RS",choices = dir_listRS(),selected = dir_listRS()[2])})
+    selectInput("dataDirRS", "RS",choices = dir_listRS(),selected = dir_listRS()[1])})
 
 
 
@@ -192,6 +198,13 @@ server <- function(input, output) {
   output$glob_sig <- renderUI({
     numericInput("glob_sig", h4("sig threshold"), min =0, max = 1, value = 0.05, step = 0.00001)
     #sliderInput("glob_sig", h4("sig threshold"), min =0 , max = 1, value = 0.05, step = 0.01)
+  })
+
+  output$visprop_onlysig <- renderUI({
+    checkboxInput("visprop_onlysig", "show only sig.", value = FALSE)
+  })
+  output$visprop_inlinenumbers <- renderUI({
+    checkboxInput("visprop_inlinenumbers", "show nums in graph", value = TRUE)
   })
 
   output$saveimageButton <- renderUI({
@@ -339,6 +352,7 @@ server <- function(input, output) {
   ##################
   output$tabsRS <- renderUI({
     cat(file = stderr(), "into output$tabsRS \n")
+    updateSliderInput(session,"freq", value = c(0,5))
     fluidRow(
       tabBox(
         title = NULL, width = 12,
@@ -346,7 +360,8 @@ server <- function(input, output) {
         id = "tabset1", height = "250px",
 
         tabPanel("Plot", RSPlotUI("RSPlot")),
-        tabPanel("Plot2",  compareTrialsPlotUI("RSPlot2"))
+        tabPanel("Comp Plot",  compareTrialsPlotUI("RSPlot2")),
+        tabPanel("Long Plot",  longitudinalPlotUI("RS"))
         # tabPanel("Comp Plot", compareTrialsPlotUI("CohPlot")),
         # tabPanel("Trials Stat", compareTrialsStatsUI("CohTrialsStat")),
         # tabPanel("Groups Stat", compareGroupsStatsUI("CohGroupsStats")),
@@ -359,7 +374,7 @@ server <- function(input, output) {
   #RSPlotUI("ERPPlot")
   RSPlotServer("RSPlot")
   compareTrialsPlotServer("RSPlot2")
-
+  longitudinalPlotServer("RS", dir_listRS())
 
   optionsServer("Options")
   options_mod_orderServer("Options_order")

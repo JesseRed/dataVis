@@ -3,7 +3,10 @@ library(stringr)
 library(rjson)
 library(shinyalert)
 
-perform_preprocessing2 <-function(outdir, df_BD=NULL, datafilename = NULL, postfix="tmp",inshiny = TRUE){
+perform_preprocessing2 <-function(outdir, df_BD=NULL, datafilename = NULL,
+                                  postfix="tmp",inshiny = TRUE,
+                                  istest = FALSE,
+                                  datarootpath = g_datarootpath()){
   # Funktion um die DAten von Stefan und die Behavioralen Daten in
   # ein zur Weiterverarbeitung geeignetes Format zusammen zu bringen
   # uebergeben wird ein
@@ -31,7 +34,7 @@ perform_preprocessing2 <-function(outdir, df_BD=NULL, datafilename = NULL, postf
 
   method <- get_methodname(data)
 
-  outdir<- check_and_create_data_dir(method = method, postfix = postfix)
+  outdir<- check_and_create_data_dir(method = method, postfix = postfix, datarootpath = datarootpath, istest = istest)
 
   # check for consistency and eleminate empty trials and frequencies
   data<-check_data_structure(data, df_BD, method)
@@ -46,7 +49,9 @@ perform_preprocessing2 <-function(outdir, df_BD=NULL, datafilename = NULL, postf
   save_data_structure(outdir, D)
   cat(file = stderr(), "preprocessing finished in \n")
   preprocessing_time = Sys.time()-start_time
-  shinyalert("Yeaahhh!", paste0("preprocessing finished afer ",round(preprocessing_time,3)," sec."), type = "success")
+  if (!(istest)){
+    shinyalert("Yeaahhh!", paste0("preprocessing finished afer ",round(preprocessing_time,3)," sec."), type = "success")
+  }
 return(D)
 }
 
@@ -272,13 +277,15 @@ get_methodname<-function(data){
 
 
 
-check_and_create_data_dir<-function(method = method, postfix = postfix){
+check_and_create_data_dir<-function(method = method, postfix = postfix, datarootpath = g_datarootpath(), istest = FALSE){
 
   myDirName = paste0(method,"_",postfix)
-  dir_to_save = file.path(g_datarootpath(), myDirName)
+  dir_to_save = file.path(datarootpath, myDirName)
 
 
   if (dir.exists(dir_to_save)){
+
+  if (!(istest)){
     showNotification("A directory with this name already exist\n please choose a differnt or delete by hand", type= "error")
     shinyalert(title = "Warning",
                text = "Directory already exist\n if you procede, all content in this directory will be deleted",
@@ -297,7 +304,9 @@ check_and_create_data_dir<-function(method = method, postfix = postfix){
                  }
                }
     )
-
+  }else{
+    unlink(file.path(dir_to_save,"*"))
+}
   }else{
     dir.create(dir_to_save)
   }
