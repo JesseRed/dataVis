@@ -196,7 +196,7 @@ generate_plot_Corrplot<-function(mat_p, mat_t,
                   order = clustering_method,
                   addrect = num_hclust,
                   col=colorRampPalette(c("blue","red","green"))(200))
-  colnames(mat_t) = vector(mode=method, length=length(regions))
+  colnames(mat_t) = vector(mode="character", length=length(regions))
 
   myplot_corr <<- corrplot(mat_t, add = TRUE, method=method, tl.cex = cex, type = "lower", is.corr = FALSE,
                   p.mat = mat_p, sig.level = g_sig(), insig = insig, tl.srt = 45)
