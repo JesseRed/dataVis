@@ -327,7 +327,7 @@ longitudinalPlotServer <- function(id, dir_listRS) {
       output$plot<-renderPlot(
         width = function() plotwidth(),
         height = function() plotheight(),
-        res = input$plot_res,
+        #res = input$plot_res,
         {
           start_time <- Sys.time()
 

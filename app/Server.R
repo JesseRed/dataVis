@@ -372,7 +372,7 @@ server <- function(input, output, session) {
     )
   })
   #RSPlotUI("ERPPlot")
-  RSPlotServer("RSPlot")
+  #RSPlotServer("RSPlot")
   compareTrialsPlotServer("RSPlot2")
   longitudinalPlotServer("RS", dir_listRS())
 
