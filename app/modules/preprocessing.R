@@ -31,18 +31,8 @@ preprocessingUI <- function(id){
 
     fluidRow(
       column(12, fileInput(ns("file_data"), label = "data json file", accept = c(".csv", ".tsv", ".json"))),
-      #column(2, textInput(ns("delimiter_data"),"csv sep", value = ";")),
-
-#      column(2, div(style = "text-align:center; margin-top: 25px;", actionButton(ns("showdata"),"show Tab"),
-#                    actionButton(ns("hidedata"),"hide Tab"))),
     ),
-    #box(title = "table head", collapsible = TRUE, collapsed = TRUE, tableOutput(ns("head_beha"))),
 
-
-    # textInput(ns("delimiter_data"),"enter delimiter", value = ";"),
-    # fileInput(ns("file_data"), label = "data file", accept = c(".csv", ".tsv")),
-    # actionButton(ns("showdata"),"show data"),
-    # actionButton(ns("hidedata"),"hide data"),
     tableOutput(ns("head_data")),
 
 
@@ -65,7 +55,11 @@ fluidRow(
     #verbatimTextOutput(ns("preprocessingText")),
     # selectInput(ns("var"), "Variable", choices = c("one", "two"), selected = "two"),
     # actionButton(ns("do1"),"Click me")
+
+ # box(title = "merge Data", width = 12, collapsible = TRUE, collapsed = TRUE, mergedata(ns("mergedata")))
+
   )
+
 }
 
 
@@ -122,26 +116,6 @@ preprocessingServer <- function(id) {
 
 
 
-
-
-
-
-      # output$uipreprocessing <- renderUI({
-      #   fluidRow(
-      #     column(6,
-      #            selectInput(ns("mod_group1"), h4("Select Group1"),
-      #                        choices = c("Stats1"), selected = 1)
-      #     ),
-      #     column(6,
-      #            selectInput(ns("mod_group2"), h4("Select Group 2"),
-      #                        choices = c("Stats2"), selected = 1)
-      #     )
-      #   )
-      # })
-
-
-      # observeEvent(input$showhelp, {showhtml(TRUE)    })
-      # observeEvent(input$hidehelp, {showhtml(FALSE)   })
       observeEvent(input$showbeha, {showbeha(TRUE)    })
       observeEvent(input$hidebeha, {showbeha(FALSE)   })
       observeEvent(input$showdata, {showdata(TRUE)    })
@@ -168,17 +142,16 @@ preprocessingServer <- function(id) {
       #
 
 
-      output$preprocessingText <- renderPrint({
-        req(input$mod_group1)
-        req(input$mod_group2)
-        mylocalfunc()
-        cat("my output")
+      output$mergedata <- renderUI({
+        # if (showhtml()){
+        includeMarkdown("./documentation/preprocessing_markdown.md")
+        # }
       })
+
+
+
     }
   )
 }
 
-mylocalfunc<-function(){
-  cat(file = stderr(), "my locale function\n")
-}
 

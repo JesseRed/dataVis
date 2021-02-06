@@ -33,7 +33,14 @@ ui <- dashboardPage(
   dashboardSidebar(
     sidebarMenu(id ="mySidebarMenu",
       menuItem("data root dir", tabName = "datarootdir", icon = icon("file-export")),
-      menuItem("preprocess data", tabName = "preprocessdata", icon = icon("file-upload")),
+      menuItem("preprocess data", tabName = "preprocessmydata", icon = icon("file-upload"), startExpanded = FALSE,
+               menuSubItem("Data import",
+                           tabName = "preprocessdata",
+                           icon = icon('line-chart')),
+               menuSubItem("Merge Data",
+                           tabName = "mergedata",
+                           icon = icon('line-chart'))
+               ),
       menuItem("load data", tabName = "loaddata", icon = icon("file-export"), startExpanded = TRUE,
                menuSubItem(icon = NULL, uiOutput("selectDirCoh")),
                menuSubItem(icon = NULL, uiOutput("selectDirTra")),
@@ -125,6 +132,14 @@ ui <- dashboardPage(
                 title = "preprocessing",
                 width = 12,
                 preprocessingUI("preprocessing")
+              )
+      ),
+      tabItem(tabName = "mergedata",
+              #h2("preprocess data about here"),
+              box(
+                title = "merge data",
+                width = 12,
+                mergedataUI("mergedata")
               )
       ),
       tabItem(tabName = "CoherenceTab",
