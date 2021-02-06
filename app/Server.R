@@ -279,6 +279,8 @@ server <- function(input, output, session) {
   #### Tabs TRA ###
   ##################
   output$tabsTra <- renderUI({
+    cat(file = stderr(), "into output$tabsTra \n")
+    updateSliderInput(session,"freq", value = c(0,5))
     fluidRow(
       tabBox(
         title = NULL, width = 12,
@@ -290,7 +292,8 @@ server <- function(input, output, session) {
         tabPanel("Groups Stat", compareGroupsStatsUI("TraGroupsStats")),
         tabPanel("Diff Stat", compareDiffOfDiffStatsUI("TraDiffOfDiffStats")),
         tabPanel("Regression", regressionStatsUI("TraRegStats")),
-        tabPanel("ANCOVA", ancovaStatsUI("TraAncovaStats"))
+        tabPanel("ANCOVA", ancovaStatsUI("TraAncovaStats")),
+        tabPanel("Options Regions", optionsUI("Options"))
       )
     )
   })

@@ -203,10 +203,24 @@ generate_plot_Corrplot<-function(mat_p, mat_t,
 
 
   }else if (g_act_method()=="Transferentropy") {
-    myplot_corr <<- corrplot(d$mat_p, method=method, tl.cex = cex, is.corr = FALSE,
-                             p.mat = d$mat_p, sig.level = g_sig(),tl.srt = 45,
-                             insig = insig,
-                             col=colorRampPalette(c("blue","red","green"))(200))
+    rownames(mat_p) = vector(mode="character", length=length(regions))
+    x1 <<- corrplot(mat_p, method=method, tl.cex = cex, type = "upper", is.corr = FALSE,
+                    p.mat = mat_p, sig.level = multi_sig_level, tl.srt = 45,
+                    insig = insig, pch.cex = 0.4, pch.col = "white",
+                    order = clustering_method,
+                    addrect = num_hclust,
+                    col=colorRampPalette(c("blue","red","green"))(200))
+    colnames(mat_t) = vector(mode="character", length=length(regions))
+
+    myplot_corr <<- corrplot(mat_t, add = TRUE, method=method, tl.cex = cex, type = "lower", is.corr = FALSE,
+                             p.mat = mat_p, sig.level = g_sig(), insig = insig, tl.srt = 45)
+
+
+
+#    myplot_corr <<- corrplot(d$mat_p, method=method, tl.cex = cex, is.corr = FALSE,
+#                             p.mat = d$mat_p, sig.level = g_sig(),tl.srt = 45,
+#                             insig = insig,
+#                             col=colorRampPalette(c("blue","red","green"))(200))
   }else if (g_act_method()=="Granger") {
     cat(file = stderr(), "Corrrplot Granger not implemented")
     myplot_corr = NULL

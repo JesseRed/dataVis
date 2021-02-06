@@ -265,7 +265,7 @@ extract_data_array<-function(data, df_BD, method){
 get_methodname<-function(data){
 
   if (data$type=="conn_coh"){method = "Coherence"
-  }else if (data$type=="conn_coh"){method = "Transferentropy"
+  }else if (data$type=="conn_trans"){method = "Transferentropy"
   }else if (data$type=="conn_freq"){method = "Frequency"
   }else if (data$type=="conn_granger"){method = "Granger"
   }else if (data$type=="conn_erp"){method = "ERP"

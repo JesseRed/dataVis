@@ -268,6 +268,7 @@ compareTrialsPlotServer <- function(id) {
         cat(file = stderr(), cur_dev)
         cat(file=stderr(), "before curdata() in plot\n")
         d <- curdata()
+        renderplotcurdata<<-curdata()
         mat_t <<- d$mat_t
         mat_p <<- d$mat_p
         ###################
