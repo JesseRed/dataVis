@@ -32,12 +32,15 @@ ui <- dashboardPage(
   dashboardHeader(title = "Biomag Visualizer"),
   dashboardSidebar(
     sidebarMenu(id ="mySidebarMenu",
+      menuItem("data root dir", tabName = "datarootdir", icon = icon("file-export")),
       menuItem("preprocess data", tabName = "preprocessdata", icon = icon("file-upload")),
       menuItem("load data", tabName = "loaddata", icon = icon("file-export"), startExpanded = TRUE,
                menuSubItem(icon = NULL, uiOutput("selectDirCoh")),
                menuSubItem(icon = NULL, uiOutput("selectDirTra")),
                menuSubItem(icon = NULL, uiOutput("selectDirFre")),
-               menuSubItem(icon = NULL, uiOutput("selectDirGra"))
+               menuSubItem(icon = NULL, uiOutput("selectDirGra")),
+               menuSubItem(icon = NULL, uiOutput("selectDirERP")),
+               menuSubItem(icon = NULL, uiOutput("selectDirRS"))
       ),
       menuItem(id = "xxx1", "show data", tabName = "showdata", icon = icon("th"), startExpanded = TRUE,
                menuSubItem("Coherence",
@@ -51,11 +54,21 @@ ui <- dashboardPage(
                            icon = icon('line-chart')),
                menuSubItem("Granger",
                            tabName = "GrangerTab",
+                           icon = icon('line-chart')),
+               menuSubItem("ERP",
+                           tabName = "ERPTab",
+                           icon = icon('line-chart')),
+               menuSubItem("MRI-RS",
+                           tabName = "RSTab",
                            icon = icon('line-chart'))
       ),
       menuItem("global Inputs", tabName = "xxx", icon = icon("globe"), startExpanded = TRUE,
                menuSubItem(icon = NULL, uiOutput("freq")),
                menuSubItem(icon = NULL, uiOutput("glob_sig"))
+      ),
+      menuItem("visulizing properties", tabName = "xxx", icon = icon("image"), startExpanded = TRUE,
+               menuSubItem(icon = NULL, uiOutput("visprop_onlysig")),
+               menuSubItem(icon = NULL, uiOutput("visprop_inlinenumbers"))
       ),
       menuItem("Image Save", tabName = "xxx", icon = icon("save"), startExpanded = FALSE,
                menuSubItem(icon = NULL, uiOutput("saveimageButton")),
@@ -65,8 +78,9 @@ ui <- dashboardPage(
                menuSubItem(icon = NULL, uiOutput("saveimagedpi")),
                menuSubItem(icon = NULL, uiOutput("saveimagefontsize")),
                menuSubItem(icon = NULL, uiOutput("saveimagefileformat"))
-      ),
-      menuItem("Options", tabName = "OptionsTab", icon = icon("wrench")),
+
+      )
+      #menuItem("Options", tabName = "OptionsTab", icon = icon("wrench")),
 
       # menuItem("load data", tabName = "loaddata1", icon = icon("th"),
       #          menuSubItem(icon = NULL, uiOutput("freq")),
@@ -74,7 +88,7 @@ ui <- dashboardPage(
       # ),
       #selectInput("HumanTrafficking", "Choose a trafficking type: ", list("Victim", "Trafficker")),
 
-      textOutput("res")
+      #textOutput("res")
     )
   ),
   dashboardBody(
@@ -97,6 +111,14 @@ ui <- dashboardPage(
       tabItem(tabName = "OptionsTab",
               uiOutput("tabsOpt")
       ),
+      tabItem(tabName = "datarootdir",
+              #h2("preprocess data about here"),
+              box(
+                title = "data root dir seletion",
+                width = 12,
+                datarootdirUI("datarootdir")
+              )
+      ),
       tabItem(tabName = "preprocessdata",
               #h2("preprocess data about here"),
               box(
@@ -116,6 +138,12 @@ ui <- dashboardPage(
       ),
       tabItem(tabName = "GrangerTab",
               uiOutput("tabsGra")
+      ),
+      tabItem(tabName = "ERPTab",
+              uiOutput("tabsERP")
+      ),
+      tabItem(tabName = "RSTab",
+              uiOutput("tabsRS")
       )
 
 

@@ -26,6 +26,8 @@ library(sortable)
 library(reshape2)
 library(tidyverse)
 library(shinyjqui)
+library(optimbase)
+library(rlang)
 #library(shinyWidgets)
 
 #setwd("..")
@@ -61,17 +63,30 @@ sapply(pathnames, FUN=source);
 #
 options(shiny.maxRequestSize=300*1024^2)
 
-server <- function(input, output) {
+server <- function(input, output, session) {
 
   ######################
    ### reactive val ###
   ######################
+  selecteddatadir<-datarootdirServer("datarootdir")
+  g_datarootpath <<-reactiveVal(getwd())
+  observeEvent(selecteddatadir(),{
+    #cat(file = stderr(),paste0("change in selecteddatadir detected","\n"))
+    val <- selecteddatadir()
+    g_datarootpath(val)
+  })
   initialized = FALSE
-  dir_listCoh <- reactiveVal(value = dir(path = "../data", pattern = "^Coherence", full.names = F, recursive = F))
-  dir_listTra <- reactiveVal(value = dir(path = "../data", pattern = "^Transferentropy", full.names = F, recursive = F))
-  dir_listFre <- reactiveVal(value = dir(path = "../data", pattern = "^Frequency", full.names = F, recursive = F))
-  dir_listGra <- reactiveVal(value = dir(path = "../data", pattern = "^Granger", full.names = F, recursive = F))
-
+  dir_listCoh <- reactive({dir(path = g_datarootpath(), pattern = "^Coherence", full.names = F, recursive = F)})
+  dir_listTra <- reactive({dir(path = g_datarootpath(), pattern = "^Transferentropy", full.names = F, recursive = F)})
+  dir_listFre <- reactive({dir(path = g_datarootpath(), pattern = "^Frequency", full.names = F, recursive = F)})
+  dir_listGra <- reactive({dir(path = g_datarootpath(), pattern = "^Granger", full.names = F, recursive = F)})
+  dir_listERP <- reactive({dir(path = g_datarootpath(), pattern = "^ERP", full.names = F, recursive = F)})
+  dir_listRS  <- reactive({dir(path = g_datarootpath(), pattern = "^RS", full.names = F, recursive = F)})
+  # dir_listCoh <- reactiveVal(value = dir(path = "../data", pattern = "^Coherence", full.names = F, recursive = F))
+  # dir_listTra <- reactiveVal(value = dir(path = "../data", pattern = "^Transferentropy", full.names = F, recursive = F))
+  # dir_listFre <- reactiveVal(value = dir(path = "../data", pattern = "^Frequency", full.names = F, recursive = F))
+  # dir_listGra <- reactiveVal(value = dir(path = "../data", pattern = "^Granger", full.names = F, recursive = F))
+  #
  # method <- reactive({})
   method <- reactiveVal(value = "Coherence")
   directory <- reactiveVal(value = "Coherence")
@@ -89,16 +104,23 @@ server <- function(input, output) {
     } else if (input$mySidebarMenu == "TransferentropyTab"){ return("Transferentropy")
     } else if (input$mySidebarMenu == "FrequencyTab")      { return("Frequency")
     } else if (input$mySidebarMenu == "GrangerTab")        { return("Granger")
-    } else if (input$mySidebarMenu == "OptionsTab")        { return("Options")
+    } else if (input$mySidebarMenu == "ERPTab")            { return("ERP")
+    } else if (input$mySidebarMenu == "RSTab")             {
+      cat(file=stderr(),"updateSliderInput\n")
+      updateSliderInput(session,"freq", value = c(0,5))
+      return("RS")
+    #} else if (input$mySidebarMenu == "OptionsTab")        { return("Options")
     } else {   return("Coherence")  }
   })
 
   g_act_data_dir <<- reactive({
-    if (g_act_method()=="Coherence"){       return(input$dataDirCoh)}
-    if (g_act_method()=="Transferentropy"){ return(input$dataDirTra)}
-    if (g_act_method()=="Frequency"){       return(input$dataDirFre)}
-    if (g_act_method()=="Granger"){         return(input$dataDirGra)}
-    if (g_act_method()=="Options"){         return(input$dataDirCoh)}
+    if (g_act_method()=="Coherence"){       return(file.path(g_datarootpath(),input$dataDirCoh))}
+    if (g_act_method()=="Transferentropy"){ return(file.path(g_datarootpath(),input$dataDirTra))}
+    if (g_act_method()=="Frequency"){       return(file.path(g_datarootpath(),input$dataDirFre))}
+    if (g_act_method()=="Granger"){         return(file.path(g_datarootpath(),input$dataDirGra))}
+    if (g_act_method()=="ERP"){             return(file.path(g_datarootpath(),input$dataDirERP))}
+    if (g_act_method()=="RS"){              return(file.path(g_datarootpath(),input$dataDirRS))}
+    #if (g_act_method()=="Options"){         return(file.path(g_datarootpath(),input$dataDirCoh))}
 
     return("Coherence")
   })
@@ -108,18 +130,31 @@ server <- function(input, output) {
 
   # this reload variable triggers the manual reload of other global variables
   # best option to change this is g_reload = g_reload(g_reload()+1)
-  g_reload_rVal <<- reactiveVal(0)
-  g_data      <<- reactive({ get_data(g_act_data_dir())                })
-  g_beh      <<- reactive({ get_global_tbl_beh(g_act_data_dir())      })
-  g_regions <<- reactive({ get_global_uregion_list(g_act_data_dir()) })
-  g_trials  <<- reactive({ get_global_utrial_list(g_act_data_dir())  })
-  g_groups  <<- reactive({ get_global_group_names(g_act_data_dir())  })
-  g_freqs   <<- reactive({ get_global_ufreq_list(g_act_data_dir())   })
-  g_regions_named <<- reactive({ get_global_region_names(g_act_data_dir()) })
-  g_trials_named  <<- reactive({ get_global_trial_names(g_act_data_dir())  })
-  g_sel_freqs<<- reactive({ get_selected_freq_list(g_freqs(), input$freq) })
-  g_sig<<- reactive({input$glob_sig})
 
+  g_reload_rVal   <<- reactiveVal(0)
+  g_D             <<- reactive({g_reload_rVal(); get_global_D(g_act_data_dir())                })
+  g_data          <<- reactive({ g_D()$mdat                                   })
+  g_beh           <<- reactive({ g_D()$df_BD                                  })
+  g_regions       <<- reactive({ g_D()$uregion_list                           })
+  g_trials        <<- reactive({ g_D()$utrial_list                            })
+  g_groups        <<- reactive({ c("all_groups",g_D()$ugroup_list)            })
+  g_freqs         <<- reactive({ g_D()$ufreq_list                             })
+  g_regions_named <<- reactive({ g_D()$uregion_list_named                     })
+  g_trials_named  <<- reactive({ g_D()$utrial_list_named                      })
+  g_sel_freqs     <<- reactive({ get_selected_freq_list(g_freqs(),input$freq) })
+  g_sig           <<- reactive({ input$glob_sig                               })
+
+  # g_data      <<- reactive({ get_data(g_act_data_dir())                })
+  # g_beh      <<- reactive({ get_global_tbl_beh(g_act_data_dir())      })
+  # g_regions <<- reactive({ get_global_uregion_list(g_act_data_dir()) })
+  # g_trials  <<- reactive({ get_global_utrial_list(g_act_data_dir())  })
+  # g_groups  <<- reactive({ get_global_group_names(g_act_data_dir())  })
+  # g_freqs   <<- reactive({ get_global_ufreq_list(g_act_data_dir())   })
+  # g_regions_named <<- reactive({ get_global_region_names(g_act_data_dir()) })
+  # g_trials_named  <<- reactive({ get_global_trial_names(g_act_data_dir())  })
+  # g_sel_freqs<<- reactive({ get_selected_freq_list(g_freqs(), input$freq) })
+  # g_sig<<- reactive({input$glob_sig})
+  #
   g_saveImage_button <<- reactive({input$saveimageButton})
   g_saveImage_width <<- reactive({input$saveimagewidth})
   g_saveImage_height <<- reactive({input$saveimageheight})
@@ -128,16 +163,8 @@ server <- function(input, output) {
   g_saveImage_dpi <<- reactive({input$saveimagedpi})
   g_saveImage_fontsize <<- reactive({input$saveimagefontsize})
 
-  set.seed(122)
-  histdata <- rnorm(500)
-
-
-
-
-  output$plot1 <- renderPlot({
-    data <- histdata[seq_len(input$slider)]
-    hist(data)
-  })
+  g_visprop_onlysig         <<- reactive({input$visprop_onlysig})
+  g_visprop_inlinenumbers   <<- reactive({input$visprop_inlinenumbers})
 
   ##################
    #### Sidebar ###
@@ -156,50 +183,12 @@ server <- function(input, output) {
     selectInput("dataDirFre", "Frequency",choices = dir_listFre(), selected = dir_listFre()[2])})
   output$selectDirGra <- renderUI({
     selectInput("dataDirGra", "Granger",choices = dir_listGra(),selected = dir_listGra()[2])})
+  output$selectDirERP <- renderUI({
+    selectInput("dataDirERP", "ERP",choices = dir_listERP(),selected = dir_listERP()[2])})
+  output$selectDirRS <- renderUI({
+    selectInput("dataDirRS", "RS",choices = dir_listRS(),selected = dir_listRS()[1])})
 
 
-
-  # # Show modal when button is clicked.
-  # observeEvent(input$mySidebarMenu, {
-  #   #dir_list(list.dirs(path = "./data", full.names = F, recursive = F))
-  #   cat(file = stderr(), paste0("observeEvent:", input$mySidebarMenu, "\n"))
-  #   cat(file = stderr(), paste0("method:", method(), "\n"))
-  #   cat(file = stderr(), paste0("directory:", directory(), "\n"))
-  #   cat(file = stderr(), paste0("input$dataDirTra:", input$dataDirTra, "\n"))
-  #   cat(file = stderr(), paste0("g_act_method:", g_act_method(), "\n"))
-  #   cat(file = stderr(), paste0("g_act_data_dir:", g_act_data_dir(), "\n"))
-  #
-  #   # if (input$mySidebarMenu == "CoherenceTab"){
-  #   #   method("Coherence")
-  #   #   directory(input$dataDirCoh)
-  #   # } else if (input$mySidebarMenu == "TranferentropyTab"){
-  #   #   method("Transferentropy")
-  #   #   directory(input$dataDirTra)
-  #   #
-  #   # } else if (input$mySidebarMenu == "FrequencyTab"){
-  #   #   method("Frequency")
-  #   #   directory(input$dataDirFre)
-  #   #
-  #   # } else if (input$mySidebarMenu == "GrangerTab"){
-  #   #   method("Granger")
-  #   #   directory(input$dataDirGra)
-  #   #
-  #   # } else if (input$mySidebarMenu == "OptionsTab"){
-  #   #   method("Options")
-  #   #   directory(input$dataDirCoh)
-  #   #
-  #   # } else {
-  #   #   # default ... initially called
-  #   #   method("Coherence")
-  #   #   directory("Coherence")
-  #   #
-  #   # }
-  #   cat(file = stderr(), paste0("directory:", directory(), "\n"))
-  #   cat(file = stderr(), paste0("input$dataDirTra:", input$dataDirTra, "\n"))
-  #   cat(file = stderr(), paste0("g_act_method:", g_act_method(), "\n"))
-  #   cat(file = stderr(), paste0("g_act_data_dir:", g_act_data_dir(), "\n"))
-  #   cat(file = stderr(), paste0("_________________________\n"))
-  # })
 
   output$freq <- renderUI({
     sliderInput(inputId = "freq",
@@ -209,6 +198,13 @@ server <- function(input, output) {
   output$glob_sig <- renderUI({
     numericInput("glob_sig", h4("sig threshold"), min =0, max = 1, value = 0.05, step = 0.00001)
     #sliderInput("glob_sig", h4("sig threshold"), min =0 , max = 1, value = 0.05, step = 0.01)
+  })
+
+  output$visprop_onlysig <- renderUI({
+    checkboxInput("visprop_onlysig", "show only sig.", value = FALSE)
+  })
+  output$visprop_inlinenumbers <- renderUI({
+    checkboxInput("visprop_inlinenumbers", "show nums in graph", value = TRUE)
   })
 
   output$saveimageButton <- renderUI({
@@ -236,23 +232,21 @@ server <- function(input, output) {
 
 
 
-
-  #####################
-  #### Tabs Options ###
-  #####################
-  output$tabsOpt <- renderUI({
-    fluidRow(
-      tabBox(
-        title = NULL, width = 12,
-        # The id lets us use input$tabset1 on the server to find the current tab
-        id = "tabset1", height = "250px",
-
-        tabPanel("Regions order", options_mod_orderUI("Options_order")),
-        tabPanel("Regions name", options_mod_nameUI("Options_name"))
-
-      )
-    )
-  })
+#
+#   #####################
+#   #### Tabs Options ###
+#   #####################
+#   output$tabsOpt <- renderUI({
+#     fluidRow(
+#       tabBox(
+#         title = NULL, width = 12,
+#         # The id lets us use input$tabset1 on the server to find the current tab
+#         id = "tabset1", height = "250px",
+#         tabPanel("Regions order", options_mod_orderUI("Options_order")),
+#         tabPanel("Regions name", options_mod_nameUI("Options_name"))
+#       )
+#     )
+#   })
 
 
   ##################
@@ -271,7 +265,11 @@ server <- function(input, output) {
         tabPanel("Groups Stat", compareGroupsStatsUI("CohGroupsStats")),
         tabPanel("Diff Stat", compareDiffOfDiffStatsUI("CohDiffOfDiffStats")),
         tabPanel("Regression", regressionStatsUI("CohRegStats")),
-        tabPanel("ANCOVA", ancovaStatsUI("CohAncovaStats"))
+        tabPanel("ANCOVA", ancovaStatsUI("CohAncovaStats")),
+        tabPanel("Options Regions", optionsUI("Options")),
+        tabPanel("Regions order", options_mod_orderUI("Options_order")),
+        tabPanel("Regions name", options_mod_nameUI("Options_name"))
+
       )
     )
   })
@@ -281,6 +279,8 @@ server <- function(input, output) {
   #### Tabs TRA ###
   ##################
   output$tabsTra <- renderUI({
+    cat(file = stderr(), "into output$tabsTra \n")
+    updateSliderInput(session,"freq", value = c(0,5))
     fluidRow(
       tabBox(
         title = NULL, width = 12,
@@ -292,7 +292,8 @@ server <- function(input, output) {
         tabPanel("Groups Stat", compareGroupsStatsUI("TraGroupsStats")),
         tabPanel("Diff Stat", compareDiffOfDiffStatsUI("TraDiffOfDiffStats")),
         tabPanel("Regression", regressionStatsUI("TraRegStats")),
-        tabPanel("ANCOVA", ancovaStatsUI("TraAncovaStats"))
+        tabPanel("ANCOVA", ancovaStatsUI("TraAncovaStats")),
+        tabPanel("Options Regions", optionsUI("Options"))
       )
     )
   })
@@ -328,6 +329,57 @@ server <- function(input, output) {
     )
   })
 
+
+  ##################
+  #### Tabs ERP ###
+  ##################
+  output$tabsERP <- renderUI({
+    fluidRow(
+      tabBox(
+        title = NULL, width = 12,
+        # The id lets us use input$tabset1 on the server to find the current tab
+        id = "tabset1", height = "250px",
+
+        tabPanel("Plot", ERPPlotUI("ERPPlot"))
+
+      )
+    )
+  })
+
+  #ERPPlotUI("ERPPlot")
+  ERPPlotServer("ERPPlot")
+
+
+  ##################
+  #### Tabs RS ###
+  ##################
+  output$tabsRS <- renderUI({
+    cat(file = stderr(), "into output$tabsRS \n")
+    updateSliderInput(session,"freq", value = c(0,5))
+    fluidRow(
+      tabBox(
+        title = NULL, width = 12,
+        # The id lets us use input$tabset1 on the server to find the current tab
+        id = "tabset1", height = "250px",
+
+        tabPanel("Plot", RSPlotUI("RSPlot")),
+        tabPanel("Comp Plot",  compareTrialsPlotUI("RSPlot2")),
+        tabPanel("Long Plot",  longitudinalPlotUI("RS"))
+        # tabPanel("Comp Plot", compareTrialsPlotUI("CohPlot")),
+        # tabPanel("Trials Stat", compareTrialsStatsUI("CohTrialsStat")),
+        # tabPanel("Groups Stat", compareGroupsStatsUI("CohGroupsStats")),
+        # tabPanel("Diff Stat", compareDiffOfDiffStatsUI("CohDiffOfDiffStats")),
+        # tabPanel("Regression", regressionStatsUI("CohRegStats")),
+        # tabPanel("ANCOVA", ancovaStatsUI("CohAncovaStats"))
+      )
+    )
+  })
+  #RSPlotUI("ERPPlot")
+  #RSPlotServer("RSPlot")
+  compareTrialsPlotServer("RSPlot2")
+  longitudinalPlotServer("RS", dir_listRS())
+
+  optionsServer("Options")
   options_mod_orderServer("Options_order")
   options_mod_nameServer("Options_name")
 
@@ -351,5 +403,7 @@ server <- function(input, output) {
   ancovaStatsServer("CohAncovaStats", reactive(input$glob_sig), reactive(input$freq))
 
   preprocessingServer("preprocessing")
+
+
 
 }

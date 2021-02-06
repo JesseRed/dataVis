@@ -63,27 +63,46 @@ options_mod_orderServer <- function(id) {
         #cat(file=stderr(), paste0("class(input$regions_order)=",class(input$regions_order),"\n"))
         #cat(file=stderr(), paste0("g_act_data_dir()=",g_act_data_dir(),"\n"))
         # lade die orginalen Daten
-        uregion_list_org <<- readRDS(file.path("../data",g_act_data_dir(),"uregion_list.Rda"))
-        mdatc_org = readRDS(file.path("../data", g_act_data_dir(), "tbl_data.Rda"))
-        # estimate the changes
+
+
+        D <- readRDS(file = file.path(g_act_data_dir(),"D.Rda"))
+        uregion_list_org <- D$uregion_list
+        mdatc_org <- D$mdat
+
         uregion_list <<- input$regions_order
 
-        #cat(file=stderr(), paste0("uregion_list_org=",uregion_list_org,"\n"))
-        #cat(file=stderr(), paste0("uregion_list=",uregion_list,"\n"))
-        #cat(file=stderr(), paste0("class(uregion_list_org)=",class(uregion_list_org),"\n"))
-        #cat(file=stderr(), paste0("class(uregion_list)=",class(uregion_list),"\n"))
-
         cx <<- match(uregion_list, uregion_list_org)
-        #cat(file=stderr(), paste0("changes=",cx,"\n"))
         mdat = mdatc_org[,cx,cx,,]
-#        x = match(urn, uro)
-#        n = m(,x,x,,)
-        saveRDS(uregion_list, file = file.path("../data", g_act_data_dir(),"uregion_list.Rda"))
-        saveRDS(mdat,         file = file.path("../data", g_act_data_dir(), "tbl_data.Rda"))
+        D$mdat = mdat
+        D$uregion_list = uregion_list
+        uregion_list_named = list()
+        uregion_list_named[uregion_list] = 1:length(uregion_list)
+        D$uregion_list_named = uregion_list_named
+        saveRDS(D, file = file.path(g_act_data_dir(),"D.Rda"))
+#        saveRDS(mdat,         file = file.path("../data", g_act_data_dir(), "tbl_data.Rda"))
         g_reload_rVal(g_reload_rVal()+1)
-        #        saveRDS(uregion_list, file = file.path("./data",g_act_method(),"uregion_list.Rda"))
-#        saveRDS(mdat,         file = file.path("./data", g_act_method(), "tbl_data.Rda"))
-        # speichere nun wieder alles
+
+
+
+        #    old
+        #
+        #
+        #
+        # uregion_list_org <<- readRDS(file.path("../data",g_act_data_dir(),"uregion_list.Rda"))
+        # mdatc_org = readRDS(file.path("../data", g_act_data_dir(), "tbl_data.Rda"))
+        # # estimate the changes
+        # uregion_list <<- input$regions_order
+        #
+        # #cat(file=stderr(), paste0("uregion_list_org=",uregion_list_org,"\n"))
+        # #cat(file=stderr(), paste0("uregion_list=",uregion_list,"\n"))
+        # #cat(file=stderr(), paste0("class(uregion_list_org)=",class(uregion_list_org),"\n"))
+        # #cat(file=stderr(), paste0("class(uregion_list)=",class(uregion_list),"\n"))
+        #
+        # cx <<- match(uregion_list, uregion_list_org)
+        # mdat = mdatc_org[,cx,cx,,]
+        # saveRDS(uregion_list, file = file.path("../data", g_act_data_dir(),"uregion_list.Rda"))
+        # saveRDS(mdat,         file = file.path("../data", g_act_data_dir(), "tbl_data.Rda"))
+        # g_reload_rVal(g_reload_rVal()+1)
 
       })
 

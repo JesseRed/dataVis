@@ -10,8 +10,7 @@ The preprocessing is relatively rigid
 
 ## In Long
 You have to deliver your Input data as csv Files.   
-Save them into the preprocessing folder   
-![This is a alt text.](./preprocessing_folders.png "directory image")
+Save them into a preprocessing folder   
 
 
 *****
@@ -30,12 +29,6 @@ Because delimiter setting is a pain, you can choose the delimiter as you like.
 
 If you do not know the delimiter, than open your file in a text editor and check it  
 
-### Column descriptions by Stefans tool
-- Freq: __frontal\_links\_A\_\_5248\_\_0.00__
-- Coherence: __frontal\_links\_A>frontopolar\_A\_\_5248\_\_0.00__
-- Transferentropy: __frontal\_links\_A>frontal\_links\_B\_\_65\_\_0.00__
-- Granger: **frontal\_links\_A>frontopolar\_A\_\_5248\_\_0.00**
- 
-The naming is important as the columnnames are parsed by **">"** and **"\_\_"** 
+
 
 

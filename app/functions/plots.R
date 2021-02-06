@@ -1,5 +1,5 @@
 
-generate_histogram_plot_facet<-function(group1, group2, trial1, trial2, freq, level_x_rval, level_y_rval){
+generate_histogram_plot_facet<-function(group1, group2, trial1, trial2, freq, level_x_rval, level_y_rval, data = NULL){
   # Erstellt einen Histogram plot von mehreren Gruppen mit gleichen Achsenskalen
 
   # gedacht fuer tabs in denen gruppen und trials ausgewaehlt werden
@@ -17,77 +17,103 @@ generate_histogram_plot_facet<-function(group1, group2, trial1, trial2, freq, le
   #cat(file = stderr(), paste0("is.reactive(trial1)=",is.reactive(trial1),"\n"))
   #cat(file = stderr(), paste0("is.reactive(level_x_rval)=",is.reactive(level_x_rval),"\n"))
   #cat(file = stderr(), "freq()=",freq(),"\n")
-  d <- get_currently_selected_data(g_data(), group1, group2, as.numeric(trial1), as.numeric(trial2), freq)
-  #d <- get_data_freqmean(g_data(), freq)
-  #cat(file = stderr(), "class(d)=",class(d),"\n")
-  #cat(file = stderr(), paste0("\n","level_x_rval=",level_x_rval))
-  #d <- curdata()
-  if (trial1 == trial2) {
-    #cat(file = stderr(), "trial1 == trial2\n")
-    string1 = paste0(group1," vs ", group2, " in trial ", names(g_trials_named())[trial1], "\n")
-    d1 = get_data_group_freqmean(g_data(), group1)
-    d2 = get_data_group_freqmean(g_data(), group2)
-    x = d1[,level_x_rval, level_y_rval, as.numeric(trial1)]
-    y = d2[,level_x_rval, level_y_rval, as.numeric(trial1)]
-    df <- data.frame(Gruppe=c(rep(group1, times=length(x)),
-                              rep(group2, times=length(y))),
-                     val=c(x, y))
-    df$num <- ave(df$val, df$Gruppe, FUN = seq_along)
-    # means for geomline
-    df_hline = data.frame(Gruppe = c(group1,group2), Means=c(mean(x), mean(y)))
-    # df$val = d[,level_x_rval, level_y_rval, as.numeric(input$trial1)]
-    # df$num <- ave(df$val, df$Gruppe, FUN = seq_along)
-    # dummy2 = data.frame(Gruppe = c(0,1), Means=c(0.4, 0.5))
-
-  }else if (group1 == group2){
-    string1 = paste0(trial1," vs ", trial2, "in group ", group1, "\n")
-    #data1 = data_1()
-    #data2 = data_2()
-    data1 = d$data1
-    data2 = d$data2
-    x = data1[,level_x_rval, level_y_rval]
-    y = data2[,level_x_rval, level_y_rval]
-    df <- data.frame(Gruppe=c(rep(g_trials()[as.numeric(trial1)], times=length(x)),
-                              rep(g_trials()[as.numeric(trial2)], times=length(y))),
-                     val=c(x, y))
-    #cat(file = stderr(), paste0("val=",c(x,y),"\n"))
-    #cat(file = stderr(), paste0("df=",df,"\n"))
-
-    df$num <- ave(df$val, df$Gruppe, FUN = seq_along)
-    # means for geomline
-    df_hline = data.frame(Gruppe = c(g_trials()[as.numeric(trial1)],
-                                     g_trials()[as.numeric(trial2)]),
-                          Means=c(mean(x), mean(y)))
-  } else{
-
-    my_paired <- d$my_paired
-    data1 <- d$data1
-    data2 <- d$data2
-    string1 <-d$string1
-    mat_p <- d$mat_p
-    mat_t <- d$mat_t
-
-    x = data1[,level_x_rval, level_y_rval]
-    y = data2[,level_x_rval, level_y_rval]
-
-    df <- data.frame(Gruppe=c(rep(group1, times=length(x)),
-                              rep(group2, times=length(y))),
-                     val=c(x, y))
-    df$num <- ave(df$val, df$Gruppe, FUN = seq_along)
-    # means for geomline
-    df_hline = data.frame(Gruppe = c(group1, group2), Means=c(mean(x), mean(y)))
-
+  cat(file = stderr(), "into generate_histogram_plot_facet\n")
+  if (is.null(data)){
+    cat(file = stderr(), "create new data\n")
+    d <- get_currently_selected_data(g_data(), group1, group2, as.numeric(trial1), as.numeric(trial2), freq)
+  }else{
+    cat(file = stderr(), "get the old data\n")
+    d<-data
   }
+  x = d$data1[,level_x_rval, level_y_rval]
+  y = d$data2[,level_x_rval, level_y_rval]
+  df <- data.frame(Gruppe=c(rep(group1, times=length(x)),
+                            rep(group2, times=length(y))),
+                   val=c(x, y))
+  df$num <- ave(df$val, df$Gruppe, FUN = seq_along)
+  # means for geomline
+  df_hline = data.frame(Gruppe = c(group1,group2), Means=c(mean(x), mean(y)))
   myplot<- ggplot(df, aes(num, val, fill=Gruppe)) +
     geom_bar(stat="identity") +
     facet_wrap(~Gruppe) +
     geom_hline(data = df_hline, aes(yintercept = Means))
-return(myplot)
+  return(myplot)
+
+#   #d <- get_data_freqmean(g_data(), freq)
+#   #cat(file = stderr(), "class(d)=",class(d),"\n")
+#   #cat(file = stderr(), paste0("\n","level_x_rval=",level_x_rval))
+#   #d <- curdata()
+#   if (trial1 == trial2) {
+#     #cat(file = stderr(), "trial1 == trial2\n")
+#     data1 = d$data1
+#     data2 = d$data2
+#     x = data1[,level_x_rval, level_y_rval]
+#     y = data2[,level_x_rval, level_y_rval]
+#
+#     #     string1 = paste0(group1," vs ", group2, " in trial ", names(g_trials_named())[trial1], "\n")
+#     # d1 = get_data_group_freqmean(g_data(), group1, freq)
+#     # d2 = get_data_group_freqmean(g_data(), group2, freq)
+#     # x = d1[,level_x_rval, level_y_rval, as.numeric(trial1)]
+#     # y = d2[,level_x_rval, level_y_rval, as.numeric(trial1)]
+#     df <- data.frame(Gruppe=c(rep(group1, times=length(x)),
+#                               rep(group2, times=length(y))),
+#                      val=c(x, y))
+#     df$num <- ave(df$val, df$Gruppe, FUN = seq_along)
+#     # means for geomline
+#     df_hline = data.frame(Gruppe = c(group1,group2), Means=c(mean(x), mean(y)))
+#     # df$val = d[,level_x_rval, level_y_rval, as.numeric(input$trial1)]
+#     # df$num <- ave(df$val, df$Gruppe, FUN = seq_along)
+#     # dummy2 = data.frame(Gruppe = c(0,1), Means=c(0.4, 0.5))
+#
+#   }else if (group1 == group2){
+#     string1 = paste0(trial1," vs ", trial2, "in group ", group1, "\n")
+#     #data1 = data_1()
+#     #data2 = data_2()
+#     data1 = d$data1
+#     data2 = d$data2
+#     x = data1[,level_x_rval, level_y_rval]
+#     y = data2[,level_x_rval, level_y_rval]
+#     df <- data.frame(Gruppe=c(rep(g_trials()[as.numeric(trial1)], times=length(x)),
+#                               rep(g_trials()[as.numeric(trial2)], times=length(y))),
+#                      val=c(x, y))
+#     #cat(file = stderr(), paste0("val=",c(x,y),"\n"))
+#     #cat(file = stderr(), paste0("df=",df,"\n"))
+#
+#     df$num <- ave(df$val, df$Gruppe, FUN = seq_along)
+#     # means for geomline
+#     df_hline = data.frame(Gruppe = c(g_trials()[as.numeric(trial1)],
+#                                      g_trials()[as.numeric(trial2)]),
+#                           Means=c(mean(x), mean(y)))
+#   } else{
+#
+#     #my_paired <- d$my_paired
+#     data1 <- d$data1
+#     data2 <- d$data2
+#     string1 <-d$string1
+#     #mat_p <- d$mat_p
+#     #mat_t <- d$mat_t
+#
+#     x = data1[,level_x_rval, level_y_rval]
+#     y = data2[,level_x_rval, level_y_rval]
+#
+#     df <- data.frame(Gruppe=c(rep(group1, times=length(x)),
+#                               rep(group2, times=length(y))),
+#                      val=c(x, y))
+#     df$num <- ave(df$val, df$Gruppe, FUN = seq_along)
+#     # means for geomline
+#     df_hline = data.frame(Gruppe = c(group1, group2), Means=c(mean(x), mean(y)))
+#
+#   }
+#   myplot<- ggplot(df, aes(num, val, fill=Gruppe)) +
+#     geom_bar(stat="identity") +
+#     facet_wrap(~Gruppe) +
+#     geom_hline(data = df_hline, aes(yintercept = Means))
+# return(myplot)
 }
 
-generate_plot_Circle<-function(mat_p, mat_t, data1, data2){
-  rownames(mat_t) = g_regions()
-  colnames(mat_t) = g_regions()
+generate_plot_Circle<-function(mat_p, mat_t, data1, data2, regions = g_regions()){
+  rownames(mat_t) = regions
+  colnames(mat_t) = regions
   x = data1[,1,2]
   y = data2[,2,3]
   z = t.test(x,y)
@@ -97,8 +123,8 @@ generate_plot_Circle<-function(mat_p, mat_t, data1, data2){
   M = abs(log(mat_p))
 
   t_threshold = abs(log(g_sig()))
-  rownames(M) = g_regions()
-  colnames(M) = g_regions()
+  rownames(M) = regions
+  colnames(M) = regions
   M[is.nan(M)]=0
   M[upper.tri(M)]=0.001
 
@@ -115,42 +141,140 @@ generate_plot_Circle<-function(mat_p, mat_t, data1, data2){
   return(myplot)
 }
 
-generate_plot_Corrplot<-function(mat_p, mat_t){
+generate_plot_Corrplot<-function(mat_p, mat_t,
+                                 myfontsize = g_saveImage_fontsize(),
+                                 inline_numbers = g_visprop_inlinenumbers(),
+                                 only_sig = g_visprop_onlysig(),
+                                 regions = g_regions(),
+                                 clustering_method = "original",
+                                 num_hclust = 0){
+  start_time <- Sys.time()
   # colnames(d$mat_p) = g_regions()
   # rownames(d$mat_p) = vector(mode="character", length=length(g_regions()))
   # colnames(d$mat_t) = vector(mode="character", length=length(g_regions()))
   # rownames(d$mat_t) = g_regions()
+  # setting the fontsize
+  #if ((myfontsize >8) & (myfontsize<12)){
+  #  cex = 0.4
+  #}
+  if (is.null(myfontsize)){myfontsize=14}
+
+  cex = myfontsize /20
+  cat(file = stderr(), cex)
+  if (cex>1.0){
+    cex = 1.0
+  }
+  if (only_sig) {
+    insig = "blank"
+    #insig = "pch"
+  }else{
+    insig = "pch"
+    insig = "p-value"
+    insig = "n"
+    insig = "label_sig"
+  }
+  if (inline_numbers){
+    method = "number"
+  } else{
+    method = "square"
+    method = "circle"
+    method = "shade"
+    method = "color"
+  }
+  multi_sig_level = c(.001, .01, g_sig())
+  glob_mat_p <<- mat_p
+  glob_mat_t <<- mat_t
 
   if (g_act_method()=="Coherence"){
+
   # Erstellt einen Histogram plot von mehreren Gruppen mit gleichen Achsenskalen
   #d = get_currently_selected_data(g_data(), group1, group2, trial1, trial2, freq())
-    rownames(mat_p) = vector(mode="character", length=length(g_regions()))
-  x1 <<- corrplot(mat_p, method="number", tl.cex = 0.9, type = "upper", is.corr = FALSE,
-                  p.mat = mat_p, sig.level = g_sig(), tl.srt = 45,
+    rownames(mat_p) = vector(mode="character", length=length(regions))
+  x1 <<- corrplot(mat_p, method=method, tl.cex = cex, type = "upper", is.corr = FALSE,
+                  p.mat = mat_p, sig.level = multi_sig_level, tl.srt = 45,
+                  insig = insig, pch.cex = 0.4, pch.col = "white",
+                  order = clustering_method,
+                  addrect = num_hclust,
                   col=colorRampPalette(c("blue","red","green"))(200))
-  colnames(mat_t) = vector(mode="character", length=length(g_regions()))
+  colnames(mat_t) = vector(mode="character", length=length(regions))
 
-  myplot_corr <<- corrplot(mat_t, add = TRUE, method="number", tl.cex = 0.9, type = "lower", is.corr = FALSE,
-                  p.mat = mat_p, sig.level = g_sig(), tl.srt = 45)
+  myplot_corr <<- corrplot(mat_t, add = TRUE, method=method, tl.cex = cex, type = "lower", is.corr = FALSE,
+                  p.mat = mat_p, sig.level = g_sig(), insig = insig, tl.srt = 45)
+
+
   }else if (g_act_method()=="Transferentropy") {
-    myplot_corr <<- corrplot(d$mat_p, method="number", tl.cex = 0.9, is.corr = FALSE,
-                             p.mat = d$mat_p, sig.level = g_sig(),tl.srt = 45,
-                             col=colorRampPalette(c("blue","red","green"))(200))
+    rownames(mat_p) = vector(mode="character", length=length(regions))
+    x1 <<- corrplot(mat_p, method=method, tl.cex = cex, type = "upper", is.corr = FALSE,
+                    p.mat = mat_p, sig.level = multi_sig_level, tl.srt = 45,
+                    insig = insig, pch.cex = 0.4, pch.col = "white",
+                    order = clustering_method,
+                    addrect = num_hclust,
+                    col=colorRampPalette(c("blue","red","green"))(200))
+    colnames(mat_t) = vector(mode="character", length=length(regions))
+
+    myplot_corr <<- corrplot(mat_t, add = TRUE, method=method, tl.cex = cex, type = "lower", is.corr = FALSE,
+                             p.mat = mat_p, sig.level = g_sig(), insig = insig, tl.srt = 45)
+
+
+
+#    myplot_corr <<- corrplot(d$mat_p, method=method, tl.cex = cex, is.corr = FALSE,
+#                             p.mat = d$mat_p, sig.level = g_sig(),tl.srt = 45,
+#                             insig = insig,
+#                             col=colorRampPalette(c("blue","red","green"))(200))
   }else if (g_act_method()=="Granger") {
     cat(file = stderr(), "Corrrplot Granger not implemented")
     myplot_corr = NULL
   }else if (g_act_method()=="Frequency") {
     cat(file = stderr(), "Corrplot Frequency not implemented")
     myplot_corr = NULL
-  }
+  }else if (g_act_method()=="RS") {
+    cat(file = stderr(), "RS in corrplot\n")
+    rownames(mat_p) = vector(mode="character", length=length(regions))
+    x1 <<- corrplot(mat_p,
+                    method=method,
+                    tl.cex = cex,
+                    type = "upper",
+                    is.corr = FALSE,
+                    p.mat = mat_p,
+                    tl.srt = 45,
+                    sig.level = multi_sig_level,
+                    insig = insig,
+                    pch.cex = 0.5,
+                    addgrid.col = "grey",
+                    order = "hclust", #clustering_method,
+                    hclust.method = "average",
+                    addrect = num_hclust,
+                    pch.col = "white",
+                    col=colorRampPalette(c("blue","red","green"))(200))
+    colnames(mat_t) = vector(mode="character", length=length(regions))
 
+    myplot_corr <<- corrplot(mat_t,
+                             add = TRUE,
+                             type = "lower",
+                             is.corr = FALSE,
+                             method=method,
+                             tl.cex = cex,
+                             p.mat = mat_p,
+                             sig.level = g_sig(),
+                             pch.cex = 0.5,
+                             order = clustering_method,
+                             addrect = num_hclust,
+                             insig = insig,
+                             tl.srt = 45)
+  }
+  cat(file = stderr(), paste0("generate_plot_Corrplot duration = ", Sys.time()-start_time,"\n" ))
   return(myplot_corr)
 
 }
 
-generate_plot_Pheatmap<-function(mat_p, mat_t, myfontsize = g_saveImage_fontsize()){
-  colnames(mat_p) = g_regions()
-  rownames(mat_p) = g_regions()
+generate_plot_Pheatmap<-function(mat_p,
+                                 mat_t,
+                                 myfontsize = g_saveImage_fontsize(),
+                                 inline_numbers = g_visprop_inlinenumbers(),
+                                 regions = g_regions()){
+  cat(file=stderr(),paste0("show inline numbers = ",inline_numbers,"\n"))
+  colnames(mat_p) = regions
+  rownames(mat_p) = regions
 
   # Returns a vector of 'num.colors.in.palette'+1 colors. The first 'cutoff.fraction'
   # fraction of the palette interpolates between colors[1] and colors[2], the remainder
@@ -172,7 +296,7 @@ generate_plot_Pheatmap<-function(mat_p, mat_t, myfontsize = g_saveImage_fontsize
 
   myplot<-pheatmap(
     mat                   = mat_p,
-    display_numbers       = TRUE,
+    display_numbers       = inline_numbers,
     color                 = cols,
     fontsize              = myfontsize,
     main                  = "P-Values Pheatmap",
@@ -180,6 +304,7 @@ generate_plot_Pheatmap<-function(mat_p, mat_t, myfontsize = g_saveImage_fontsize
     show_colnames         = TRUE,
     cluster_cols          = FALSE,
     cluster_rows          = FALSE,
+    angle_col             = 45,
 
   )
   return(myplot)
@@ -211,7 +336,12 @@ open_device_for_save <- function(filename){
 
 }
 
-generate_plot_ggplot_corrplot_handmade<- function(mat_p, mat_t, myfontsize = g_saveImage_fontsize()){
+generate_plot_ggplot_corrplot_handmade<- function(mat_p, mat_t,
+                                                  myfontsize = g_saveImage_fontsize(),
+                                                  inline_numbers = g_visprop_inlinenumbers(),
+                                                  regions = g_regions()){
+
+  start_time <- Sys.time()
 
   rownames(mat_p)<-NULL
   colnames(mat_p)<-NULL
@@ -278,9 +408,6 @@ generate_plot_ggplot_corrplot_handmade<- function(mat_p, mat_t, myfontsize = g_s
 
   #cat(file = stderr(), paste0("length(g_regions()",length(g_regions()),"\n"))
 
-
-  regions<<-g_regions()
-
   #diagonal_elements <- df$Var1==df$Var2
 
   p<-ggplot(df, aes(x = Var1, y = Var2)) +
@@ -308,10 +435,11 @@ generate_plot_ggplot_corrplot_handmade<- function(mat_p, mat_t, myfontsize = g_s
               hjust=0.5, vjust=0.5, size = 3,
               stat = "identity")+
     geom_abline(slope = 1, intercept = 0) +
-    scale_y_continuous(breaks=seq(1, length(g_regions()), 1), labels = g_regions(), minor_breaks = NULL) +
-    scale_x_continuous(breaks=seq(1, length(g_regions()), 1), labels = g_regions(), minor_breaks = NULL)
+    scale_y_continuous(breaks=seq(1, length(regions), 1), labels = regions, minor_breaks = NULL) +
+    scale_x_continuous(breaks=seq(1, length(regions), 1), labels = regions, minor_breaks = NULL)
+    cat(file = stderr(), paste0("generate_plot_ggplot_corrplot_handmade duration = ", Sys.time()-start_time,"\n" ))
 
-  #cat(file = stderr(), paste0("length(g_regions()",length(g_regions()),"\n"))
+  #cat(file = stderr(), paste0("length(regions",length(regions),"\n"))
 
   return(p)
 

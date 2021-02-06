@@ -93,7 +93,8 @@ compareTrialsPlotServer <- function(id) {
           )
         ),
         fluidRow(
-          plotOutput(ns("plot"), width = "auto", height = "800px", click = ns("plot_click"))
+        #  plotOutput(ns("plot"), width = "auto", height = "800px", click = ns("plot_click"))
+          plotOutput(ns("plot"), width = "auto", height = "auto", click = ns("plot_click"))
         ),
 
         fluidRow(
@@ -235,86 +236,39 @@ compareTrialsPlotServer <- function(id) {
       ###########################################################
       ### RENDERPLOT
       output$myplotly<-renderPlotly({
+        start_time = Sys.time()
+        cat(file=stderr(), "before curdata() in myplotly\n")
+
         d <- curdata()
         mat_t <<- d$mat_t
         mat_p <<- d$mat_p
         p <-generate_plot_ggplot_corrplot_handmade(mat_p, mat_t)
-        #
-        # d<-tapply(PlantGrowth$weight,PlantGrowth$group,mean)
-        # d<-data.frame(d)
-        # d <- curdata()
-        # mat_t <<- d$mat_t
-        # mat_p <<- d$mat_p
-        # # p<-plot_ly(x = rownames(d), y = c(input$ctrl,input$trt1,input$trt2),
-        # #            type ="bar"
-        # # )
-        #
-        # # p<-layout(p,title = "Mean plantgrowth",
-        # #           xaxis = list(
-        # #             title = "GROUP",
-        # #             titlefont = list(size=16)
-        # #           ),
-        # #           yaxis = list(
-        # #             title = "MEAN GROWTH",
-        # #             titlefont = list(size=16),
-        # #             ticks="outside",
-        # #             ticklen=7,
-        # #             zeroline=TRUE,
-        # #             showline=TRUE
-        # #           )
-        # # )
-        #
-        # #data(mtcars)
-        # #corr <- round(cor(mtcars), 1)
-        # #p.mat <- cor_pmat(mtcars)
-        #
-        # #         ggcorrplot(mat_p)
-        #
-        # # nbreaks=8,
-        # # use = "everything",
-        # # palette='RdGy',
-        # # label=TRUE,
-        # # label_size=5,
-        # # label_color='white')
-        # #p<-ggcorr(data = NULL, cor_matrix=mat_p)
-        # #p<-ggcorrplot(data = NULL, cor_matrix=mat_p)
-        # #p<-ggcorrplot(corr)
-        # #p<-ggcorr(corr, nbreaks = 5)
-        # mat_p_sig = mat_p
-        # mat_p_sig[mat_p_sig>0.05]=0.05000001
-        # p<-ggcorr(
-        #   data = NULL,
-        #   cor_matrix = mat_p_sig,
-        #   nbreaks = 5,
-        #   label = TRUE,
-        #   drop = TRUE,
-        #   limits = FALSE #c(0,0.05)
-        #   )
-
-        # ggcorr(nba[, 2:15], geom = "blank", label = TRUE, hjust = 0.75) +
-        #   geom_point(size = 10, aes(color = coefficient > 0, alpha = abs(coefficient) > 0.5)) +
-        #   scale_alpha_manual(values = c("TRUE" = 0.25, "FALSE" = 0)) +
-        #   guides(color = FALSE, alpha = FALSE)
-
-
         p
+        cat(file = stderr(),paste0("renderPlotly duration =",Sys.time()-start_time,"\n"))
+
       })
-        #width = function() plotwidth(),
-        #height = function() plotheight(),
 
 
       ###########################################################
       ### RENDERPLOT
       output$plot<-renderPlot(
-        #width = function() plotwidth(),
-        #height = function() plotheight(),
+        width = function() plotwidth(),
+        height = function() plotheight(),
         #res = input$plot_res,
         {
+          start_time <- Sys.time()
+
         req(input$trial1)
         req(input$trial2)
         req(input$group1)
         req(input$group2)
+        req(input$method)
+#        dev.off()
+        cur_dev <- dev.cur()
+        cat(file = stderr(), cur_dev)
+        cat(file=stderr(), "before curdata() in plot\n")
         d <- curdata()
+        renderplotcurdata<<-curdata()
         mat_t <<- d$mat_t
         mat_p <<- d$mat_p
         ###################
@@ -380,92 +334,7 @@ compareTrialsPlotServer <- function(id) {
           #x
           p <-generate_plot_ggplot_corrplot_handmade(mat_p, mat_t)
 
-          # data(mtcars)
-          # corr <- round(cor(mtcars), 1)
-          # p.mat <- cor_pmat(mtcars)
-          # ggcorrplot(corr)
 
-          #x1 <- plot(d$mat_t)
-            #ggcorr(data = NULL, cor_matrix=mat_p)
-
-
-           #
-           # ggcorrplot(corr, hc.order = TRUE,
-           #            type = "lower",
-           #            lab = TRUE,
-           #            lab_size = 3, insig = 'blank',
-           #            method="square", p.mat = corr, sig.level = 0.4,
-           #            colors = c("tomato2", "white", "springgreen3"),
-           #            title="Correlogram of mtcars",
-           #            ggtheme=theme_bw) + geom_point(aes(colour = cut(pvalue, c(-Inf, 0.1, 0.2, Inf))),
-           #                                            +                                           size = 5) +
-           #   scale_color_manual(name = "pvalue",
-           #                                            values = c("(-Inf,0.1]" = "black",
-           #                                                           +                                   "(0.1,0.2]" = "yellow",
-           #                                                           +                                   "(0.2, Inf]" = "red"),
-           #                                               labels = c("<= 0.1", "0.1 < pval <= 0.2", "> 0.2"))
-           #
-
-
-
-
-
-
-
-
-
-
-           #
-#           > corr <- matrix(runif(100),nrow=10)
-#           > ggcorrplot(corr, hc.order = TRUE,
-#                                    type = "lower",
-#                                    lab = TRUE,
-#                                    lab_size = 3,
-#                        method="circle",
-#                                   colors = c("tomato2", "white", "springgreen3"),
-#                                   title="Correlogram of mtcars",
-#                                   ggtheme=theme_bw)
-#  #         myplot_corr
-# #          cat(file = stderr(), 'ggcorr\n')
-#  #         ggcorrplot(mat_p)
-#
-#                  # nbreaks=8,
-#                  # use = "everything",
-#                  # palette='RdGy',
-#                  # label=TRUE,
-#                  # label_size=5,
-#                  # label_color='white')
-#           mat_p_sig = mat_p
-#           mat_p_sig[mat_p_sig>0.05]=0.05000001
-#           # xx<-ggcorr(
-#           #   data = NULL,
-#           #   cor_matrix = mat_p_sig,
-#           #   nbreaks = 5,
-#           #   label = TRUE,
-#           #   drop = TRUE,
-#           #   limits = FALSE #c(0,0.05)
-#           # )
-#           df <- as.data.frame(mat_p)
-#
-#           xx <- ggcorr(
-#             data = NULL,
-#             cor_matrix = mat_p,
-#             geom = "blank",
-#             digits = 3,
-#             label = TRUE,
-#             hjust = 0.75,
-#             angle = -45) +
-#
-#             geom_point(
-#               size = 12,
-#               aes(color = coefficient > 0,
-#                   alpha = abs(coefficient) < 0.05)) +
-#             scale_alpha_manual(values = c("TRUE" = 0.25, "FALSE" = 0)) +
-#             geom_mark(data = df)+ #, aes(p.value=mat_p))+
-#             #geom_abline(slope = -1, intercept = dim(mat_p)-1)+
-#             geom_abline(slope = 1, intercept = 0)+
-#             guides(color = FALSE, alpha = FALSE)
-#
 
          #xx<- generate_histogram_plot_facet(input$group1, input$group2, input$trial1, input$trial2, freq(), level_x_rval(), level_y_rval())
          return(p)
@@ -477,14 +346,24 @@ compareTrialsPlotServer <- function(id) {
         }
         if (input$method=="Pheatmap"){
 
-            generate_plot_Pheatmap(d$mat_p, d$mat_t, myfontsize = 18)
+          cur_dev <- dev.cur()
+          # Pheatmat setzt das dev.cur() um ... daher manuelles zuruck setzen
+          myplotpheatmap = generate_plot_Pheatmap(d$mat_p, d$mat_t, myfontsize = 18)
+          #cur_dev <- dev.cur()
+          #cat(file = stderr(), paste0("cur_dev=", cur_dev,"\n"))
+          dev.set(cur_dev)
+          return(myplotpheatmap)
 
         }
+        cat(file = stderr(),paste0("plot duration =",Sys.time()-start_time,"\n"))
 
       }
       )
 
       output$text_bottom <- renderPrint({
+        cat(file = stderr(),paste0("level_y_rval()=",level_y_rval(),"\n"))
+        cat(file = stderr(),paste0("level_x_rval()=",level_x_rval(),"\n"))
+
         x = curdata()$data1[, level_y_rval(), level_x_rval()]
         y = curdata()$data2[, level_y_rval(), level_x_rval()]
         z = t.test(x,y, paired = curdata()$my_paired)
@@ -526,6 +405,8 @@ compareTrialsPlotServer <- function(id) {
 
         cat(file = stderr(), "observeEvent(g_save_Image_button(), with input$method =", input$method,"\n")
         cat(file = stderr(), "dpi=",g_saveImage_dpi(),"\n")
+        cat(file=stderr(), "before curdata() in g_saveImage_button\n")
+
         d <- curdata()
         #if (g_saveImage_button()>0){
           filename = paste0(g_saveImage_filename(),"_hist", format(Sys.time(), "%Y-%m-%d-%H-%M-%S."), g_saveImage_fileext())
