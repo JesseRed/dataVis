@@ -412,17 +412,17 @@ get_currently_selected_data<-function(data, g1, g2, t1, t2, freq, trials=g_trial
   d$color1 = colorRampPalette(c("blue","red","green"))
   cat(file = stderr(),paste0("get_currently_selected_data only filter the data duration =",Sys.time()-start_time,"\n"))
 
-  x <<- d
+  #x <<- d
 
   cat(file = stderr(), "entering for loop ... now \n")
   for (i in 1:(dim(d$data1)[2])-1){
-    cat(file = stderr(),paste0("i=",i,"\n"))
+    #cat(file = stderr(),paste0("i=",i,"\n"))
     start_idx = i+1
     if (method =="Granger"){
       start_idx = 1
     }
     for (j in start_idx:(dim(d$data1)[3])){
-      cat(file = stderr(),paste0("j=",j,"\n"))
+     # cat(file = stderr(),paste0("j=",j,"\n"))
       if (!(i==j)){
           x <- na.omit(d$data1[,i,j])
           y <- na.omit(d$data2[,i,j])
@@ -434,7 +434,7 @@ get_currently_selected_data<-function(data, g1, g2, t1, t2, freq, trials=g_trial
             z = t.test(x,y, paired = d$my_paired)
             d$mat_p[i,j] = z$p.value
             d$mat_t[i,j] = z$statistic
-            cat(file = stderr(),paste0("tryCatch d$mat_p[",i, ",",j,"] =", d$mat_p[i,j],"\n"))
+           # cat(file = stderr(),paste0("tryCatch d$mat_p[",i, ",",j,"] =", d$mat_p[i,j],"\n"))
 
           },
         error = function(cond){

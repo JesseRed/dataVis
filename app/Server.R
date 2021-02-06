@@ -403,6 +403,7 @@ server <- function(input, output, session) {
   ancovaStatsServer("CohAncovaStats", reactive(input$glob_sig), reactive(input$freq))
 
   preprocessingServer("preprocessing")
+  mergedataServer("mergedata")
 
 
 
