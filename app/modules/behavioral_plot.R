@@ -763,7 +763,47 @@ append_correlation_row_trials <- function(x1 = NULL, b1 = NULL, x2 = NULL,
 
 
 
+wide2long<- function(df){
+  # get a list of all measurement timepoints (the numbers after the __ )
+  mytimemarkers = c()
+  x = strsplit(colnames(df),'__')
+  for (i in 1:length(x)) {
+    if (length(x[[i]])==2){
+      #cat(file = stderr(), paste0("i=",i,"\n"))
 
+      mytimemarkers=c(mytimemarkers,x[[i]][2])
+    }
+  }
+  umytimemarkers = unique(mytimemarkers)
+  ucolnames = unlist(unique(lapply(strsplit(colnames(dfb),'__'),`[[`,1)), use.names=FALSE)
+  ucolnames = c("Measurement",ucolnames)
+  cat(file = stderr(), ucolnames)
+  df_new = data.frame(columns = ucolnames)
+  cat(file = stderr(), paste0("\n Mycolnames = \n",colnames(df_new),"\n"))
+
+  df_new_row_idx = 1
+  df_row_idx = 1
+  # gehe ueber jedes Feld
+  # bestimme den colname und entsprechend das neue Feld
+  for (i in 1:nrow(df)){
+    for (j in 1:ncol(df)){
+      x = strsplit(colnames(df)[j],'__')
+      if (length(x[[1]])==2){
+        num = as.numeric(x[[1]][2])
+        new_colname = str_trim(x[[1]][1])
+      }else{
+        num = 1
+        new_colname = str_trim(x[[1]][1])
+      }
+      cat(file = stderr(), "new_colname =",new_colname,"=\n")
+      df_new[[i+((num-1)*nrow(df)), new_colname]] = df[[i,j]]
+
+    }
+  }
+
+
+  return(df_new)
+}
 
 
 
