@@ -47,7 +47,8 @@ ui <- dashboardPage(
                menuSubItem(icon = NULL, uiOutput("selectDirFre")),
                menuSubItem(icon = NULL, uiOutput("selectDirGra")),
                menuSubItem(icon = NULL, uiOutput("selectDirERP")),
-               menuSubItem(icon = NULL, uiOutput("selectDirRS"))
+               menuSubItem(icon = NULL, uiOutput("selectDirRS")),
+               menuSubItem(icon = NULL, uiOutput("selectDirBeh"))
       ),
       menuItem(id = "xxx1", "show data", tabName = "showdata", icon = icon("th"), startExpanded = TRUE,
                menuSubItem("Coherence",
@@ -67,6 +68,9 @@ ui <- dashboardPage(
                            icon = icon('line-chart')),
                menuSubItem("MRI-RS",
                            tabName = "RSTab",
+                           icon = icon('line-chart')),
+               menuSubItem("pure Behavioral",
+                           tabName = "BehTab",
                            icon = icon('line-chart'))
       ),
       menuItem("global Inputs", tabName = "xxx", icon = icon("globe"), startExpanded = TRUE,
@@ -159,6 +163,9 @@ ui <- dashboardPage(
       ),
       tabItem(tabName = "RSTab",
               uiOutput("tabsRS")
+      ),
+      tabItem(tabName = "BehTab",
+              uiOutput("tabsBeh")
       )
 
 

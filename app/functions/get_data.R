@@ -92,78 +92,34 @@ get_currently_selected_data_long<-function(data, g1, g2, t1, t2, freq,
   d$explanation = "not filled"
   d$my_paired = FALSE
 
+
   if (is.null(datalong)){
-  # nicht longitudinale Daten
-  if ((! t1 == t2) && (!g1==g2)){
-    d$string1 = paste0("Compare the in group diff of ", t1," vs ", t2, "between groups", "\n",
-                       "unpaired t-test\n")
-    d$data1 = get_data_group_trial_freqmean(data,g1, t1, freq, tbl_beh = tbl_beh, method=method)-get_data_group_trial_freqmean(data,g1, t2, freq, tbl_beh = tbl_beh, method=method)
-    d$data2 = get_data_group_trial_freqmean(data,g2, t1, freq, tbl_beh = tbl_beh, method=method)-get_data_group_trial_freqmean(data,g2, t2, freq, tbl_beh = tbl_beh, method=method)
-    d$my_paired = FALSE
+    ###############################
+    # nicht longitudinale Daten
+    if ((! t1 == t2) && (!g1==g2)){
+      d$string1 = paste0("Compare the in group diff of ", t1," vs ", t2, "between groups", "\n",
+                         "unpaired t-test\n")
+      d$data1 = get_data_group_trial_freqmean(data,g1, t1, freq, tbl_beh = tbl_beh, method=method)-get_data_group_trial_freqmean(data,g1, t2, freq, tbl_beh = tbl_beh, method=method)
+      d$data2 = get_data_group_trial_freqmean(data,g2, t1, freq, tbl_beh = tbl_beh, method=method)-get_data_group_trial_freqmean(data,g2, t2, freq, tbl_beh = tbl_beh, method=method)
+      d$my_paired = FALSE
 
-  }else{
-    d$data1 = get_data_group_trial_freqmean(data,g1, t1, freq, tbl_beh = tbl_beh, method=method)
-    d$data2 = get_data_group_trial_freqmean(data,g2, t2, freq, tbl_beh = tbl_beh, method=method)
-    if (t1 == t2) {
-      d$string1 = paste0(g1," vs ", g2, " in trial ", trials[t1], "\n",
-                         "independent t-test\n")
-      # d$string1 = paste0(g1," vs ", g2, " in trial ", g_trials()[t1], "\n",
-      #                    "independent t-test\n")
-    }
-    if (g1 == g2){
-      d$string1 = paste0(t1," vs ", t2, "in group ", g1, "\n paired t-test\n")
-      d$my_paired = TRUE
-    }
-  }
-  #cat(file = stderr(), paste0("dim(d$data1) = ", dim(d$data1),"\n"))
-  #cat(file = stderr(), paste0("dim(d$data2) = ", dim(d$data2),"\n"))
-  #d$mat_p = matrix(data=NA, nrow=dim(d$data1)[2], ncol=dim(d$data1)[3])
-  #d$mat_t = matrix(data=NA, nrow=dim(d$data1)[2], ncol=dim(d$data1)[3])
-  d$mat_p = ones(dim(d$data1)[2], dim(d$data1)[3])
-  d$mat_t = zeros(dim(d$data1)[2], dim(d$data1)[3])
-
-  d$color1 = colorRampPalette(c("blue","red","green"))
-  cat(file = stderr(),paste0("get_currently_selected_data only filter the data duration =",Sys.time()-start_time,"\n"))
-
-
-  #cat(file = stderr(), "entering for loop ... now \n")
-  for (i in 1:(dim(d$data1)[2])-1){
-    start_idx = i+1
-    if (method =="Granger"){
-      start_idx = 1
-    }
-    for (j in start_idx:(dim(d$data1)[3])){
-      if (!(i==j)){
-        x <- na.omit(d$data1[,i,j])
-        y <- na.omit(d$data2[,i,j])
-        out<- tryCatch(
-          {
-            z = t.test(x,y, paired = d$my_paired)
-            d$mat_p[i,j] = z$p.value
-            d$mat_t[i,j] = z$statistic
-          },
-          error = function(cond){
-            #cat(file = stderr(), paste0("error ttest estimation of in i=",i," j=",j,"\n"))
-            #cat(file = stderr(), paste0("error message =",cond,"\n"))
-            d$mat_p[i,j] = 1
-            d$mat_t[i,j] = 0
-          },
-          warning= function(cond){
-            #cat(file = stderr(), paste0("warning ttest estimation of in i=",i," j=",j,"\n"))
-            #cat(file = stderr(), paste0("warning message =",cond,"\n"))
-            d$mat_p[i,j] = 1
-            d$mat_t[i,j] = 0
-          })
+    }else{
+      d$data1 = get_data_group_trial_freqmean(data,g1, t1, freq, tbl_beh = tbl_beh, method=method)
+      d$data2 = get_data_group_trial_freqmean(data,g2, t2, freq, tbl_beh = tbl_beh, method=method)
+      if (t1 == t2) {
+        d$string1 = paste0(g1," vs ", g2, " in trial ", trials[t1], "\n",
+                           "independent t-test\n")
+        # d$string1 = paste0(g1," vs ", g2, " in trial ", g_trials()[t1], "\n",
+        #                    "independent t-test\n")
+      }
+      if (g1 == g2){
+        d$string1 = paste0(t1," vs ", t2, "in group ", g1, "\n paired t-test\n")
+        d$my_paired = TRUE
       }
     }
-  }
 
-  if(!(method=="Granger")){
-    d$mat_p[lower.tri(d$mat_p)]<-d$mat_p[upper.tri(d$mat_p)]
-    d$mat_t[lower.tri(d$mat_t)]<-d$mat_t[upper.tri(d$mat_t)]
-
-  }
   }else{
+    #############################
     # longitudinale Daten
     cat(file = stderr(),"\nlongitudinal data analyse start \n")
     d1 <- get_selected_data_considering_group_trial(data, g1,g2,t1,t2, freq,  trials = trials, tbl_beh = tbl_beh, method = method)
@@ -250,9 +206,12 @@ get_currently_selected_data_long<-function(data, g1, g2, t1, t2, freq,
       )
       }
     }
+  }
+    #####################
+    # d$data1 und d$data2 sind erhoben
 
-    glob_d <<- d
-        #cat(file = stderr(), paste0("dim(d$data1) = ", dim(d$data1),"\n"))
+
+    #cat(file = stderr(), paste0("dim(d$data1) = ", dim(d$data1),"\n"))
     #cat(file = stderr(), paste0("dim(d$data2) = ", dim(d$data2),"\n"))
     #d$mat_p = matrix(data=NA, nrow=dim(d$data1)[2], ncol=dim(d$data1)[3])
     #d$mat_t = matrix(data=NA, nrow=dim(d$data1)[2], ncol=dim(d$data1)[3])
@@ -260,11 +219,10 @@ get_currently_selected_data_long<-function(data, g1, g2, t1, t2, freq,
     d$mat_t = zeros(dim(d$data1)[2], dim(d$data1)[3])
 
     d$color1 = colorRampPalette(c("blue","red","green"))
-    cat(file = stderr(),paste0("get_currently_selected_data only filter the data duration =",Sys.time()-start_time,"\n"))
+    cat(file = stderr(),paste0("get_currently_selected_data_long only filter the data duration =",Sys.time()-start_time,"\n"))
 
 
-
-    #cat(file = stderr(), "entering for loop ... now \n")
+    cat(file = stderr(), "entering for loop ... now \n")
     for (i in 1:(dim(d$data1)[2])-1){
       start_idx = i+1
       if (method =="Granger"){
@@ -297,11 +255,11 @@ get_currently_selected_data_long<-function(data, g1, g2, t1, t2, freq,
     }
 
     if(!(method=="Granger")){
-      d$mat_p[lower.tri(d$mat_p)]<-d$mat_p[upper.tri(d$mat_p)]
-      d$mat_t[lower.tri(d$mat_t)]<-d$mat_t[upper.tri(d$mat_t)]
+      lowerTriangle(d$mat_p) = upperTriangle(d$mat_p, byrow=TRUE)
+      lowerTriangle(d$mat_t) = upperTriangle(d$mat_t, byrow=TRUE)
 
     }
-  }
+
   colnames(d$mat_p) = regions
   rownames(d$mat_p) = regions
   colnames(d$mat_t) = regions
@@ -389,8 +347,8 @@ get_currently_selected_data<-function(data, g1, g2, t1, t2, freq, trials=g_trial
 
   }else{
     xdata <<- data
-    cat(file = stderr(), paste0("get_data_group_trial_freqmean(data,g1=",g1,",t1=",t1,"freq=",freq,",tbl_beh, method=",method,")\n"))
-    cat(file = stderr(), paste0("get_data_group_trial_freqmean(data,g2=",g2,",t2=",t2,"freq=",freq,",tbl_beh, method=",method,")\n"))
+    #cat(file = stderr(), paste0("get_data_group_trial_freqmean(data,g1=",g1,",t1=",t1,"freq=",freq,",tbl_beh, method=",method,")\n"))
+    #cat(file = stderr(), paste0("get_data_group_trial_freqmean(data,g2=",g2,",t2=",t2,"freq=",freq,",tbl_beh, method=",method,")\n"))
     d$data1 = get_data_group_trial_freqmean(data,g1, t1, freq, tbl_beh = tbl_beh, method=method)
     d$data2 = get_data_group_trial_freqmean(data,g2, t2, freq, tbl_beh = tbl_beh, method=method)
     if (t1 == t2) {
@@ -454,9 +412,10 @@ get_currently_selected_data<-function(data, g1, g2, t1, t2, freq, trials=g_trial
   }
 
   if(!(method=="Granger")){
-    d$mat_p[lower.tri(d$mat_p)]<-d$mat_p[upper.tri(d$mat_p)]
-    d$mat_t[lower.tri(d$mat_t)]<-d$mat_t[upper.tri(d$mat_t)]
-
+  #  d$mat_p[lower.tri(d$mat_p)]<-d$mat_p[upper.tri(d$mat_p)]
+  #  d$mat_t[lower.tri(d$mat_t)]<-d$mat_t[upper.tri(d$mat_t)]
+    lowerTriangle(d$mat_p) = upperTriangle(d$mat_p, byrow=TRUE)
+    lowerTriangle(d$mat_t) = upperTriangle(d$mat_t, byrow=TRUE)
   }
 
 
@@ -693,18 +652,18 @@ get_data_group_trial_freq <- function(data, group, trial, freq, tbl_beh = g_beh(
 # has tests
 get_data_group_trial_freqmean <- function(data, group, trial, freq, tbl_beh = g_beh(), method = g_act_method()){
   #cat(file = stderr(), paste0("start get_data_group_trial_freqmean with dim(data)=",dim(data),"\n"))
-  start_time2 = Sys.time()
+  #start_time2 = Sys.time()
   data_group_trial = get_data_group_trial(data, group, trial, tbl_beh = tbl_beh, method = method)
   #cat(file = stderr(), paste0("in get_data_group_trial_freqmean with dim(data_group_trial)=",dim(data_group_trial),"\n"))
-  cat(file = stderr(),paste0("get_data_group_trial duration =",Sys.time()-start_time2,"\n"))
-  start_time2 = Sys.time()
+  #cat(file = stderr(),paste0("get_data_group_trial duration =",Sys.time()-start_time2,"\n"))
+  #start_time2 = Sys.time()
   data_group_trial_freq = filter_by_selfreq(data_group_trial, freq, method = method)
   #cat(file = stderr(), paste0("in get_data_group_trial_freqmean with dim(data_group_trial_freq)=",dim(data_group_trial_freq),"\n"))
-  cat(file = stderr(),paste0("filter_by_selfreq duration =",Sys.time()-start_time2,"\n"))
-  start_time2 = Sys.time()
+  #cat(file = stderr(),paste0("filter_by_selfreq duration =",Sys.time()-start_time2,"\n"))
+  #start_time2 = Sys.time()
   data_group_trial_freqmean = get_freqmean(data_group_trial_freq, method = method)
  #cat(file = stderr(), paste0("in get_data_group_trial_freqmean with dim(data_group_trial_freqmean)=",dim(data_group_trial_freqmean),"\n"))
-  cat(file = stderr(),paste0("get_freqmean duration =",Sys.time()-start_time2,"\n"))
+  #cat(file = stderr(),paste0("get_freqmean duration =",Sys.time()-start_time2,"\n"))
 
   return(data_group_trial_freqmean)
 }

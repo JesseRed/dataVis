@@ -82,6 +82,8 @@ server <- function(input, output, session) {
   dir_listGra <- reactive({dir(path = g_datarootpath(), pattern = "^Granger", full.names = F, recursive = F)})
   dir_listERP <- reactive({dir(path = g_datarootpath(), pattern = "^ERP", full.names = F, recursive = F)})
   dir_listRS  <- reactive({dir(path = g_datarootpath(), pattern = "^RS", full.names = F, recursive = F)})
+  dir_listBeh <- reactive({list.files(path = file.path(g_datarootpath(), "Behavioral"), pattern = ".csv$", full.names = F, recursive = F)})
+
   # dir_listCoh <- reactiveVal(value = dir(path = "../data", pattern = "^Coherence", full.names = F, recursive = F))
   # dir_listTra <- reactiveVal(value = dir(path = "../data", pattern = "^Transferentropy", full.names = F, recursive = F))
   # dir_listFre <- reactiveVal(value = dir(path = "../data", pattern = "^Frequency", full.names = F, recursive = F))
@@ -110,6 +112,7 @@ server <- function(input, output, session) {
       updateSliderInput(session,"freq", value = c(0,5))
       return("RS")
     #} else if (input$mySidebarMenu == "OptionsTab")        { return("Options")
+    } else if (input$mySidebarMenu == "BehTab")            { return("Beh")
     } else {   return("Coherence")  }
   })
 
@@ -120,6 +123,7 @@ server <- function(input, output, session) {
     if (g_act_method()=="Granger"){         return(file.path(g_datarootpath(),input$dataDirGra))}
     if (g_act_method()=="ERP"){             return(file.path(g_datarootpath(),input$dataDirERP))}
     if (g_act_method()=="RS"){              return(file.path(g_datarootpath(),input$dataDirRS))}
+    if (g_act_method()=="Beh"){              return(file.path(g_datarootpath(),"Behavioral",input$dataDirBeh))}
     #if (g_act_method()=="Options"){         return(file.path(g_datarootpath(),input$dataDirCoh))}
 
     return("Coherence")
@@ -187,6 +191,8 @@ server <- function(input, output, session) {
     selectInput("dataDirERP", "ERP",choices = dir_listERP(),selected = dir_listERP()[2])})
   output$selectDirRS <- renderUI({
     selectInput("dataDirRS", "RS",choices = dir_listRS(),selected = dir_listRS()[1])})
+  output$selectDirBeh <- renderUI({
+    selectInput("dataDirBeh", "Beh",choices = dir_listBeh(),selected = dir_listBeh()[1])})
 
 
 
@@ -374,6 +380,32 @@ server <- function(input, output, session) {
       )
     )
   })
+
+  dfb <- reactive({
+    cat(file = stderr(), paste0("datafile", g_act_data_dir(),"\n"))
+    dfx = read.csv(file = g_act_data_dir(), header = TRUE, sep = input$sep, check.names = FALSE)
+    return(dfx)
+  })
+  ##################
+  #### Tabs Beh ####
+  ##################
+  output$tabsBeh <- renderUI({
+    cat(file = stderr(), "into output$tabsBeh \n")
+    updateSliderInput(session,"freq", value = c(0,5))
+    fluidRow(
+      tabBox(
+        title = NULL, width = 12,
+        # The id lets us use input$tabset1 on the server to find the current tab
+        id = "tabset1", height = "250px",
+
+        #tabPanel("Plot", RSPlotUI("BehPlot")),
+        tabPanel("Beh Plot",  behavioralPlotUI("BehPlot2"))
+        #tabPanel("Long Beh Plot",  longitudinalPlotUI("RS"))
+
+      )
+    )
+  })
+
   #RSPlotUI("ERPPlot")
   #RSPlotServer("RSPlot")
   compareTrialsPlotServer("RSPlot2")
@@ -405,6 +437,7 @@ server <- function(input, output, session) {
   preprocessingServer("preprocessing")
   mergedataServer("mergedata")
 
+  behavioralPlotServer("BehPlot2") #,reactive(read.csv(file = g_act_data_dir(), header = TRUE, sep = input$sep, check.names = FALSE)))
 
 
 }
