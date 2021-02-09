@@ -129,17 +129,31 @@ fluidRow(
 
         D <- readRDS(file = file.path(g_act_data_dir(),"D.Rda"))
         uregion_list_org <- D$uregion_list
+
         mdatc_org <- D$mdat
+        #cat(file = stderr(), paste0("D$mdat[1,3,4,1,1]=",D$mdat[1,3,4,1,1],"\n"))
+        #cat(file = stderr(), paste0("D$mdat[1,3,5,1,1]=",D$mdat[1,3,5,1,1],"\n"))
+        #cat(file = stderr(), paste0("D$mdat[1,3,6,1,1]=",D$mdat[1,3,6,1,1],"\n"))
+        #cat(file = stderr(), paste0("D$mdat[1,3,7,1,1]=",D$mdat[1,3,7,1,1],"\n"))
 
-        uregion_list <<- input$regions_order
-
-        cx <<- match(uregion_list, uregion_list_org)
+        uregion_list <- input$regions_order
+        #cat(file = stderr(), paste0("uregion_list_org = ", uregion_list_org,"\n"))
+        #cat(file = stderr(), paste0("uregion_list = ", uregion_list,"\n"))
+        mysaveuregion_list<- uregion_list
+        cx <- match(uregion_list, uregion_list_org)
         mdat = mdatc_org[,cx,cx,,]
         D$mdat = mdat
         D$uregion_list = uregion_list
         uregion_list_named = list()
         uregion_list_named[uregion_list] = 1:length(uregion_list)
         D$uregion_list_named = uregion_list_named
+        # cat(file = stderr(), paste0("D$uregion_list = ", D$uregion_list,"\n"))
+        # cat(file = stderr(), paste0("D$uregion_list_named = ", D$uregion_list_named,"\n"))
+        # cat(file = stderr(), paste0("D$mdat[1,3,4,1,1]=",D$mdat[1,3,4,1,1],"\n"))
+        # cat(file = stderr(), paste0("D$mdat[1,3,5,1,1]=",D$mdat[1,3,5,1,1],"\n"))
+        # cat(file = stderr(), paste0("D$mdat[1,3,6,1,1]=",D$mdat[1,3,6,1,1],"\n"))
+        # cat(file = stderr(), paste0("D$mdat[1,3,7,1,1]=",D$mdat[1,3,7,1,1],"\n"))
+
         saveRDS(D, file = file.path(g_act_data_dir(),"D.Rda"))
 #        saveRDS(mdat,         file = file.path("../data", g_act_data_dir(), "tbl_data.Rda"))
         g_reload_rVal(g_reload_rVal()+1)

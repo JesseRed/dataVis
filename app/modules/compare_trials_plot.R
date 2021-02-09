@@ -216,7 +216,8 @@ compareTrialsPlotServer <- function(id) {
       })
 
       curdata <- reactive({
-        get_currently_selected_data(g_data(), input$group1, input$group2, as.numeric(input$trial1), as.numeric(input$trial2), g_sel_freqs())
+        get_currently_selected_data_long(g_data(), input$group1, input$group2, as.numeric(input$trial1), as.numeric(input$trial2), g_sel_freqs())
+#        get_currently_selected_data(g_data(), input$group1, input$group2, as.numeric(input$trial1), as.numeric(input$trial2), g_sel_freqs())
       })
 
       plotwidth <- reactive({
@@ -265,26 +266,29 @@ compareTrialsPlotServer <- function(id) {
         req(input$method)
 #        dev.off()
         cur_dev <- dev.cur()
-        cat(file = stderr(), cur_dev)
-        cat(file=stderr(), "before curdata() in plot\n")
+        #cat(file = stderr(), cur_dev)
+        #cat(file=stderr(), "before curdata() in plot\n")
         d <- curdata()
         renderplotcurdata<<-curdata()
-        mat_t <<- d$mat_t
-        mat_p <<- d$mat_p
+        # mat_t <<- d$mat_t
+        # mat_p <<- d$mat_p
+        # cat(file = stderr(), "in renderPlot\n")
+        # cat(file = stderr(), "\nmat_p\n")
+        # cat(file = stderr(), mat_p)
+        # cat(file = stderr(), "\nmat_t\n")
+        # cat(file = stderr(), mat_t)
+
         ###################
         # CORRPLOT
         if (input$method=="Corrplot"){
           generate_plot_Corrplot(d$mat_p, d$mat_t)
-
         }
-
 
         if (input$method=="Corrplot_mixed"){
           #png("mypng.png")
           #x1 <<- plot(d$mat_t)
           mat_p_sig <- mat_p
           mat_p_sig[mat_p>g_sig()]<-g_sig()+0.0000000001
-
           #dev.off()
           rownames(mat_p) = vector(mode="character", length=length(g_regions()))
           x1 <<- corrplot(mat_p_sig, method="circle", tl.cex = 0.9, type = "upper", is.corr = FALSE,
@@ -298,7 +302,6 @@ compareTrialsPlotServer <- function(id) {
                           #non_corr.method = "pch",
                           #col=colorRampPalette(c("blue","red","green"))(200))
           colnames(mat_t) = vector(mode="character", length=length(g_regions()))
-
          # myplot_corr <<- corrplot(mat_t, add = TRUE, method="number", tl.cex = 0.9, type = "lower", is.corr = FALSE,
         #                           p.mat = mat_p, sig.level = g_sig())
 

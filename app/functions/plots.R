@@ -114,6 +114,8 @@ generate_histogram_plot_facet<-function(group1, group2, trial1, trial2, freq, le
 generate_plot_Circle<-function(mat_p, mat_t, data1, data2, regions = g_regions()){
   rownames(mat_t) = regions
   colnames(mat_t) = regions
+  #cat(file = stderr(), paste0("Circle regions = ", regions,"\n"))
+  #cat(file = stderr(), mat_t)
   x = data1[,1,2]
   y = data2[,2,3]
   z = t.test(x,y)
@@ -184,13 +186,16 @@ generate_plot_Corrplot<-function(mat_p, mat_t,
   multi_sig_level = c(.001, .01, g_sig())
   glob_mat_p <<- mat_p
   glob_mat_t <<- mat_t
+  #cat(file = stderr(), paste0("Corr regions = ", regions,"\n"))
+  #cat(file = stderr(), paste0("Corr colnames = ", colnames(mat_p),"\n"))
+  #cat(file = stderr(), mat_t)
 
   if (g_act_method()=="Coherence"){
 
   # Erstellt einen Histogram plot von mehreren Gruppen mit gleichen Achsenskalen
   #d = get_currently_selected_data(g_data(), group1, group2, trial1, trial2, freq())
     rownames(mat_p) = vector(mode="character", length=length(regions))
-  x1 <<- corrplot(mat_p, method=method, tl.cex = cex, type = "upper", is.corr = FALSE,
+    myplot_corr <<- corrplot(mat_p, method=method, tl.cex = cex, type = "upper", is.corr = FALSE,
                   p.mat = mat_p, sig.level = multi_sig_level, tl.srt = 45,
                   insig = insig, pch.cex = 0.4, pch.col = "white",
                   order = clustering_method,
@@ -198,7 +203,7 @@ generate_plot_Corrplot<-function(mat_p, mat_t,
                   col=colorRampPalette(c("blue","red","green"))(200))
   colnames(mat_t) = vector(mode="character", length=length(regions))
 
-  myplot_corr <<- corrplot(mat_t, add = TRUE, method=method, tl.cex = cex, type = "lower", is.corr = FALSE,
+  myplot_corr <- corrplot(mat_t, add = TRUE, method=method, tl.cex = cex, type = "lower", is.corr = FALSE,
                   p.mat = mat_p, sig.level = g_sig(), insig = insig, tl.srt = 45)
 
 
