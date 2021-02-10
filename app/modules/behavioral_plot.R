@@ -39,12 +39,16 @@ behavioralPlotServer <- function(id) {
         #cat(file = stderr(), paste0("the colnames are: ", colnames(dfx),"\n"))
         return(dfx)
       })
+
+      dfw <- reactive({
+        wide2long(df())
+      })
       # unique Colnames without the number after "__"
 
 
       ucolnames <- reactive({
-      # cat(file = stderr(), paste(colnames(dfb)))
-         unlist(unique(lapply(strsplit(colnames(dfb),'__'),`[[`,1)), use.names=FALSE)
+        # cat(file = stderr(), paste(colnames(dfb)))
+        unlist(unique(lapply(strsplit(colnames(df()),'__'),`[[`,1)), use.names=FALSE)
       })
 
       #f_utrial_list_all <- reactive({c("all", g_trials())})
@@ -80,7 +84,7 @@ behavioralPlotServer <- function(id) {
                      column(6,
                             selectInput(ns("column"), h5("Select Variable", align = "center"),
                                         choices = ucolnames(), selected = 1),
-#                                        choices = c("A","B"), selected = 1)#ucolnames(), selected = 1)
+                            #                                        choices = c("A","B"), selected = 1)#ucolnames(), selected = 1)
                      ),
                      # column(6,
                      #        selectInput(ns("trial2"), h5("Select Trial 2", align = "center"),
@@ -223,8 +227,9 @@ behavioralPlotServer <- function(id) {
       })
 
       output$data_time <-renderPlot({
-
-        plot(c(1,2,3), c(1,2,3))
+        ggplot(data = dfw(), aes(x = Measurement, y = Zeichen)) +
+          geom_point()
+#        plot(c(1,2,3), c(1,2,3))
       })
       output$text_data_time <- renderPrint({
         cat("statistic text about here")
@@ -248,62 +253,62 @@ behavioralPlotServer <- function(id) {
       ################################################################
       # THE histogram plots of individual subjects
       ###########################################
-#
-#       output$hist_compare_diffTrial_sameGroup1 <- renderPlot({
-#         req(input$plot_click$x)
-#         create_df_for_histplot(compare = "trials", group=1, trial = 1)
-#       })
-#
-#
-#       output$hist_compare_diffTrial_sameGroup2 <- renderPlot({
-#         req(input$plot_click$x)
-#         create_df_for_histplot(compare = "trials", group=2, trial = 1)
-#       })
-#
-#
-#       output$hist_compare_diffGroup_sameTrial1 <- renderPlot({
-#         req(input$plot_click$x)
-#         create_df_for_histplot(compare = "groups", group=1, trial = 1)
-#       })
-#
-#
-#       output$hist_compare_diffGroup_sameTrial2 <- renderPlot({
-#         req(input$plot_click$x)
-#         create_df_for_histplot(compare = "groups", group=1, trial = 2)
-#       })
+      #
+      #       output$hist_compare_diffTrial_sameGroup1 <- renderPlot({
+      #         req(input$plot_click$x)
+      #         create_df_for_histplot(compare = "trials", group=1, trial = 1)
+      #       })
+      #
+      #
+      #       output$hist_compare_diffTrial_sameGroup2 <- renderPlot({
+      #         req(input$plot_click$x)
+      #         create_df_for_histplot(compare = "trials", group=2, trial = 1)
+      #       })
+      #
+      #
+      #       output$hist_compare_diffGroup_sameTrial1 <- renderPlot({
+      #         req(input$plot_click$x)
+      #         create_df_for_histplot(compare = "groups", group=1, trial = 1)
+      #       })
+      #
+      #
+      #       output$hist_compare_diffGroup_sameTrial2 <- renderPlot({
+      #         req(input$plot_click$x)
+      #         create_df_for_histplot(compare = "groups", group=1, trial = 2)
+      #       })
 
 
 
-#
-#       ################################################################
-#       # THE text about t-statistics
-#       ###########################################
-#       output$text_stats_compare_diffGroup_sameTrial1 <- renderPrint({
-#         req(input$plot_click)
-#         z = ttest_estimation(compare = "groups", group = 1, trial = 1)
-#         cat(z$mydescription)
-#       })
-#
-#       output$text_stats_compare_diffGroup_sameTrial2 <- renderPrint({
-#         req(input$plot_click)
-#         z = ttest_estimation(compare = "groups", group = 1, trial = 2)
-#         cat(z$mydescription)
-#       })
-#
-#       output$text_stats_compare_diffTrial_sameGroup1 <- renderPrint({
-#         req(input$plot_click)
-#         z = ttest_estimation(compare = "trials", group = 1, trial = 1)
-#         cat(z$mydescription)
-#       })
-#
-#       output$text_stats_compare_diffTrial_sameGroup2 <- renderPrint({
-#         req(input$plot_click)
-#         z = ttest_estimation(compare = "trials", group = 2, trial = 1)
-#         cat(z$mydescription)
-#       })
-#       ####
-#       #################################################################
-#
+      #
+      #       ################################################################
+      #       # THE text about t-statistics
+      #       ###########################################
+      #       output$text_stats_compare_diffGroup_sameTrial1 <- renderPrint({
+      #         req(input$plot_click)
+      #         z = ttest_estimation(compare = "groups", group = 1, trial = 1)
+      #         cat(z$mydescription)
+      #       })
+      #
+      #       output$text_stats_compare_diffGroup_sameTrial2 <- renderPrint({
+      #         req(input$plot_click)
+      #         z = ttest_estimation(compare = "groups", group = 1, trial = 2)
+      #         cat(z$mydescription)
+      #       })
+      #
+      #       output$text_stats_compare_diffTrial_sameGroup1 <- renderPrint({
+      #         req(input$plot_click)
+      #         z = ttest_estimation(compare = "trials", group = 1, trial = 1)
+      #         cat(z$mydescription)
+      #       })
+      #
+      #       output$text_stats_compare_diffTrial_sameGroup2 <- renderPrint({
+      #         req(input$plot_click)
+      #         z = ttest_estimation(compare = "trials", group = 2, trial = 1)
+      #         cat(z$mydescription)
+      #       })
+      #       ####
+      #       #################################################################
+      #
 
 
 
@@ -763,7 +768,112 @@ append_correlation_row_trials <- function(x1 = NULL, b1 = NULL, x2 = NULL,
 
 
 
+wide2long<- function(df){
+  # get a list of all measurement timepoints (the numbers after the __ )
+  mytimemarkers = c()
+  x = strsplit(colnames(df),'__')
+  for (i in 1:length(x)) {
+    if (length(x[[i]])==2){
+      #cat(file = stderr(), paste0("i=",i,"\n"))
 
+      mytimemarkers=c(mytimemarkers,x[[i]][2])
+    }
+  }
+  umytimemarkers = unique(mytimemarkers)
+  ucolnames = unlist(unique(lapply(strsplit(colnames(df),'__'),`[[`,1)), use.names=FALSE)
+  ucolnames = c("Measurement",ucolnames)
+  #cat(file = stderr(), paste0('\n',ucolnames,'\n'))
+  df_new = data.frame(matrix(ncol=length(ucolnames), nrow=0))
+  names(df_new) <- ucolnames
+  #cat(file = stderr(), paste0("\n Mycolnames = \n",colnames(df_new),"\n"))
+
+  df_new_row_idx = 1
+  df_row_idx = 1
+  # gehe ueber jedes Feld
+  # bestimme den colname und entsprechend das neue Feld
+  var_colnames <- get_var_colnames(colnames(df))
+  non_var_colnames <- get_non_var_colnames(colnames(df))
+  #non_var_colnames <- c("Measurement", non_var_colnames)
+  max_measurement_num =0
+
+  for (col_num in 1:length(colnames(df))){ #ncol(df)){
+    new_colname = get_new_colname(colnames(df)[col_num])
+    num = get_measurement_number(colnames(df)[col_num])
+    if (num>max_measurement_num){ max_measurement_num<-num}
+
+    #cat(file = stderr(), "new_colname =",new_colname,", num=",num,"=\n")
+    for (i in 1:nrow(df)){
+      df_new[[i+((num-1)*nrow(df)), new_colname]] = df[[i,col_num]]
+
+      # df_new[[i+((num-1)*nrow(df)), "Measurement"]] = num
+      # for (k in 1:length(non_var_colnames)){
+      #   df_new[[i+((num-1)*nrow(df)), non_var_colnames[k]]] = df[[i,non_var_colnames[k]]]
+      # }
+
+
+    }
+  }
+  # fuelle noch die nicht variablen Spalten
+
+    for (i in 1:nrow(df)){
+      for (k in 1:length(mytimemarkers)){
+        df_new[[i+((k-1)*nrow(df)), "Measurement"]] = mytimemarkers[k]
+        for (col_num in 1:length(non_var_colnames)){
+          df_new[[i+((k-1)*nrow(df)), non_var_colnames[col_num]]] = df[[i,non_var_colnames[col_num]]]
+        }
+      }
+    }
+
+  return(df_new)
+}
+
+
+get_var_colnames<-function(mycolnames){
+  var_colnames <- c()
+  for (i in 1:length(mycolnames)){
+    x = strsplit(mycolnames[i],'__')
+    if (length(x[[1]])==2){
+      var_colnames <- c(var_colnames, mycolnames[i])
+    }
+  }
+  return(var_colnames)
+}
+
+
+get_non_var_colnames<-function(mycolnames){
+  non_var_colnames <- c()
+  for (i in 1:length(mycolnames)){
+    x = strsplit(mycolnames[i],'__')
+    if (length(x[[1]])==1){
+      non_var_colnames <- c(non_var_colnames, mycolnames[i])
+    }
+  }
+  return(non_var_colnames)
+}
+
+get_new_colname<-function(oldcolname){
+  x = strsplit(oldcolname,'__')
+  if (length(x[[1]])==2){
+    num = as.numeric(x[[1]][2])
+    new_colname = str_trim(x[[1]][1])
+  }else{
+    num = 1
+    new_colname = str_trim(x[[1]][1])
+  }
+  return(new_colname)
+}
+
+get_measurement_number<-function(oldcolname){
+  x = strsplit(oldcolname,'__')
+  if (length(x[[1]])==2){
+    num = as.numeric(x[[1]][2])
+    new_colname = str_trim(x[[1]][1])
+  }else{
+    num = 1
+    new_colname = str_trim(x[[1]][1])
+  }
+  return(num)
+}
 
 
 
