@@ -6,6 +6,7 @@ library(ggcorrplot)
 library(ggplot2)
 library(plotly)
 
+
 compareTrialsPlotUI <- function(id){
   ns <- NS(id)
   tagList(
