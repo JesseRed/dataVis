@@ -353,25 +353,6 @@ generate_plot_ggplot_corrplot_handmade<- function(mat_p, mat_t,
   rownames(mat_t)<-NULL
   colnames(mat_t)<-NULL
 
- # mat_p <- matrix(runif(196,0,0.1),nrow=14)
- #mat_t <- matrix(runif(196,0,10),nrow=14)
-
-  # names <- c("frontal_right_A1",
-  #            "frontal_right_B2",
-  #            "frontal_right_A3",
-  #            "frontal_right_A4",
-  #            "frontal_right_A5",
-  #            "frontal_right_A6",
-  #            "frontal_right_A7",
-  #            "frontal_right_A8",
-  #            "frontal_right_A9",
-  #            "frontal_right_A10",
-  #            "frontal_right_A11",
-  #            "frontal_right_A12",
-  #            "frontal_right_A13",
-  #            "frontal_right_A14"
-  # )
-
 
   A <- mat_p
   Alt_b = lower.tri(A, diag = FALSE)

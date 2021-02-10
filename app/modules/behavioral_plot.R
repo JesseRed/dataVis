@@ -1,5 +1,7 @@
 library(shiny)
-
+library(plotly)
+library(hrbrthemes)
+library(dplyr)
 
 behavioralPlotUI <- function(id){
   ns <- NS(id)
@@ -48,7 +50,8 @@ behavioralPlotServer <- function(id) {
 
       ucolnames <- reactive({
         # cat(file = stderr(), paste(colnames(dfb)))
-        unlist(unique(lapply(strsplit(colnames(df()),'__'),`[[`,1)), use.names=FALSE)
+        ucolnames <- unlist(unique(lapply(strsplit(colnames(df()),'__'),`[[`,1)), use.names=FALSE)
+        ucolnames <- c("Measurement_num","Measurement_str",ucolnames)
       })
 
       #f_utrial_list_all <- reactive({c("all", g_trials())})
@@ -82,14 +85,18 @@ behavioralPlotServer <- function(id) {
                    h4("trial comparison", align = "center"),
                    fluidRow(
                      column(6,
-                            selectInput(ns("column"), h5("Select Variable", align = "center"),
+                            selectInput(ns("column1"), h5("Select Variable", align = "center"),
                                         choices = ucolnames(), selected = 1),
                             #                                        choices = c("A","B"), selected = 1)#ucolnames(), selected = 1)
                      ),
+                     column(6,
+                            selectInput(ns("column2"), h5("Select Variable", align = "center"),
+                                          choices = ucolnames(), selected = ucolnames()[8]),
+                              #                                        choices = c("A","B"), selected = 1)#ucolnames(), selected = 1)
+                       )
                      # column(6,
                      #        selectInput(ns("trial2"), h5("Select Trial 2", align = "center"),
                      #                    choices = g_trials_named(), selected = g_trials_named()[2])
-                     # )
 
                    )
             ),
@@ -127,6 +134,22 @@ behavioralPlotServer <- function(id) {
                    ),
                    column(3, align = "left",
                           verbatimTextOutput(ns("text_data_time")),
+                   )),
+
+          fluidRow(align = "center", h4("the showing2"),
+                   column(9,
+                          plotlyOutput(ns("data_time2"), width = "auto", height = "600px"),
+                   ),
+                   column(3, align = "left",
+                          verbatimTextOutput(ns("text_data_time2")),
+                   )),
+
+          fluidRow(align = "center", h4("the showing3"),
+                   column(9,
+                          plotOutput(ns("data_time3"), width = "auto", height = "600px", click = ns("plot_click_hist")),
+                   ),
+                   column(3, align = "left",
+                          verbatimTextOutput(ns("text_data_time3")),
                    )),
 
           fluidRow(align = "center", h4("comparison of Trial1 vs. Trial 2 of selected group 1"),
@@ -227,8 +250,18 @@ behavioralPlotServer <- function(id) {
       })
 
       output$data_time <-renderPlot({
-        ggplot(data = dfw(), aes(x = Measurement, y = Zeichen)) +
-          geom_point()
+        cat(file = stderr(), paste0("input$column2=",input$column2,"\n"))
+        windowsFonts(Times=windowsFont("TT Times New Roman"))
+#        ggplot(data = dfw(), aes(x = input$column1, y = input$column2)) +
+         ggplot(data = dfw(), aes(x = Measurement_num, y = Zeichen)) +
+          geom_point(shape=21, color="black", fill="#69b3a2", size=6) +
+          ggtitle(paste0(input$column1," vs. ", input$column2))
+        #geom_line( color="grey") +
+          #geom_point(shape=21, color="black", fill="#69b3a2", size=6) +
+          #theme_ipsum() +
+          #ggtitle("Evolution of bitcoin price")
+
+        #cat(file = stderr(), "renderPlot\n")
 #        plot(c(1,2,3), c(1,2,3))
       })
       output$text_data_time <- renderPrint({
@@ -236,7 +269,20 @@ behavioralPlotServer <- function(id) {
       })
 
 
+      output$data_time2 <-renderPlotly({
+        cat(file = stderr(), "renderPlotly\n")
+        data(diamonds, package = "ggplot2")
+        p<-plot_ly(diamonds, x = ~cut, color = ~clarity, colors = "Accent")
+        p
+        #
 
+        # dfw() %>%
+        #   plot_ly(x = ~Measurement, y = ~Zeichen) %>%
+        #   layout(title = "My histos")
+        #p<-ggplot(data = dfw(), aes(x = Measurement, y = Zeichen)) +
+        #  geom_point()
+        #return(p)
+      })
 
 
 
@@ -781,7 +827,7 @@ wide2long<- function(df){
   }
   umytimemarkers = unique(mytimemarkers)
   ucolnames = unlist(unique(lapply(strsplit(colnames(df),'__'),`[[`,1)), use.names=FALSE)
-  ucolnames = c("Measurement",ucolnames)
+  ucolnames = c("Measurement_num","Measurement_str",ucolnames)
   #cat(file = stderr(), paste0('\n',ucolnames,'\n'))
   df_new = data.frame(matrix(ncol=length(ucolnames), nrow=0))
   names(df_new) <- ucolnames
@@ -799,25 +845,17 @@ wide2long<- function(df){
   for (col_num in 1:length(colnames(df))){ #ncol(df)){
     new_colname = get_new_colname(colnames(df)[col_num])
     num = get_measurement_number(colnames(df)[col_num])
-    if (num>max_measurement_num){ max_measurement_num<-num}
 
-    #cat(file = stderr(), "new_colname =",new_colname,", num=",num,"=\n")
     for (i in 1:nrow(df)){
       df_new[[i+((num-1)*nrow(df)), new_colname]] = df[[i,col_num]]
-
-      # df_new[[i+((num-1)*nrow(df)), "Measurement"]] = num
-      # for (k in 1:length(non_var_colnames)){
-      #   df_new[[i+((num-1)*nrow(df)), non_var_colnames[k]]] = df[[i,non_var_colnames[k]]]
-      # }
-
-
     }
   }
   # fuelle noch die nicht variablen Spalten
 
     for (i in 1:nrow(df)){
       for (k in 1:length(mytimemarkers)){
-        df_new[[i+((k-1)*nrow(df)), "Measurement"]] = mytimemarkers[k]
+        df_new[[i+((k-1)*nrow(df)), "Measurement_num"]] = strtoi(mytimemarkers[k])
+        df_new[[i+((k-1)*nrow(df)), "Measurement_str"]] = mytimemarkers[k]
         for (col_num in 1:length(non_var_colnames)){
           df_new[[i+((k-1)*nrow(df)), non_var_colnames[col_num]]] = df[[i,non_var_colnames[col_num]]]
         }
