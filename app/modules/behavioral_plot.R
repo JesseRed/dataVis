@@ -130,7 +130,14 @@ behavioralPlotServer <- function(id) {
 
           fluidRow(align = "center", h4("the showing"),
                    column(9,
-                          plotOutput(ns("data_time"), width = "auto", height = "600px", click = ns("plot_click_hist")),
+                          plotlyOutput(ns("data_time"), width = "auto", height = "600px"
+                                       ),
+                          # plotOutput(ns("data_time"), width = "auto", height = "600px",
+                          #            #click = ns("plot_click"),
+                          #            dblclick = dblclickOpts(id = ns("plot_dblclick")),
+                          #            hover = hoverOpts(id = ns("plot_hover")),
+                          #            brush = brushOpts(id = ns("plot_brush"))
+                          # ),
                    ),
                    column(3, align = "left",
                           verbatimTextOutput(ns("text_data_time")),
@@ -151,36 +158,36 @@ behavioralPlotServer <- function(id) {
                    column(3, align = "left",
                           verbatimTextOutput(ns("text_data_time3")),
                    )),
-
-          fluidRow(align = "center", h4("comparison of Trial1 vs. Trial 2 of selected group 1"),
-                   column(9,
-                          plotOutput(ns("hist_compare_diffTrial_sameGroup1"), width = "auto", height = "300px", click = ns("plot_click_hist")),
-                   ),
-                   column(3, align = "left",
-                          verbatimTextOutput(ns("text_stats_compare_diffTrial_sameGroup1")),
-                   )),
-
-          fluidRow(align = "center", h4("comparison of Trial1 vs. Trial 2 of selected group 2"),
-                   column(9,
-                          plotOutput(ns("hist_compare_diffTrial_sameGroup2"), width = "auto", height = "300px", click = ns("plot_click_hist")),
-                   ),
-                   column(3, align = "left",
-                          verbatimTextOutput(ns("text_stats_compare_diffTrial_sameGroup2")),
-                   )),
-          fluidRow(align = "center", h4("comparison of Group 1 vs. Group 2 of selected trial 1"),
-                   column(9,
-                          plotOutput(ns("hist_compare_diffGroup_sameTrial1"), width = "auto", height = "300px", click = ns("plot_click_hist")),
-                   ),
-                   column(3, align = "left",
-                          verbatimTextOutput(ns("text_stats_compare_diffGroup_sameTrial1")),
-                   )),
-          fluidRow(align = "center", h4("comparison of Group 1 vs. Group 2 of selected trial 2"),
-                   column(9,
-                          plotOutput(ns("hist_compare_diffGroup_sameTrial2"), width = "auto", height = "300px", click = ns("plot_click_hist")),
-                   ),
-                   column(3, align = "left",
-                          verbatimTextOutput(ns("text_stats_compare_diffGroup_sameTrial2")),
-                   )),
+#
+#           fluidRow(align = "center", h4("comparison of Trial1 vs. Trial 2 of selected group 1"),
+#                    column(9,
+#                           plotOutput(ns("hist_compare_diffTrial_sameGroup1"), width = "auto", height = "300px", click = ns("plot_click_hist")),
+#                    ),
+#                    column(3, align = "left",
+#                           verbatimTextOutput(ns("text_stats_compare_diffTrial_sameGroup1")),
+#                    )),
+#
+#           fluidRow(align = "center", h4("comparison of Trial1 vs. Trial 2 of selected group 2"),
+#                    column(9,
+#                           plotOutput(ns("hist_compare_diffTrial_sameGroup2"), width = "auto", height = "300px", click = ns("plot_click_hist")),
+#                    ),
+#                    column(3, align = "left",
+#                           verbatimTextOutput(ns("text_stats_compare_diffTrial_sameGroup2")),
+#                    )),
+#           fluidRow(align = "center", h4("comparison of Group 1 vs. Group 2 of selected trial 1"),
+#                    column(9,
+#                           plotOutput(ns("hist_compare_diffGroup_sameTrial1"), width = "auto", height = "300px", click = ns("plot_click_hist")),
+#                    ),
+#                    column(3, align = "left",
+#                           verbatimTextOutput(ns("text_stats_compare_diffGroup_sameTrial1")),
+#                    )),
+#           fluidRow(align = "center", h4("comparison of Group 1 vs. Group 2 of selected trial 2"),
+#                    column(9,
+#                           plotOutput(ns("hist_compare_diffGroup_sameTrial2"), width = "auto", height = "300px", click = ns("plot_click_hist")),
+#                    ),
+#                    column(3, align = "left",
+#                           verbatimTextOutput(ns("text_stats_compare_diffGroup_sameTrial2")),
+#                    )),
 
           # fluidRow(
           #   column(12,
@@ -249,14 +256,19 @@ behavioralPlotServer <- function(id) {
 
       })
 
-      output$data_time <-renderPlot({
+      output$data_time <-renderPlotly({
         cat(file = stderr(), paste0("input$column2=",input$column2,"\n"))
+        options(viewer=NULL)
         windowsFonts(Times=windowsFont("TT Times New Roman"))
+        bd2x <<- dfw()
 #        ggplot(data = dfw(), aes(x = input$column1, y = input$column2)) +
-         ggplot(data = dfw(), aes(x = Measurement_num, y = Zeichen)) +
-          geom_point(shape=21, color="black", fill="#69b3a2", size=6) +
-          ggtitle(paste0(input$column1," vs. ", input$column2))
-        #geom_line( color="grey") +
+         p<-ggplot(data = dfw(), aes(x = Measurement_num, y = Zeichen, group = ID, colour = ID, shape = ID)) +
+           geom_line()+
+           geom_point(size = 2)+ # shape = 21, color="black", fill="#69b3a2", size=6) +
+           ggtitle(paste0(input$column1," vs. ", input$column2))
+
+         ggplotly(p)
+         #geom_line( color="grey") +
           #geom_point(shape=21, color="black", fill="#69b3a2", size=6) +
           #theme_ipsum() +
           #ggtitle("Evolution of bitcoin price")
@@ -266,8 +278,18 @@ behavioralPlotServer <- function(id) {
       })
       output$text_data_time <- renderPrint({
         cat("statistic text about here")
+        cat("input$plot_click:\n")
+        str(input$plot_click)
+        cat("input$plot_hover:\n")
+        str(input$plot_hover)
+        cat("input$plot_dblclick:\n")
+        str(input$plot_dblclick)
+        cat("input$plot_brush:\n")
+        str(input$plot_brush)
       })
 
+      addPopover(session, id = "data_time", title = "Data", content = paste0("asdfsda"),
+                 placement = "bottom",trigger = "hover")
 
       output$data_time2 <-renderPlotly({
         cat(file = stderr(), "renderPlotly\n")
@@ -845,17 +867,17 @@ wide2long<- function(df){
   for (col_num in 1:length(colnames(df))){ #ncol(df)){
     new_colname = get_new_colname(colnames(df)[col_num])
     num = get_measurement_number(colnames(df)[col_num])
-
+    if (num>max_measurement_num){max_measurement_num = num}
     for (i in 1:nrow(df)){
       df_new[[i+((num-1)*nrow(df)), new_colname]] = df[[i,col_num]]
     }
   }
-  # fuelle noch die nicht variablen Spalten
-
+#fuelle noch die nicht variablen Spalten
+#cat(file= stderr(), paste0("length(umyteimmarkers)=", umytimemarkers,"\n"))
     for (i in 1:nrow(df)){
-      for (k in 1:length(mytimemarkers)){
-        df_new[[i+((k-1)*nrow(df)), "Measurement_num"]] = strtoi(mytimemarkers[k])
-        df_new[[i+((k-1)*nrow(df)), "Measurement_str"]] = mytimemarkers[k]
+      for (k in 1:length(umytimemarkers)){
+        df_new[[i+((k-1)*nrow(df)), "Measurement_num"]] = strtoi(umytimemarkers[k])
+        df_new[[i+((k-1)*nrow(df)), "Measurement_str"]] = umytimemarkers[k]
         for (col_num in 1:length(non_var_colnames)){
           df_new[[i+((k-1)*nrow(df)), non_var_colnames[col_num]]] = df[[i,non_var_colnames[col_num]]]
         }

@@ -407,9 +407,9 @@ compareTrialsPlotServer <- function(id) {
         req(input$trial1)
         req(input$trial2)
 
-        cat(file = stderr(), "observeEvent(g_save_Image_button(), with input$method =", input$method,"\n")
-        cat(file = stderr(), "dpi=",g_saveImage_dpi(),"\n")
-        cat(file=stderr(), "before curdata() in g_saveImage_button\n")
+        #cat(file = stderr(), "observeEvent(g_save_Image_button(), with input$method =", input$method,"\n")
+        #cat(file = stderr(), "dpi=",g_saveImage_dpi(),"\n")
+        #cat(file=stderr(), "before curdata() in g_saveImage_button\n")
 
         d <- curdata()
         #if (g_saveImage_button()>0){

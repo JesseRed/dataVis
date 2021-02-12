@@ -20,7 +20,7 @@ generate_histogram_plot_facet<-function(group1, group2, trial1, trial2, freq, le
   cat(file = stderr(), "into generate_histogram_plot_facet\n")
   if (is.null(data)){
     cat(file = stderr(), "create new data\n")
-    d <- get_currently_selected_data(g_data(), group1, group2, as.numeric(trial1), as.numeric(trial2), freq)
+    d <- get_currently_selected_data_long(g_data(), group1, group2, as.numeric(trial1), as.numeric(trial2), freq)
   }else{
     cat(file = stderr(), "get the old data\n")
     d<-data
@@ -276,7 +276,8 @@ generate_plot_Pheatmap<-function(mat_p,
                                  mat_t,
                                  myfontsize = g_saveImage_fontsize(),
                                  inline_numbers = g_visprop_inlinenumbers(),
-                                 regions = g_regions()){
+                                 regions = g_regions(),
+                                 sig_level = g_sig()){
   cat(file=stderr(),paste0("show inline numbers = ",inline_numbers,"\n"))
   colnames(mat_p) = regions
   rownames(mat_p) = regions
@@ -285,19 +286,25 @@ generate_plot_Pheatmap<-function(mat_p,
   # fraction of the palette interpolates between colors[1] and colors[2], the remainder
   # between colors[3] and colors[4]. 'num.colors.in.palette' must be sufficiently large
   # to get smooth color gradients.
-  makeColorRampPalette <- function(colors, cutoff.fraction, num.colors.in.palette)
+  makeColorRampPalette <- function(colors, cutoff.fraction, num.colors.in.palette=100, pmin=0.0, pmax=1.0)
   {
+    num.colors.in.palette = as.integer((pmax-pmin)*100)
+    cutoff.fraction_low = cutoff.fraction-pmin
+    cutoff.fraction_high = pmax-cutoff.fraction_low
+
     stopifnot(length(colors) == 4)
-    ramp1 <- colorRampPalette(colors[1:2])(num.colors.in.palette * cutoff.fraction)
-    ramp2 <- colorRampPalette(colors[3:4])(num.colors.in.palette * (1 - cutoff.fraction))
+    ramp1 <- colorRampPalette(colors[1:2])(num.colors.in.palette * cutoff.fraction_low)
+    ramp2 <- colorRampPalette(colors[3:4])(num.colors.in.palette * cutoff.fraction_high)
     return(c(ramp1, ramp2))
   }
 
-  cutoff.distance <- 0.05
+  cutoff.distance <- sig_level # -0.01 # die 0.01 weil sonst 0.06 auch eingefaerbt wird ... vollstaendig verstehe ich das aber nicht
   cols <- makeColorRampPalette(c("red", "orange",    # distances 0 to 3 colored from white to red
                                  "gray", "black"), # distances 3 to max(distmat) colored from green to black
                                cutoff.distance / 1, #max(mat_p), #max(distmat),
-                               100)
+                               pmin= min(mat_p),
+                               pmax = max(mat_p)
+                               )
 
   myplot<-pheatmap(
     mat                   = mat_p,
