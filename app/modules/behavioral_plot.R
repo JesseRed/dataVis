@@ -65,35 +65,60 @@ behavioralPlotServer <- function(id) {
                    style = "background-color: #fcfcfc;",
                    #style = 'border-bottom: 2px solid gray',
                    style = "border-right: 2px solid black",
-                   h4("Method", align = "center"),
+                   h4("Configure Groups", align = "center"),
                    fluidRow(
-                     column(6,
-                            selectInput(ns("group1"), h5("Select Group1", align = "center"),
-                                        choices = c("data across time", "one vs. one"), selected = 1)
+                     column(2,
+                            selectInput(ns("num_groups"), h5("num groups", align = "center"),
+                                        choices = c(1,2)), selected = 1),
+                     column(5,
+                            textInput(ns("filterg1"), h5("filter group 1", align = "center"), value = "Start0Middel1Abschluss2==0"),
                      ),
-                     # column(6,
+                     column(5,
+                            textInput(ns("filterg2"), h5("filter group 2", align = "center"), value = "Start0Middel1Abschluss2==2"),
+                     ),
+                   ),
+
+
+            # column(6,
                      #        selectInput(ns("group2"), h5("Select Group 2", align = "center"),
                      #                    choices = g_groups(), selected = g_groups()[3])
                      # )
 
-                   )
+
 
             ),
-            column(5,
+            column(3,
                    style = "background-color: #fcfcfc;",
                    style = 'border-right: 2px solid gray',
-                   h4("trial comparison", align = "center"),
+                   h4("Variables to show", align = "center"),
                    fluidRow(
                      column(6,
-                            selectInput(ns("column1"), h5("Select Variable", align = "center"),
+                            selectInput(ns("x"), h5("Select Variable as X", align = "center"),
                                         choices = ucolnames(), selected = 1),
+
+
                             #                                        choices = c("A","B"), selected = 1)#ucolnames(), selected = 1)
                      ),
                      column(6,
-                            selectInput(ns("column2"), h5("Select Variable", align = "center"),
-                                          choices = ucolnames(), selected = ucolnames()[8]),
-                              #                                        choices = c("A","B"), selected = 1)#ucolnames(), selected = 1)
-                       )
+                            selectInput(ns("y"), h5("Select Variable as Y", align = "center"),
+                                        choices = ucolnames(), selected = ucolnames()[13]),
+                            #                                        choices = c("A","B"), selected = 1)#ucolnames(), selected = 1)
+                     ),
+                   )
+            ),
+            column(2,
+                   style = "background-color: #fcfcfc;",
+                   style = 'border-right: 2px solid gray',
+                   h4("Define Exlusion Criteria", align = "center"),
+                   fluidRow(
+                     column(6,
+                            selectInput(ns("columnExclude"), h5("Select Variable", align = "center"),
+                                        choices = ucolnames(), selected = ucolnames()[4]),
+                     ),
+                     column(6,
+                            selectInput(ns("columnExcludeIF"), h5("Exclude by val=", align = "center"),
+                                        choices = c(-999, 0,1), selected = -999),
+                     )
                      # column(6,
                      #        selectInput(ns("trial2"), h5("Select Trial 2", align = "center"),
                      #                    choices = g_trials_named(), selected = g_trials_named()[2])
@@ -128,7 +153,7 @@ behavioralPlotServer <- function(id) {
             # )
           ),
 
-          fluidRow(align = "center", h4("the showing"),
+          fluidRow(
                    column(9,
                           plotlyOutput(ns("data_time"), width = "auto", height = "600px"
                                        ),
@@ -140,17 +165,39 @@ behavioralPlotServer <- function(id) {
                           # ),
                    ),
                    column(3, align = "left",
-                          verbatimTextOutput(ns("text_data_time")),
+                          fluidRow(
+                            column(12,
+                                   checkboxInput(ns("geom_smooth"), label = "show geom_smooth", value = FALSE),
+                            )
+                          ),
+                          fluidRow(
+                            column(12,
+                                   checkboxInput(ns("show_individual_subjects"), label = "show individual subjects", value = FALSE),
+                            )
+                          ),
+                          fluidRow(
+                            column(12,
+                                   verbatimTextOutput(ns("text_data_time")),
+                            )
+                          ),
+
+
                    )),
 
-          fluidRow(align = "center", h4("the showing2"),
-                   column(9,
-                          plotlyOutput(ns("data_time2"), width = "auto", height = "600px"),
+          fluidRow(align = "center", h2("Statistical Analysis"),
+                   column(3, align = "left", h4("linear trends"),
+                          verbatimTextOutput(ns("text_analyse_linear")),
                    ),
-                   column(3, align = "left",
-                          verbatimTextOutput(ns("text_data_time2")),
-                   )),
-
+                   column(3, align = "left", h4("outlier"),
+                          verbatimTextOutput(ns("text_analyse_outlier")),
+                   ),
+                   column(3, align = "left", h4("time split"),
+                         verbatimTextOutput(ns("text_analyse_time_split")),
+                   ),
+                   column(3, align = "left", h4("general information"),
+                       verbatimTextOutput(ns("text_analyse_general")),
+                   ),
+          ),
           fluidRow(align = "center", h4("the showing3"),
                    column(9,
                           plotOutput(ns("data_time3"), width = "auto", height = "600px", click = ns("plot_click_hist")),
@@ -251,23 +298,141 @@ behavioralPlotServer <- function(id) {
         )
       })
 
+      selColExclude <- reactive({
+        req(input$columnExclude)
+      })
+      selColExcludeIF <- reactive({
+        req(input$columnExcludeIF)
+      })
+      # data frame wide format and filterd
+      dfwf <- reactive({
+        tmp <- dfw() %>% filter(!!as.name(input$columnExclude) != input$columnExcludeIF)
+        if (input$num_groups==1){
+          df_ret<- tmp %>% filter(eval(rlang::parse_expr(input$filterg1)))
+          df_ret$G <- 1
+        }else if (input$num_groups==2){
+          df_g1<- tmp %>% filter(eval(rlang::parse_expr(input$filterg1)))
+          df_g1$G <- 1
+          df_g2<- tmp %>% filter(eval(rlang::parse_expr(input$filterg2)))
+          df_g2$G <- 2
+          df_ret <- rbind(df_g1, df_g2)
+        }
+
+        return(df_ret)
+      })
+
+      dfwfg1 <- reactive({
+        dfwf() %>% filter(eval(rlang::parse_expr(input$filterg1)))
+      })
+      dfwfg2 <- reactive({
+        dfwf() %>% filter(eval(rlang::parse_expr(input$filterg2)))
+      })
+
+
       selColData <- reactive({
         req(input$column)
 
       })
+      selColData1 <- reactive({
+        req(input$x)
+
+      })
+      selColData2 <- reactive({
+        req(input$y)
+
+      })
 
       output$data_time <-renderPlotly({
-        cat(file = stderr(), paste0("input$column2=",input$column2,"\n"))
+        #req(input$x)
+        #req(input$y)
+        #req(input$selColExcludeIF)
+        if (input$num_groups==1){
         options(viewer=NULL)
         windowsFonts(Times=windowsFont("TT Times New Roman"))
-        bd2x <<- dfw()
-#        ggplot(data = dfw(), aes(x = input$column1, y = input$column2)) +
-         p<-ggplot(data = dfw(), aes(x = Measurement_num, y = Zeichen, group = ID, colour = ID, shape = ID)) +
-           geom_line()+
-           geom_point(size = 2)+ # shape = 21, color="black", fill="#69b3a2", size=6) +
-           ggtitle(paste0(input$column1," vs. ", input$column2))
 
-         ggplotly(p)
+        cat(file = stderr(), paste0("renderPlotly with length(dfwf())=",nrow(dfwf()),"\n"))
+        #       ggplot(data = dfw(), aes(x = input$x, y = input$y)) +
+        p<-ggplot(data = dfwf(), aes_string(x = selColData1(), y = selColData2()))+ #, group = "ID", colour = "ID", shape = "ID")) +
+          geom_line()+
+          geom_point(size = 2)+ # shape = 21, color="black", fill="#69b3a2", size=6) +
+          ggtitle(paste0(input$x," vs. ", input$y))
+        w<-ggplotly(p)
+
+        if (input$geom_smooth){
+
+          w<-ggplotly(p + geom_smooth(se = FALSE) +
+                        geom_smooth(method=lm , color="red", se=FALSE)
+                      )
+        }
+
+
+        if (input$show_individual_subjects){
+          p<-ggplot(data = dfwf(), aes_string(x = selColData1(), y = selColData2(), group = "ID", colour = "ID", shape = "ID")) +
+            geom_line()+
+            geom_point(size = 2)+ # shape = 21, color="black", fill="#69b3a2", size=6) +
+            ggtitle(paste0(input$x," vs. ", input$y))
+          w<-ggplotly(p)
+
+        }
+
+        }else if(input$num_groups==2){
+          p<-ggplot(data = dfwf(), aes_string(x = input$x, y = input$y, color = "G"))+ #, group = "ID", colour = "ID", shape = "ID")) +
+#            geom_line()+
+            geom_point(size = 2)+ # shape = 21, color="black", fill="#69b3a2", size=6) +
+            ggtitle(paste0(input$x," vs. ", input$y))
+          w<-ggplotly(p)
+
+          if (input$geom_smooth){
+
+            w<-ggplotly(p + geom_smooth(se = FALSE) +
+                          geom_smooth(method=lm , color="red", se=FALSE)
+            )
+          }
+          # ggplot(data = iris, aes(x = Sepal.Length,  y = Petal.Length, color = Species)) +
+          #   geom_point() +
+          #   geom_smooth(method = "nls", formula = y ~ a * x + b, se = F,
+          #               method.args = list(start = list(a = 0.1, b = 0.1)))
+
+        }
+
+
+        return(w)
+#        w<-ggplotly(p + geom_smooth(group = "ID", se = FALSE))
+
+
+         # bd2x %>%
+         #   plot_ly() %>%
+         #   add_lines(x = ~Measurement_num, y=~Zeichen) %>%
+         #   group_by(ID)
+         #
+         #
+
+         # fig <- plot_ly(
+         #   type = 'scatter',
+         #   x = bd2x$Measurement_num,
+         #   y = bd2x$Zeichen,
+         #   text = paste("Make: ", rownames(bd2x),
+         #                "<br>hp: ", bd2x$Measurement_num,
+         #                "<br>qsec: ", bd2x$Zeichen,
+         #                "<br>Cyl: ", bd2x$ID),
+         #   hoverinfo = 'text',
+         #   mode = 'markers',
+         #   transforms = list(
+         #     list(
+         #       type = 'groupby',
+         #       groups = bd2x$ID
+         #       # ,
+         #       # styles = list(
+         #       #   list(target = 4, value = list(marker =list(color = 'blue'))),
+         #       #   list(target = 6, value = list(marker =list(color = 'red'))),
+         #       #   list(target = 8, value = list(marker =list(color = 'black')))
+         #       # )
+         #     )
+         #   )
+         # )
+         #
+         # fig
+
          #geom_line( color="grey") +
           #geom_point(shape=21, color="black", fill="#69b3a2", size=6) +
           #theme_ipsum() +
@@ -286,16 +451,87 @@ behavioralPlotServer <- function(id) {
         str(input$plot_dblclick)
         cat("input$plot_brush:\n")
         str(input$plot_brush)
+
       })
 
-      addPopover(session, id = "data_time", title = "Data", content = paste0("asdfsda"),
-                 placement = "bottom",trigger = "hover")
+      output$text_analyse_linear <- renderPrint({
+        cat("linear trend")
+        if (input$num_groups==1){
+          newModel <- lm(as.formula(paste(input$x," ~ ",paste(input$y,collapse="+"))),data = dfwf(), na.action = na.exclude)
+          #newModel <- lm(!!input$x ~ !!input$y, data = dfwf(), na.action = na.exclude)
+          print(summary(newModel))
+        }
 
-      output$data_time2 <-renderPlotly({
-        cat(file = stderr(), "renderPlotly\n")
-        data(diamonds, package = "ggplot2")
-        p<-plot_ly(diamonds, x = ~cut, color = ~clarity, colors = "Accent")
-        p
+        if (input$num_groups==2){
+          newModel1 <- lm(as.formula(paste(input$x," ~ ",paste(input$y,collapse="+"))),data = dfwf(), na.action = na.exclude)
+          newModel2 <- lm(as.formula(paste(input$x," ~ ",paste(input$y,collapse="+"))),data = dfwf(), na.action = na.exclude)
+          #newModel <- lm(!!input$x ~ !!input$y, data = dfwf(), na.action = na.exclude)
+          print(summary(newModel1))
+          print(summary(newModel2))
+          #https://stats.stackexchange.com/questions/33013/what-test-can-i-use-to-compare-slopes-from-two-or-more-regression-models
+        }
+
+      })
+
+      output$text_analyse_outlier <- renderPrint({
+        cat("text_analyse_outlier")
+      })
+
+      output$text_analyse_time_split <- renderPrint({
+        if (input$num_groups==1){
+          cat("Correlations")
+          ct <- cor.test(dfwf() %>% filter(G==1) %>% subset(select=input$y), dfwf() %>% filter(G==1) %>% subset(select=input$x))
+          print(ct)
+        }
+        if (input$num_groups==2){
+          cat("comparing correlation coefficients")
+          n1 <- nrow(subset(dfwf, G==1))
+          n2 <- nrow(subset(dfwf, G==2))
+          ct1 <- cor.test(dfwf() %>% filter(G==1) %>% subset(select=input$y), dfwf() %>% filter(G==1) %>% subset(select=input$x))
+          ct2 <- cor.test(dfwf() %>% filter(G==2) %>% subset(select=input$y), dfwf() %>% filter(G==2) %>% subset(select=input$x))
+          r1 <- ct1$estimate
+          r2 <- ct2$estimate
+          myval <- comparing_independent_rs(r1, r2, n1, n2)
+          myval <- comparing_independent_rs(r1, r2, n1, n2)
+          cat(paste0("z-value of cor-Difference = ", myval[1],"\n"))
+          cat(paste0("p-value of cor-Difference = ", myval[2],"\n"))
+          cat("nutzung eines indpendent vergleichs fuer die Correlationskooeffizienten\n")
+          cat("bezieht nicht ein, dass es sich um longitudinale Untersuchungen der gleichen subjects handels")
+          cat("test hier ist zu konservativ")
+#
+#         comparing_dependent_rs <-function(rxy, rxz, rzy, n)
+#         {
+#           df<-n-3
+#           td<-(rxy-rzy)*sqrt((df*(1 + rxz))/(2*(1-rxy^2-rxz^2-rzy^2+(2*rxy*rxz*rzy))))
+#           p <-pt(td, df)
+#           return(c(td,p))
+#         }
+         }
+      })
+
+      output$text_analyse_general <- renderPrint({
+        #cat("text_analyse_general")
+        #cat(input$filterg1)
+        #cat(input$filterg2)
+        yg1 <- dfwf() %>% filter(G == 1) %>% subset(select=input$y)
+        yg2 <- dfwf() %>% filter(G == 2) %>% subset(select=input$y)
+        if (nrow(yg2>0)){
+          cat("comparing means\n")
+          z = t.test(yg1,yg2, paired = F)
+          out <- create_my_ttest_string(z, paired = F, mean1 = mean(yg1), mean2 = mean(yg2))
+          cat(out)
+        }
+      })
+
+#
+#       addPopover(session, id = "data_time", title = "Data", content = paste0("asdfsda"),
+#                  placement = "bottom",trigger = "hover")
+#
+#       output$data_time2 <-renderPlotly({
+#         cat(file = stderr(), "renderPlotly\n")
+#         data(diamonds, package = "ggplot2")
+#         p<-plot_ly(diamonds, x = ~cut, color = ~clarity, colors = "Accent")
+#         p
         #
 
         # dfw() %>%
@@ -304,7 +540,7 @@ behavioralPlotServer <- function(id) {
         #p<-ggplot(data = dfw(), aes(x = Measurement, y = Zeichen)) +
         #  geom_point()
         #return(p)
-      })
+      #})
 
 
 
