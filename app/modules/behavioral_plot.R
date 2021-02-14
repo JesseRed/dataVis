@@ -154,7 +154,7 @@ behavioralPlotServer <- function(id) {
           ),
 
           fluidRow(
-                   column(9,
+                   column(10,
                           plotlyOutput(ns("data_time"), width = "auto", height = "600px"
                                        ),
                           # plotOutput(ns("data_time"), width = "auto", height = "600px",
@@ -164,26 +164,22 @@ behavioralPlotServer <- function(id) {
                           #            brush = brushOpts(id = ns("plot_brush"))
                           # ),
                    ),
-                   column(3, align = "left",
-                          fluidRow(
-                            column(12,
-                                   checkboxInput(ns("geom_smooth"), label = "show geom_smooth", value = FALSE),
-                            )
-                          ),
-                          fluidRow(
-                            column(12,
-                                   checkboxInput(ns("show_individual_subjects"), label = "show individual subjects", value = FALSE),
-                            )
-                          ),
-                          fluidRow(
-                            column(12,
-                                   verbatimTextOutput(ns("text_data_time")),
-                            )
-                          ),
-
-
-                   )),
-
+                   column(2, style = "background-color: #fcfcfc;",
+                          h4("Plot Type", align = "left"),
+                          radioButtons(ns("plot_type"),label = "",
+                                       choices = c("Histogram" = "histogram",
+                                                   "Bar" = "bar",
+                                                   "show individual Subjects" = "individual_subjects",
+                                                   "show Line Chart" = "line_chart",
+                                                   "Group Mean Histogram" = "histogram_mean",
+                                                   "Group Mean Bars" = "bar_mean"
+                                                   )
+                                       ),
+                          radioButtons(ns("plot_adding"),label = "add...",
+                                       choices = c("add Trend"= "geom_smooth")
+                          )
+                   )
+                  ),
           fluidRow(align = "center", h2("Statistical Analysis"),
                    column(3, align = "left", h4("linear trends"),
                           verbatimTextOutput(ns("text_analyse_linear")),
@@ -346,57 +342,123 @@ behavioralPlotServer <- function(id) {
         #req(input$x)
         #req(input$y)
         #req(input$selColExcludeIF)
-        if (input$num_groups==1){
-        options(viewer=NULL)
-        windowsFonts(Times=windowsFont("TT Times New Roman"))
+
+        #options(viewer=NULL)
+        #windowsFonts(Times=windowsFont("TT Times New Roman"))
 
         cat(file = stderr(), paste0("renderPlotly with length(dfwf())=",nrow(dfwf()),"\n"))
-        #       ggplot(data = dfw(), aes(x = input$x, y = input$y)) +
-        p<-ggplot(data = dfwf(), aes_string(x = selColData1(), y = selColData2()))+ #, group = "ID", colour = "ID", shape = "ID")) +
-          geom_line()+
-          geom_point(size = 2)+ # shape = 21, color="black", fill="#69b3a2", size=6) +
-          ggtitle(paste0(input$x," vs. ", input$y))
+        cat(file = stderr(), paste0("renterPlotly with colname2 = ",selColData2(), "\n"))
+        p <- create_ggplot(data = dfwf(),
+                           colname1 = selColData1(),
+                           colname2 = selColData2(),
+                           num_groups = input$num_groups,
+                           plot_type = input$plot_type,
+                           plot_adding = input$plot_adding)
+
         w<-ggplotly(p)
 
-        if (input$geom_smooth){
+        })
 
-          w<-ggplotly(p + geom_smooth(se = FALSE) +
-                        geom_smooth(method=lm , color="red", se=FALSE)
-                      )
-        }
+      create_ggplot<-function(data = dfwf(),
+                              colname1 = selColData1(),
+                              colname2 = selColData2(),
+                              num_groups = input$num_groups,
+                              plot_type = "histogram",
+                              plot_adding = "nothing"){
 
+        p = NULL
+        dist <- switch(plot_type,
+                       histogram ={
+                         cat(file = stderr(),"histogram\n")
+                         p<- create_ggplot_histogram(data = data, colname1 = colname1, colname2 = colname2, num_groups = num_groups)
 
-        if (input$show_individual_subjects){
-          p<-ggplot(data = dfwf(), aes_string(x = selColData1(), y = selColData2(), group = "ID", colour = "ID", shape = "ID")) +
-            geom_line()+
-            geom_point(size = 2)+ # shape = 21, color="black", fill="#69b3a2", size=6) +
-            ggtitle(paste0(input$x," vs. ", input$y))
-          w<-ggplotly(p)
+                       },
+                       individual_subjects={
+                         cat(file = stderr(),"individual subjects\n")
+                         p <- create_ggplot_individual_subjects(data = data, colname1 = colname1, colname2 = colname2, num_groups = num_groups)
 
-        }
-
-        }else if(input$num_groups==2){
-          p<-ggplot(data = dfwf(), aes_string(x = input$x, y = input$y, color = "G"))+ #, group = "ID", colour = "ID", shape = "ID")) +
-#            geom_line()+
-            geom_point(size = 2)+ # shape = 21, color="black", fill="#69b3a2", size=6) +
-            ggtitle(paste0(input$x," vs. ", input$y))
-          w<-ggplotly(p)
-
-          if (input$geom_smooth){
-
-            w<-ggplotly(p + geom_smooth(se = FALSE) +
-                          geom_smooth(method=lm , color="red", se=FALSE)
-            )
-          }
-          # ggplot(data = iris, aes(x = Sepal.Length,  y = Petal.Length, color = Species)) +
-          #   geom_point() +
-          #   geom_smooth(method = "nls", formula = y ~ a * x + b, se = F,
-          #               method.args = list(start = list(a = 0.1, b = 0.1)))
-
-        }
+                       },
+                       line_chart={
+                         cat(file = stderr(),"line chart\n")
+                         p <- create_ggplot_individual_line_chart(data = data, colname1 = colname1, colname2 = colname2, num_groups = num_groups)
 
 
-        return(w)
+                       },
+                       histogram_mean={
+                         cat(file = stderr(),"histogram mean\n")
+                         p<- create_ggplot_histogram_mean(data = data, colname1 = colname1, colname2 = colname2, num_groups = num_groups)
+
+                       }
+        )
+        switch(plot_adding,
+               geom_smooth ={p<-add_ggplot_geomsmooth(p)}
+               )
+        return(p)
+        # num_groups = input$num_groups,
+        # geom_smooth = input$geom_smooth,
+        # shOw_histogram = input$show_histogram,
+        # show_individual_subjects = input$show_individual_subjects,
+        # show_line_chart = input$show_line_chart,
+        # shOw_histogram_mean = input$show_histogram_mean)
+        #
+
+#       if(input$num_groups==1){
+#
+#         #       ggplot(data = dfw(), aes(x = input$x, y = input$y)) +
+#         p<-ggplot(data = dfwf(), aes_string(x = selColData1(), y = selColData2()))+ #, group = "ID", colour = "ID", shape = "ID")) +
+#           geom_line()+
+#           geom_point(size = 2)+ # shape = 21, color="black", fill="#69b3a2", size=6) +
+#           ggtitle(paste0(input$x," vs. ", input$y))
+#         w<-ggplotly(p)
+#
+#         if (input$geom_smooth){
+#
+#           w<-ggplotly(p + geom_smooth(se = FALSE) +
+#                         geom_smooth(method=lm , color="red", se=FALSE)
+#                       )
+#         }
+#
+#
+#         if (input$show_individual_subjects){
+#           p<-ggplot(data = dfwf(), aes_string(x = selColData1(), y = selColData2(), group = "ID", colour = "ID", shape = "ID")) +
+#             geom_line()+
+#             geom_point(size = 2)+ # shape = 21, color="black", fill="#69b3a2", size=6) +
+#             ggtitle(paste0(input$x," vs. ", input$y))
+#           w<-ggplotly(p)
+#
+#         }
+#
+#         }else if(input$num_groups==2){
+#           p<-ggplot(data = dfwf(), aes_string(x = input$x, y = input$y, color = "G"))+ #, group = "ID", colour = "ID", shape = "ID")) +
+# #            geom_line()+
+#             geom_point(size = 2)+ # shape = 21, color="black", fill="#69b3a2", size=6) +
+#             ggtitle(paste0(input$x," vs. ", input$y))
+#           w<-ggplotly(p)
+#
+#           if (input$geom_smooth){
+#
+#             p<-p + geom_smooth(se = FALSE) +
+#                           geom_smooth(method=lm , color="red", se=FALSE)
+#
+#           }
+#
+#         }
+#
+#         return(p)
+
+        # geom_smooth
+        # show_histogram
+        # show_individual_subjects
+        # show_line_chart
+        # show_histogram_mean
+
+        # ggplot(data = iris, aes(x = Sepal.Length,  y = Petal.Length, color = Species)) +
+        #   geom_point() +
+        #   geom_smooth(method = "nls", formula = y ~ a * x + b, se = F,
+        #               method.args = list(start = list(a = 0.1, b = 0.1)))
+
+
+
 #        w<-ggplotly(p + geom_smooth(group = "ID", se = FALSE))
 
 
@@ -440,7 +502,8 @@ behavioralPlotServer <- function(id) {
 
         #cat(file = stderr(), "renderPlot\n")
 #        plot(c(1,2,3), c(1,2,3))
-      })
+      }
+
       output$text_data_time <- renderPrint({
         cat("statistic text about here")
         cat("input$plot_click:\n")
@@ -480,15 +543,32 @@ behavioralPlotServer <- function(id) {
       output$text_analyse_time_split <- renderPrint({
         if (input$num_groups==1){
           cat("Correlations")
-          ct <- cor.test(dfwf() %>% filter(G==1) %>% subset(select=input$y), dfwf() %>% filter(G==1) %>% subset(select=input$x))
+          df_sub = dfwf() %>% filter(G==1) %>% subset(select=c(input$x, input$y))
+          # change this dataframe with one column to a numeric vector
+          x_t = as.vector(df_sub[,1])
+          y_t = as.vector(df_sub[,2])
+          gx_t <<- x_t
+          gy_t <<- y_t
+          ct <- cor.test(x_t, y_t)
           print(ct)
         }
         if (input$num_groups==2){
           cat("comparing correlation coefficients")
-          n1 <- nrow(subset(dfwf, G==1))
-          n2 <- nrow(subset(dfwf, G==2))
-          ct1 <- cor.test(dfwf() %>% filter(G==1) %>% subset(select=input$y), dfwf() %>% filter(G==1) %>% subset(select=input$x))
-          ct2 <- cor.test(dfwf() %>% filter(G==2) %>% subset(select=input$y), dfwf() %>% filter(G==2) %>% subset(select=input$x))
+          n1 <- nrow(subset(dfwf(), G==1))
+          n2 <- nrow(subset(dfwf(), G==2))
+          df_sub1 = dfwf() %>% filter(G==1) %>% subset(select=c(input$x, input$y))
+          # change this dataframe with one column to a numeric vector
+          x_t1 = as.vector(df_sub1[,1])
+          y_t1 = as.vector(df_sub1[,2])
+
+          df_sub2 = dfwf() %>% filter(G==2) %>% subset(select=c(input$x, input$y))
+          # change this dataframe with one column to a numeric vector
+          x_t2 = as.vector(df_sub2[,1])
+          y_t2 = as.vector(df_sub2[,2])
+
+
+          ct1 <- cor.test(x_t1, y_t1)
+          ct2 <- cor.test(x_t2, y_t2)
           r1 <- ct1$estimate
           r2 <- ct2$estimate
           myval <- comparing_independent_rs(r1, r2, n1, n2)
@@ -496,8 +576,12 @@ behavioralPlotServer <- function(id) {
           cat(paste0("z-value of cor-Difference = ", myval[1],"\n"))
           cat(paste0("p-value of cor-Difference = ", myval[2],"\n"))
           cat("nutzung eines indpendent vergleichs fuer die Correlationskooeffizienten\n")
-          cat("bezieht nicht ein, dass es sich um longitudinale Untersuchungen der gleichen subjects handels")
-          cat("test hier ist zu konservativ")
+          cat("bezieht nicht ein, dass es sich um longitudinale \n")
+          cat("Untersuchungen der gleichen subjects handels\n")
+          cat("test hier ist zu konservativ\n")
+          cat("weiterhin wird hier mit x correliert, \n")
+          cat("wenn es auslassungen gibt veraendert \n")
+          cat("das den Korrelationskoeffizienten\n")
 #
 #         comparing_dependent_rs <-function(rxy, rxz, rzy, n)
 #         {
