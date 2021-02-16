@@ -335,6 +335,9 @@ get_currently_selected_data<-function(data, g1, g2, t1, t2, freq, trials=g_trial
 # d$mat_t ... 2D matrix ... t Werte des t-tests ueber alle Regionen
 # d$string1 ... string .... eine beschreibung des durchgefuehrten Vergleiches
 # d$color1 ... col ........ die Color palette die zu den Werten passen
+  cat(file = stderr(), "\n********************************\n")
+  cat(file = stderr(), "DEPRECATED...\n")
+  cat(file = stderr(), "The function get_currently_selected_data is deprecated ... please use get_currently_seleceted_datalong\n\n")
   start_time <- Sys.time()
   d <- list()
   d$my_paired = FALSE

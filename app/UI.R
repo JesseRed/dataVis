@@ -41,15 +41,6 @@ ui <- dashboardPage(
                            tabName = "mergedata",
                            icon = icon('line-chart'))
                ),
-      menuItem("load data", tabName = "loaddata", icon = icon("file-export"), startExpanded = TRUE,
-               menuSubItem(icon = NULL, uiOutput("selectDirCoh")),
-               menuSubItem(icon = NULL, uiOutput("selectDirTra")),
-               menuSubItem(icon = NULL, uiOutput("selectDirFre")),
-               menuSubItem(icon = NULL, uiOutput("selectDirGra")),
-               menuSubItem(icon = NULL, uiOutput("selectDirERP")),
-               menuSubItem(icon = NULL, uiOutput("selectDirRS")),
-               menuSubItem(icon = NULL, uiOutput("selectDirBeh"))
-      ),
       menuItem(id = "xxx1", "show data", tabName = "showdata", icon = icon("th"), startExpanded = TRUE,
                menuSubItem("Coherence",
                            tabName = "CoherenceTab",
@@ -72,6 +63,15 @@ ui <- dashboardPage(
                menuSubItem("pure Behavioral",
                            tabName = "BehTab",
                            icon = icon('line-chart'))
+      ),
+      menuItem("load data", tabName = "loaddata", icon = icon("file-export"), startExpanded = TRUE,
+               menuSubItem(icon = NULL, uiOutput("selectDirCoh")),
+               menuSubItem(icon = NULL, uiOutput("selectDirTra")),
+               menuSubItem(icon = NULL, uiOutput("selectDirFre")),
+               menuSubItem(icon = NULL, uiOutput("selectDirGra")),
+               menuSubItem(icon = NULL, uiOutput("selectDirERP")),
+               menuSubItem(icon = NULL, uiOutput("selectDirRS")),
+               menuSubItem(icon = NULL, uiOutput("selectDirBeh"))
       ),
       menuItem("global Inputs", tabName = "xxx", icon = icon("globe"), startExpanded = TRUE,
                menuSubItem(icon = NULL, uiOutput("freq")),
