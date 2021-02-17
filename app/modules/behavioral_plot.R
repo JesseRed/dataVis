@@ -176,7 +176,8 @@ behavioralPlotServer <- function(id) {
                                                    )
                                        ),
                           radioButtons(ns("plot_adding"),label = "add...",
-                                       choices = c("add Trend"= "geom_smooth")
+                                       choices = c("add Trend"= "geom_smooth",
+                                                   "add nothing" = "nothing")
                           )
                    )
                   ),
@@ -344,8 +345,8 @@ behavioralPlotServer <- function(id) {
         #req(input$selColExcludeIF)
 
         #options(viewer=NULL)
-        #windowsFonts(Times=windowsFont("TT Times New Roman"))
-
+          #windowsFonts(Times=windowsFont("TT Times New Roman"))
+        gdata<<-dfwf()
         cat(file = stderr(), paste0("renderPlotly with length(dfwf())=",nrow(dfwf()),"\n"))
         cat(file = stderr(), paste0("renterPlotly with colname2 = ",selColData2(), "\n"))
         p <- create_ggplot(data = dfwf(),
@@ -356,6 +357,8 @@ behavioralPlotServer <- function(id) {
                            plot_adding = input$plot_adding)
 
         w<-ggplotly(p)
+
+
 
         })
 
@@ -391,7 +394,12 @@ behavioralPlotServer <- function(id) {
                        }
         )
         switch(plot_adding,
-               geom_smooth ={p<-add_ggplot_geomsmooth(p)}
+               geom_smooth ={
+                 cat(file = stderr(), "geom_smooth\n")
+                 p<-add_ggplot_geomsmooth(p, num_groups)},
+               nothing = {
+                 cat(file = stderr(),"nothing\n")
+                 }
                )
         return(p)
         # num_groups = input$num_groups,
