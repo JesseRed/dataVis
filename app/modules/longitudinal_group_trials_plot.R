@@ -73,13 +73,18 @@ longitudinalPlotServer <- function(id, dir_listRS) {
                  h4("longitudinal data", align = "center"),
                  fluidRow(
                    column(6,
-                          selectInput(ns("comp_dir"), h5("longitudinal data"),
-                                      choices = dir_listRS, selected = dir_listRS[2]),
-                   ),
+                          textInput(ns("ld_1"), h5("long data 1", align = "center"), value = "1")
+                         ),
                    column(6,
-                          checkboxInput(ns("longtimefirst"), "estimate time first", value = TRUE)
+                          textInput(ns("ld_2"), h5("long data 2", align = "center"), value = "2, 3")
                    )
-                 )
+                ),
+                fluidRow(
+                  column(12,
+                       checkboxInput(ns("longtimefirst"), "estimate time first", value = TRUE)
+                )
+                )
+
           ),
           column(1,
                  style = "background-color: #fcfcfc;",
@@ -249,45 +254,52 @@ longitudinalPlotServer <- function(id, dir_listRS) {
       ####################################################################################
       ####################################################################################
 
-#
-#       data_1 <- reactive({
-#         get_data_group_trial_freqmean(g_data(),input$group1, as.numeric(input$trial1), g_sel_freqs())
-#       })
-#       data_2 <- reactive({
-#         get_data_group_trial_freqmean(g_data(),input$group2, as.numeric(input$trial2), g_sel_freqs())
-#       })
-#       data_g1t1 <- reactive({
-#         get_data_group_trial_freqmean(g_data(),input$group1, as.numeric(input$trial1), g_sel_freqs())
-#       })
-#       data_g1t2 <- reactive({
-#         get_data_group_trial_freqmean(g_data(),input$group1, as.numeric(input$trial2), g_sel_freqs())
-#       })
-#       data_g2t1 <- reactive({
-#         get_data_group_trial_freqmean(g_data(),input$group2, as.numeric(input$trial1), g_sel_freqs())
-#       })
-#       data_g2t2 <- reactive({
-#         get_data_group_trial_freqmean(g_data(),input$group2, as.numeric(input$trial2), g_sel_freqs())
-#       })
 
-      #g_D             <<- reactive({g_reload_rVal(); get_global_D(g_act_data_dir())                })
-      #g_data          <<- reactive({ g_D()$mdat
-      D2    <- reactive({get_global_D(file.path(g_datarootpath(),input$comp_dir))})
+      # get the data for the second time point
+      # die longitudinalen Daten sind kodiert als nummern hinter den IDs der Subjects XY001_1
+      # daher teilen wir hier die Subjects einfach entsprechend auf
+      D1    <- reactive({get_data_by_longitudinal_info(g_D(),as.numeric(unlist(strsplit(input$ld_1, split=","))))})
+      D2    <- reactive({get_data_by_longitudinal_info(g_D(),as.numeric(unlist(strsplit(input$ld_2, split=","))))})
+      data1 <- reactive({D1()$mdat})
       data2 <- reactive({D2()$mdat})
+
+
+
+
       estimate_time_first <- reactive({input$longtimefirst})
 
       curdata <- reactive({
-        M <- get_longitudinal_currently_selected_data(g_D(), D2(),
-                                                       input$group1,
-                                                       input$group2,
-                                                       as.numeric(input$trial1),
-                                                       as.numeric(input$trial2),
-                                                       g_sel_freqs(),
-                                                       estimate_time_first = estimate_time_first())
-#        M1 = get_currently_selected_data(g_data(), input$group1, input$group2, as.numeric(input$trial1), as.numeric(input$trial2), g_sel_freqs())
-#        M2 = get_currently_selected_data(data2(), input$group1, input$group2, as.numeric(input$trial1), as.numeric(input$trial2), g_sel_freqs())
+        gD1 <<- D1()
+        gD2 <<- D2()
+        M <- get_longitudinal_currently_selected_data(D1(), D2(),
+                                                      input$group1,
+                                                      input$group2,
+                                                      as.numeric(input$trial1),
+                                                      as.numeric(input$trial2),
+                                                      g_sel_freqs(),
+                                                      estimate_time_first = estimate_time_first())
         return(M)
       })
 
+      # D2    <- reactive({get_global_D(file.path(g_datarootpath(),input$comp_dir))})
+      # data2 <- reactive({D2()$mdat})
+      #
+      #
+      #
+      #
+      # estimate_time_first <- reactive({input$longtimefirst})
+      #
+      # curdata <- reactive({
+      #   M <- get_longitudinal_currently_selected_data(g_D(), D2(),
+      #                                                 input$group1,
+      #                                                 input$group2,
+      #                                                 as.numeric(input$trial1),
+      #                                                 as.numeric(input$trial2),
+      #                                                 g_sel_freqs(),
+      #                                                 estimate_time_first = estimate_time_first())
+      #   return(M)
+      # })
+      #
       plotwidth <- reactive({
         if (input$plot_width == 0){ return("auto")            }
         else{                       return(input$plot_width)  }

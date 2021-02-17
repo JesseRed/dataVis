@@ -155,8 +155,7 @@ get_currently_selected_data_long<-function(data, g1, g2, t1, t2, freq,
                              "   Ein positiver Wert in dieser Matrix zeigt einen positiven Effekt der Zeit/Intervention an (in der 2. Messung groesser)\n",
                              "4. Es wird dann zwischen X1 und X2 ein t-test fuer jede Region gerechnet (unpaired fuer die 2 Gruppen)\n",
                              "Jedes Feld der Corrplot Matrix im Bild testet somit auf folgende Hypothese\n",
-                             "Unterscheidet sich der Einfluss der Zeit/Intervention zwischen den beiden Gruppen fuer den ausgewaehlten trial?"
-      )
+                             "Unterscheidet sich der Einfluss der Zeit/Intervention zwischen den beiden Gruppen fuer den ausgewaehlten trial?")
     }else{
       # 2. Vergleiche den longitudinalen Unterschied jedem trial1 und trial2
       # ttest(trial1_zeitpunkt1-trial2_zeitpunkt1 vs. trial1_zeitpunkt2-trial2_zeitpunkt2)
@@ -177,8 +176,7 @@ get_currently_selected_data_long<-function(data, g1, g2, t1, t2, freq,
                              "3. Es wird dann zwischen X1 und X2 ein t-test fuer jede Region gerechnet (paired fuer die 2 Gruppen)\n",
                              "Jedes Feld der Corrplot Matrix im Bild testet somit auf folgende Hypothese\n",
                              "Der Unterschied zwischen trial1 und trial 2 wird von der Zeit/Intervention beeinflusst\n",
-                             "Nullhypothese: Zeit/Intervention haben keinen Einfluss auf den Unterschied zwischen trial_1 und trial_2\n"
-      )
+                             "Nullhypothese: Zeit/Intervention haben keinen Einfluss auf den Unterschied zwischen trial_1 und trial_2\n")
       }else{
       # wenn die gruppen gleich sind, d.h. wenn wir nur 2 trials vergleichen
       # in der gleichen Gruppe dann haben wir 2 Moeglichekeiten
@@ -202,8 +200,7 @@ get_currently_selected_data_long<-function(data, g1, g2, t1, t2, freq,
                              "3. Es wird dann zwischen X1 und X2 ein t-test fuer jede Region gerechnet (paired fuer die Matrizen welche die gleichen Subjects enthalten)",
                              "Jedes Feld der Corrplot Matrix im Bild testet somit auf folgende Hypothese\n",
                              "Hypothese: Zeit/Intervention unterscheidet sich in ihrem Einfluss auf trial_1 vom Einfluss auf trial2?\n",
-                             "Nullhypothese: Der Einfluss von Zeit/Intervention ist fuer trial_1 und trial_2 gleich\n",
-      )
+                             "Nullhypothese: Der Einfluss von Zeit/Intervention ist fuer trial_1 und trial_2 gleich\n")
       }
     }
   }
@@ -434,14 +431,65 @@ get_currently_selected_data<-function(data, g1, g2, t1, t2, freq, trials=g_trial
   return(d)
 }
 
+
+# die gesamte Datenstruktur des D.RDS Files wird hier eingelesen und geprueft ob der vector in long_marker hier
+# enthalten ist, nur diese werden dann zurueck gegeben
+get_data_by_longitudinal_info <-function(D_org, long_marker){
+  # long_marker ... vector of numbers ... gibt die nummern an die beibehalten werden sollen
+  # geaendert werden muss
+  # D$id_list
+  # D$df_BD
+  # D$mdat
+
+  # teste nocheinmal zur Sicherheit das die Dimensionen auch gleich sind
+  # hier sollten keine Fehler auftreten
+  if (length(D_org$id_list)!=nrow(D_org$df_BD)){
+    stop("error in get_data_by_longitudinal_info length(D_org$id_list)!=nrow(D_org$df_BD)")
+  }
+
+  if (length(D_org$id_list)!=dim(D_org$mdat)[1]){
+    stop("error in get_data_by_longitudinal_info length(D_org$id_list)!=dim(D_org$mdat)[1])")
+  }
+
+  # obgleich nicht am schnellsten ist es am uebersichtlichsten jeden Subject einzeln durchzugehen
+  # anstatt den long_marker elemente als pattern zu nutzen um die richtige Reichenfolge der
+  # Subjects wirklich sicher zu stellen ansonsten kaeme es auf die Reihenfolge im uebergebenen Vector an
+
+
+  # fuege zu den uebergebenen Vector long_marker noch die Unterstriche
+  long_markerfull = sprintf("__%.0f", long_marker)
+
+  idx_to_keep = c()
+  id_list_base = c()
+  for (i in 1:length(D_org$id_list)){
+    # ueber jedes Subject
+    # Soll das Subject in die neue liste? TRUE/FALSE
+    if (any(str_detect(D_org$id_list[i], long_markerfull))){
+      x = which((str_detect(D_org$id_list[i], long_markerfull)),T)
+
+      idx_to_keep = c(idx_to_keep, i)
+      id_list_base = c(id_list_base, str_remove(D_org$id_list[i],long_markerfull[x]))
+    }
+  }
+
+  D = D_org
+  D$id_list = D_org$id_list[idx_to_keep]
+  D$id_list_base = id_list_base
+  D$df_BD = D_org$df_BD[idx_to_keep,]
+  D$mdat = D_org$mdat[idx_to_keep,,,,,drop = F]
+
+  return(D)
+}
+
+
 # has tests
 get_data_group <-function(data, group, tbl_beh = g_beh(), method = g_act_method()){
 
-    if (group == "all_groups") {
-      data_group = data
-    } else {
-      data_group = asub(data, list(tbl_beh$Gruppe==group), 1, drop=F)
-    }
+  if (group == "all_groups") {
+    data_group = data
+  } else {
+    data_group = asub(data, list(tbl_beh$Gruppe==group), 1, drop=F)
+  }
   return(data_group)
 }
 
