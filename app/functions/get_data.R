@@ -482,6 +482,99 @@ get_data_by_longitudinal_info <-function(D_org, long_marker){
 }
 
 
+# die gesamte Datenstruktur des D.RDS Files wird hier eingelesen und geprueft ob der vector in long_marker hier
+# enthalten ist, nur diese werden dann zurueck gegeben aufgeteilt fuer die 2 Zeitpunkte
+# zusaetzlich werden ggf. Daten rausgeworfen die nicht in beiden Zeitpunkten auftauchen
+split_data_by_longitudinal_info <-function(D_org, long_marker1, long_marker2,
+                                           is_exclude_not_reoccuring_subj = TRUE,
+                                           averagelong = TRUE){
+  # long_marker ... vector of numbers ... gibt die nummern an die beibehalten werden sollen
+
+  # Trennen des Gesamtdatensatzes in Gruppen von Zeitlichen Subjects
+
+  D1 <- get_data_by_longitudinal_info(D_org, long_marker1)
+  D2 <- get_data_by_longitudinal_info(D_org, long_marker2)
+
+  # eleminieren von subjects die nicht in beiden Zeitpunkten vorkommen
+  if(is_exclude_not_reoccuring_subj){
+    tmp <-exclude_data_from_not_reoccuring_subjects(D1,D2)
+    D1 <- tmp$HD1
+    D2 <- tmp$HD2
+  }
+
+  # averaging falls eine Zeitspanne aus mehreren Zeitpunkten besteht
+  if (averagelong){
+    D1<- average_data_from_reoccuring_subjects(D1)
+    D2<- average_data_from_reoccuring_subjects(D2)
+  }
+
+
+
+
+  D = list()
+  D$D1 = D1
+  D$D2 = D2
+  return(D)
+}
+
+average_data_from_reoccuring_subjects<-function(D){
+  # es werden Subjects die die gleiche ID aber unterschiedliche Zeitpunkte haben gemittelt
+  id_list = c()
+  # leere data.frame with same columns
+  df_BD = D$df_BD[0,]
+  # get the ids without the time tag
+  ids = sapply(strsplit(D$id_list,"__"),"[",1)
+  uids = unique(ids)
+
+  for (i in 1:length(uids)){
+    current_id_name = uids[i]
+    # get the index of all occurences of the first ID
+    idxs = which(str_detect(ids,current_id_name))
+    id_list = c(id_list,ids[idxs[1]])
+    df_BD = estimate_average_of_rows(D$df_BD[idxs,])
+    # entferne die ids aus der id lists
+    ids = ids[-idxs]
+  }
+  D$id_list = HD2$id_list = intersect(D1$id_list, D2$id_list)
+  HD1$df_BD = D1$df_BD[D1$df_BD$ID %in% HD1$id_list,]
+  HD2$df_BD = D2$df_BD[D2$df_BD$ID %in% HD2$id_list,]
+  HD1$mdat = D1$mdat[D1$df_BD$ID %in% HD1$id_list,,,,,drop = FALSE]
+  HD2$mdat = D2$mdat[D2$df_BD$ID %in% HD2$id_list,,,,,drop = FALSE]
+  return(list(HD1=HD1, HD2=HD2))
+}
+
+estimate_average_of_rows<- function(df){
+  # estimate the mean of all rows
+  # return a dataframe with a single row
+
+  for (i in 1:ncol(df3)){
+    cat(paste0(colnames(df3)[i]," \n"))
+    cat(paste0("i = ",i, "\n"))
+    tmpmean = 0
+    z = 0
+    found_numeric = FALSE
+    for (j in 1:nrow(df3)){
+      if (is.numeric(df3[[j,i]])){
+        as.double(dfm[[i]])
+        cat("is numeric \n")
+        tmpmean = tmpmean + df3[[j,i]]
+        z = z + 1
+        found_numeric = TRUE
+      }
+
+    }
+
+    if (found_numeric){
+      dfm[1,i] = tmpmean/z
+    }else{
+      dfm[1,i] = df3[[1,i]]
+    }
+    cat("sd")
+  }
+}
+
+
+
 # has tests
 get_data_group <-function(data, group, tbl_beh = g_beh(), method = g_act_method()){
 

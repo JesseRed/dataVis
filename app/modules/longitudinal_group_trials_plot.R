@@ -36,6 +36,21 @@ longitudinalPlotServer <- function(id, dir_listRS) {
         fluidPage(
         fluidRow(
           column(2,
+                 style = "background-color: #fcfcfc;",
+                 style = 'border-right: 2px solid gray',
+                 h4("trial comparison", align = "center"),
+                 fluidRow(
+                   column(6,
+                          selectInput(ns("trial1"), h5("Select Trial 1", align = "center"),
+                                      choices = g_trials_named(), selected = g_groups()[1])
+                   ),
+                   column(6,
+                          selectInput(ns("trial2"), h5("Select Trial 2", align = "center"),
+                                      choices = g_trials_named(), selected = g_groups()[2])
+                   )
+                 )
+          ),
+          column(2,
 
                  style = "background-color: #fcfcfc;",
                  #style = 'border-bottom: 2px solid gray',
@@ -52,21 +67,7 @@ longitudinalPlotServer <- function(id, dir_listRS) {
                           )
                  )
           ),
-          column(2,
-                 style = "background-color: #fcfcfc;",
-                 style = 'border-right: 2px solid gray',
-                 h4("trial comparison", align = "center"),
-                 fluidRow(
-                   column(6,
-                          selectInput(ns("trial1"), h5("Select Trial 1", align = "center"),
-                                      choices = g_trials_named(), selected = g_groups()[1])
-                   ),
-                   column(6,
-                          selectInput(ns("trial2"), h5("Select Trial 2", align = "center"),
-                                      choices = g_trials_named(), selected = g_groups()[2])
-                   )
-                 )
-          ),
+
           column(2,
                  style = "background-color: #fcfcfc;",
                  style = 'border-right: 2px solid gray',
@@ -79,11 +80,23 @@ longitudinalPlotServer <- function(id, dir_listRS) {
                           textInput(ns("ld_2"), h5("long data 2", align = "center"), value = "2, 3")
                    )
                 ),
-                fluidRow(
-                  column(12,
-                       checkboxInput(ns("longtimefirst"), "estimate time first", value = TRUE)
-                )
-                )
+                checkboxInput(ns("longtimefirst"), "estimate time first", value = TRUE),
+                checkboxInput(ns("averagelong"), "average same long subj(1 vs. av(2,3))", value = TRUE),
+                checkboxInput(ns("cb_same_subjects"), "include only reoccuring subj", value = TRUE)
+          ),
+          # column(1,
+          #        style = "background-color: #fcfcfc;",
+          #        style = 'border-right: 2px solid gray',
+          #        h4("Visualize", align = "center"),
+          #        checkboxInput(ns("longtimefirst"), "estimate time first", value = TRUE),
+          #        checkboxInput(ns("cb_same_subjects"), "include only reoccuring subj", value = TRUE)
+          # ),
+          column(2,
+                 style = "background-color: #fcfcfc;",
+                 style = 'border-right: 2px solid gray',
+                 h4("Filter", align = "center"),
+                 textInput(ns("filterg1"), h5("filter G1", align = "center"), value = "Zeichen>0"),
+                 textInput(ns("filterg2"), h5("filter G2", align = "center"), value = "Zeichen>0"),
 
           ),
           column(1,
@@ -93,20 +106,20 @@ longitudinalPlotServer <- function(id, dir_listRS) {
                  selectInput(ns("method"), h5("method"),
                              choices = c("Corrplot", "Corrplot_mixed", "Corrplot_clustered", "ggcorr", "Circle", "Pheatmap"), selected = 1)
           ),
-          column(2,
-                 style = "background-color: #fcfcfc;",
-                 style = 'border-right: 2px solid gray',
-                 h4("Clustering", align = "center"),
-                 fluidRow(
-                    column(6,
-                          selectInput(ns("clustering"), h5("method"),
-                             choices = c("original", "FPC","PCA", "hclust"), selected = 1)
-                    ),
-                    column(6,
-                         numericInput(ns("num_hclust"),h5("num hclust"), 3)
-                    )
-                 )
-          ),
+          # column(2,
+          #        style = "background-color: #fcfcfc;",
+          #        style = 'border-right: 2px solid gray',
+          #        h4("Clustering", align = "center"),
+          #        fluidRow(
+          #           column(6,
+          #                 selectInput(ns("clustering"), h5("method"),
+          #                    choices = c("original", "FPC","PCA", "hclust"), selected = 1)
+          #           ),
+          #           column(6,
+          #                numericInput(ns("num_hclust"),h5("num hclust"), 3)
+          #           )
+          #        )
+          # ),
           column(2,
                  fluidRow(
                    column(6,
@@ -258,8 +271,13 @@ longitudinalPlotServer <- function(id, dir_listRS) {
       # get the data for the second time point
       # die longitudinalen Daten sind kodiert als nummern hinter den IDs der Subjects XY001_1
       # daher teilen wir hier die Subjects einfach entsprechend auf
-      D1    <- reactive({get_data_by_longitudinal_info(g_D(),as.numeric(unlist(strsplit(input$ld_1, split=","))))})
-      D2    <- reactive({get_data_by_longitudinal_info(g_D(),as.numeric(unlist(strsplit(input$ld_2, split=","))))})
+
+
+      D1    <- reactive({get_data_by_longitudinal_info(g_D(),as.numeric(unlist(strsplit(input$ld_1, split=","))),
+                                                       is_exclude_not_reoccuring_subj = cb_same_subjects,
+                                                       averagelong = averagelong)})
+      D2    <- reactive({get_data_by_longitudinal_info(g_D(),as.numeric(unlist(strsplit(input$ld_2, split=","))),
+                                                       is_exclude_not_reoccuring_subj = cb_same_subjects)})
       data1 <- reactive({D1()$mdat})
       data2 <- reactive({D2()$mdat})
 
