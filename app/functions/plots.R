@@ -145,6 +145,8 @@ generate_plot_Corrplot<-function(mat_p, mat_t,
   #if ((myfontsize >8) & (myfontsize<12)){
   #  cex = 0.4
   #}
+
+
   if (is.null(myfontsize)){myfontsize=14}
 
   cex = myfontsize /20
@@ -220,6 +222,7 @@ generate_plot_Corrplot<-function(mat_p, mat_t,
     myplot_corr = NULL
   }else if (g_act_method()=="RS") {
     cat(file = stderr(), "RS in corrplot\n")
+    # setzte auf leer damit keine Namen in diagonalelementen angezeigt werden
     rownames(mat_p) = vector(mode="character", length=length(regions))
     x1 <<- corrplot(mat_p,
                     method=method,
@@ -232,7 +235,7 @@ generate_plot_Corrplot<-function(mat_p, mat_t,
                     insig = insig,
                     pch.cex = 0.5,
                     addgrid.col = "grey",
-                    order = "hclust", #clustering_method,
+                    order = clustering_method, #"hclust", #clustering_method,
                     hclust.method = "average",
                     addrect = num_hclust,
                     pch.col = "white",

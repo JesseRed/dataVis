@@ -42,11 +42,11 @@ longitudinalPlotServer <- function(id, dir_listRS) {
                  fluidRow(
                    column(6,
                           selectInput(ns("trial1"), h5("Select Trial 1", align = "center"),
-                                      choices = g_trials_named(), selected = g_groups()[1])
+                                      choices = g_trials_named(), selected =g_trials_named()[1])
                    ),
                    column(6,
                           selectInput(ns("trial2"), h5("Select Trial 2", align = "center"),
-                                      choices = g_trials_named(), selected = g_groups()[1])
+                                      choices = g_trials_named(), selected = g_trials_named()[2])
                    )
                  )
           ),
@@ -99,12 +99,23 @@ longitudinalPlotServer <- function(id, dir_listRS) {
                  textInput(ns("filterg2"), h5("filter G2", align = "center"), value = "Zeichen>0"),
 
           ),
-          column(1,
+          column(2,
                  style = "background-color: #fcfcfc;",
                  style = 'border-right: 2px solid gray',
                  h4("Visualize", align = "center"),
                  selectInput(ns("method"), h5("method"),
-                             choices = c("Corrplot", "Corrplot_mixed", "Corrplot_clustered", "ggcorr", "Circle", "Pheatmap"), selected = 1)
+                             choices = c("Corrplot", "Corrplot_mixed", "Corrplot_clustered", "ggcorr", "Circle", "Pheatmap"), selected = 1),
+                 fluidRow(
+                   column(6,
+                         selectInput(ns("clustering"), h5("method"),
+                             choices = c("original", "FPC","PCA", "hclust"), selected = 1)
+                   ),
+                   column(6,
+                         numericInput(ns("num_hclust"),h5("num hclust"), 3)
+                   )
+                 )
+
+
           ),
           # column(2,
           #        style = "background-color: #fcfcfc;",
@@ -392,6 +403,7 @@ longitudinalPlotServer <- function(id, dir_listRS) {
         ###################
         # CORRPLOT
         if (input$method=="Corrplot"){
+
           generate_plot_Corrplot(d$mat_p, d$mat_t, regions = colnames(d$mat_p),
                                  clustering_method = input$clustering,
                                  num_hclust = input$num_hclust) #D$uregion_list)
