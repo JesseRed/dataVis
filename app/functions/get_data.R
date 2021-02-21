@@ -40,23 +40,18 @@ get_longitudinal_currently_selected_data<-function(D1, D2, g1, g2, t1, t2, freq,
                                                    tbl_beh = g_beh(),
                                                    method = g_act_method(),
                                                    estimate_time_first = TRUE){
+
+  cat(file = stderr(),paste0("Deprecated funktion of get_longitudinal_currently_selected_data ...\n",
+                             "better to use split first and than get_currently_selected_data_long\n"))
   # generierung von t- und p-Maps fuer longitudinale Daten
   # Es muss insbesondere die Gruppenintegritaet ueberprueft werden, da
   # sich die Gruppen zwischen den beiden Messungen unterscheiden werden durch drop outs
   homogen_group_data = exclude_data_from_not_reoccuring_subjects(D1,D2)
-  HD1 <- homogen_group_data$HD1
-  HD2 <- homogen_group_data$HD2
+  HD1 <- homogen_group_data$D1
+  HD2 <- homogen_group_data$D2
   glob_HD1 <<-HD1
   glob_HD2 <<-HD2
-  # d1 = get_currently_selected_data(HD1, g1, g2, t1, t2, freq,
-  #                                  trials = HD1$utrial_list,
-  #                                  regions = HD1$uregion_list,
-  #                                  tbl_beh = HD1$df_BD)
-  #
-  # d2 = get_currently_selected_data(HD2, g1, g2, t1, t2, freq,
-  #                                  trials = HD2$utrial_list,
-  #                                  regions = HD2$uregion_list,
-  #                                  tbl_beh = HD2$df_BD)
+
   cat(file = stderr(), "now get the datalong\n")
   d = get_currently_selected_data_long(HD1$mdat, g1, g2, t1, t2, freq,
                                        trials=HD1$utrial_list,
@@ -76,6 +71,7 @@ get_currently_selected_data_long<-function(data, g1, g2, t1, t2, freq,
                                            tbl_beh = g_beh(),
                                            method = g_act_method(),
                                            datalong = NULL,
+                                           tbl_beh_long = NULL,
                                            estimate_time_first = TRUE){
   # die funktion gibt eine LIste von mehreren Variablen zurueck
   # gedacht fuer tabs in denen gruppen und trials ausgewaehlt werden
@@ -121,11 +117,23 @@ get_currently_selected_data_long<-function(data, g1, g2, t1, t2, freq,
   }else{
     #############################
     # longitudinale Daten
-    cat(file = stderr(),"\nlongitudinal data analyse start \n")
+#    if (is_debug){
+    # cat(file = stderr(),"\nlongitudinal data analyse start \n")
+    # cat(file = stderr(),paste0("g1 = ",g1, "   g2 = ", g2,"\n"))
+    # cat(file = stderr(),paste0("t1 = ",t1, "   t2 = ", t2,"\n"))
+    # cat(file = stderr(),paste0("freq = ",freq,"\n"))
+    # cat(file = stderr(),paste0("trials = ",trials,"\n"))
+    # cat(file = stderr(),paste0("method = ",method,"\n"))
+    # cat(file = stderr(),paste0("get_currently_selected_data_long length(dim(data))= ",length(dim(data)),"\n"))
+    # cat(file = stderr(),paste0("get_currently_selected_data_long dim(data)= ",dim(data),"\n"))
+    # cat(file = stderr(),dim(data))
+
+    #   }
+    #Z127 <<- data
     d1 <- get_selected_data_considering_group_trial(data, g1,g2,t1,t2, freq,  trials = trials, tbl_beh = tbl_beh, method = method)
-    cat(file = stderr(),"1\n")
-    d2 <- get_selected_data_considering_group_trial(datalong, g1,g2,t1,t2, freq, trials = trials, tbl_beh = tbl_beh, method = method)
-    cat(file = stderr(),"2\n")
+    #cat(file = stderr(),"1\n")
+    d2 <- get_selected_data_considering_group_trial(datalong, g1,g2,t1,t2, freq, trials = trials, tbl_beh = tbl_beh_long, method = method)
+    #cat(file = stderr(),"2\n")
     d <- d1
     glob_d1<<-d1
     glob_d2<<-d2
@@ -216,10 +224,10 @@ get_currently_selected_data_long<-function(data, g1, g2, t1, t2, freq,
     d$mat_t = zeros(dim(d$data1)[2], dim(d$data1)[3])
 
     d$color1 = colorRampPalette(c("blue","red","green"))
-    cat(file = stderr(),paste0("get_currently_selected_data_long only filter the data duration =",Sys.time()-start_time,"\n"))
+    #cat(file = stderr(),paste0("get_currently_selected_data_long only filter the data duration =",Sys.time()-start_time,"\n"))
 
 
-    cat(file = stderr(), "entering for loop ... now \n")
+    #cat(file = stderr(), "entering for loop ... now \n")
     for (i in 1:(dim(d$data1)[2])-1){
       start_idx = i+1
       if (method =="Granger"){
@@ -276,6 +284,7 @@ get_selected_data_considering_group_trial<-function(data, g1,g2,t1,t2, freq, tri
     d$data2 = get_data_group_trial_freqmean(data,g2, t1, freq, tbl_beh = tbl_beh, method=method)-get_data_group_trial_freqmean(data,g2, t2, freq, tbl_beh = tbl_beh, method=method)
 
   }else{
+    Z281<<-data
     d$data1 = get_data_group_trial_freqmean(data,g1, t1, freq, tbl_beh = tbl_beh, method=method)
     d$data2 = get_data_group_trial_freqmean(data,g2, t2, freq, tbl_beh = tbl_beh, method=method)
     if (t1 == t2) {
@@ -311,14 +320,127 @@ exclude_data_from_not_reoccuring_subjects<-function(D1,D2){
   if (!(identical(D1$dimcontent, D2$dimcontent))){
     cat(file = stderr(), paste0("selected longitudinal data have not the same dimcontent description (", D1$dimcontent,"!=",D2$dimcontent,")\n"))
   }
-  HD1 = D1
-  HD2 = D2
-  HD1$id_list = HD2$id_list = intersect(D1$id_list, D2$id_list)
-  HD1$df_BD = D1$df_BD[D1$df_BD$ID %in% HD1$id_list,]
-  HD2$df_BD = D2$df_BD[D2$df_BD$ID %in% HD2$id_list,]
-  HD1$mdat = D1$mdat[D1$df_BD$ID %in% HD1$id_list,,,,,drop = FALSE]
-  HD2$mdat = D2$mdat[D2$df_BD$ID %in% HD2$id_list,,,,,drop = FALSE]
-  return(list(HD1=HD1, HD2=HD2))
+
+  ids1 = sapply(strsplit(D1$id_list,"__"),"[",1)
+  ids2 = sapply(strsplit(D2$id_list,"__"),"[",1)
+
+  common_id_base = intersect(ids1, ids2)
+  # laufe ueber die jeden Eintrag aus D1 und D2 und entferne ihn
+  # falls die ID nicht in der common_id_base steht
+
+  D1 <- delete_subject_from_data_struct(D = D1, ids_to_keep =  match(common_id_base,ids1))
+  D2 <- delete_subject_from_data_struct(D = D2, ids_to_keep =  match(common_id_base,ids2))
+
+#   HD1$id_list = HD2$id_list = intersect(ids1, ids2)
+# #  HD1$id_list = HD2$id_list = intersect(D1$id_list, D2$id_list)
+#   HD1$df_BD = D1$df_BD[D1$df_BD$ID %in% HD1$id_list,]
+#   HD2$df_BD = D2$df_BD[D2$df_BD$ID %in% HD2$id_list,]
+#   HD1$mdat = D1$mdat[D1$df_BD$ID %in% HD1$id_list,,,,,drop = FALSE]
+#   HD2$mdat = D2$mdat[D2$df_BD$ID %in% HD2$id_list,,,,,drop = FALSE]
+  return(list(D1=D1, D2=D2))
+}
+
+# has tests
+# entfernt subjects aus der Datenstruktur
+delete_subject_from_data_struct<-function(D = NULL, ids_to_keep = NULL, ids_to_delete = NULL){
+  # entfernt ein oder mehrere Subjects aus der DAtenstruktur anhand entweder der id als String
+  # oder der Position (die Position in der id_list = Position in Matrix = Position in der df_BD)
+  # es kann auch ein Vector mit mehreren Werten uebergebn werden
+  # wenn ein vector von Strings uebergeben wird so wandeln wir diesen dann in numbers um
+
+  # pruefe ob
+  if (is.null(D)){
+    cat(file = stderr(), paste0("Function delete_subject_from_data_struct\n"))
+    cat(file = stderr(), paste0("The function delete_subject_from_data_struct needs\n",
+                                "a Data Object that is not NULL\n",
+                                "returning D unchanged\n"))
+    return(D)
+  }
+  if (!("mdat" %in% names(D))){
+    cat(file = stderr(), paste0("Function delete_subject_from_data_struct\n"))
+    cat(file = stderr(), paste0("The given Data Structure is not compatible\n",
+                                "the field 'mdat' was not found\n",
+                                "returning D unchanged\n"))
+    return(D)
+  }
+  if (!("id_list" %in% names(D))){
+    cat(file = stderr(), paste0("Function delete_subject_from_data_struct\n"))
+    cat(file = stderr(), paste0("The given Data Structure is not compatible\n",
+                                "the field 'id_list' was not found\n",
+                                "returning D unchanged\n"))
+    return(D)
+  }
+  if (!("df_BD" %in% names(D))){
+    cat(file = stderr(), paste0("Function delete_subject_from_data_struct\n"))
+    cat(file = stderr(), paste0("The given Data Structure is not compatible\n",
+                                "the field 'df_BD' was not found\n",
+                                "returning D unchanged\n"))
+    return(D)
+  }
+  if ((length(D$id_list)!= dim(D$mdat)[1]) | (length(D$id_list)!=nrow(D$df_BD))){
+    cat(file = stderr(), paste0("Function delete_subject_from_data_struct\n"))
+    cat(file = stderr(), paste0("The given Data Structure is not compatible\n",
+                                "(length(D$id_list)!= dim(D$mdat)[1]) | (length(D$id_list)!=nrow(D$df_BD)) \n",
+                                "returning D unchanged\n"))
+    return(D)
+  }
+
+
+  if (is.null(ids_to_keep) && is.null(ids_to_delete)){
+    cat(file = stderr(), paste0("Function delete_subject_from_data_struct\n"))
+    cat(file = stderr(), paste0("The function delete_subject_from_data_struct needs\n",
+                                "either ids_to_keep argument or ids_to_delete argument\n",
+                                "none of these arguments are given\n returning D unchanged\n"))
+    return(D)
+  }
+
+  if (!is.null(ids_to_keep) && !is.null(ids_to_delete)){
+    cat(file = stderr(), paste0("Function delete_subject_from_data_struct\n"))
+    cat(file = stderr(), paste0("The function delete_subject_from_data_struct accepts\n",
+                                "either ids_to_keep argument or ids_to_delete argument\n",
+                                "but not both\n returning D unchanged\n"))
+    return(D)
+  }
+
+
+
+  # wenn ids_to_delete uebergeben wurden
+  if (is.null(ids_to_keep) && !is.null(ids_to_delete)){
+    if (!is.numeric(ids_to_delete)){
+      ids_to_delete <- match(ids_to_delete, D$id_list)
+      ids_to_delete <- ids_to_delete[!is.na(ids_to_delete)]
+    }
+    # entferne auf Basis des id Strings
+    ids_to_keep   <- c(1:length(D$id_list))[-ids_to_delete]
+  }
+
+  # wenn ids_to_keep uebergeben wurden
+  if (!is.null(ids_to_keep) && is.null(ids_to_delete)){
+    if (!is.numeric(ids_to_keep)){
+      ids_to_keep <- match(ids_to_keep, D$id_list)
+      ids_to_keep <- ids_to_keep[!is.na(ids_to_keep)]
+    }
+    # entferne auf Basis des id Strings
+    ids_to_delete   <- c(1:length(D$id_list))[-ids_to_keep]
+  }
+
+  # Veraenderung der Datenstruktur
+  # wenn die id_num uebergeben wurde oder von uns zugeordnet
+  if (!is.null(ids_to_keep) && !is.null(ids_to_delete)){
+    # entferne nun das Subject anhand der id_num
+    # entfernt werden muss in D$id_list; D$df_BD; D$mdat
+    # geloescht wird aber nur wenn es auch etwas zu loeschen gibt
+    # sonst ist ids_to_delete integer(0) am besten zu pruefen mit length=0
+    if(length(ids_to_delete)>0){
+      D$id_list = D$id_list[-ids_to_delete]
+      D$df_BD = D$df_BD[-ids_to_delete,]
+      D$mdat = R.utils::extract(D$mdat,"1"=ids_to_keep, drop = F)
+
+    #D$mdat = D$mdat[-id_num,,,,,drop = FALSE]
+    }
+  }
+  return(D)
+
 }
 
 
@@ -434,6 +556,7 @@ get_currently_selected_data<-function(data, g1, g2, t1, t2, freq, trials=g_trial
 
 # die gesamte Datenstruktur des D.RDS Files wird hier eingelesen und geprueft ob der vector in long_marker hier
 # enthalten ist, nur diese werden dann zurueck gegeben
+# die Funktion ist Teil von Split_data_by_longitudinal_info
 get_data_by_longitudinal_info <-function(D_org, long_marker){
   # long_marker ... vector of numbers ... gibt die nummern an die beibehalten werden sollen
   # geaendert werden muss
@@ -491,31 +614,28 @@ split_data_by_longitudinal_info <-function(D_org, long_marker1, long_marker2,
   # long_marker ... vector of numbers ... gibt die nummern an die beibehalten werden sollen
 
   # Trennen des Gesamtdatensatzes in Gruppen von Zeitlichen Subjects
+  S = list()
 
-  D1 <- get_data_by_longitudinal_info(D_org, long_marker1)
-  D2 <- get_data_by_longitudinal_info(D_org, long_marker2)
+  S$D1 <- get_data_by_longitudinal_info(D_org, long_marker1)
+  S$D2 <- get_data_by_longitudinal_info(D_org, long_marker2)
+
 
   # eleminieren von subjects die nicht in beiden Zeitpunkten vorkommen
   if(is_exclude_not_reoccuring_subj){
-    tmp <-exclude_data_from_not_reoccuring_subjects(D1,D2)
-    D1 <- tmp$HD1
-    D2 <- tmp$HD2
+    S <-exclude_data_from_not_reoccuring_subjects(S$D1,S$D2)
   }
 
+  gD1 <<- S$D1
+  gD2 <<- S$D2
   # averaging falls eine Zeitspanne aus mehreren Zeitpunkten besteht
   if (averagelong){
-    D1<- average_data_from_reoccuring_subjects(D1)
-    D2<- average_data_from_reoccuring_subjects(D2)
+    S$D1<- average_data_from_reoccuring_subjects(S$D1)
+    S$D2<- average_data_from_reoccuring_subjects(S$D2)
   }
 
-
-
-
-  D = list()
-  D$D1 = D1
-  D$D2 = D2
-  return(D)
+  return(S)
 }
+
 
 average_data_from_reoccuring_subjects<-function(D){
   # es werden Subjects die die gleiche ID aber unterschiedliche Zeitpunkte haben gemittelt
@@ -524,53 +644,75 @@ average_data_from_reoccuring_subjects<-function(D){
   df_BD = D$df_BD[0,]
   # get the ids without the time tag
   ids = sapply(strsplit(D$id_list,"__"),"[",1)
+  # der time marker als vector von strings
+  ids_tp = sapply(strsplit(D$id_list,"__"),"[",2)
   uids = unique(ids)
+  # die datenmatrix mit falschen Zeilennamen und falsch gefuellt als Platzhalter
+  # Columnames bereits correct
+  #mdat = R.utils::extract(D$mdat,"1"=1:length(uids), drop = F)
+  is_matrix_inizialized = FALSE
 
   for (i in 1:length(uids)){
+#    cat(file = stderr(),paste0("i=",i,"\n"))
     current_id_name = uids[i]
     # get the index of all occurences of the first ID
     idxs = which(str_detect(ids,current_id_name))
-    id_list = c(id_list,ids[idxs[1]])
-    df_BD = estimate_average_of_rows(D$df_BD[idxs,])
+    new_id_name = paste0(uids[i],"__",paste(ids_tp[idxs],collapse ="_"))
+    id_list = c(id_list, new_id_name)
+    df_BD = rbind(df_BD,estimate_average_of_rows(D$df_BD[idxs,]))
+
+    # setze den richtigen Zeilennamen
+
+    # select the rows which should than be
+    tmp = R.utils::extract(D$mdat,"1"=idxs, drop = F)
+
+    mx = means.along(tmp,1)
+    # erweitere die dimension um die erste dimension
+    dim(mx)<-c(1,dim(mx))
+
+    if (is_matrix_inizialized){
+      # hinzufuegen zur finalen Matrix
+      mdat <-abind(mdat,mx,along=1)
+    }else{
+      mdat <- mx
+      is_matrix_inizialized = TRUE
+    }
     # entferne die ids aus der id lists
-    ids = ids[-idxs]
+    #ids = ids[-idxs]
+    rownames(mdat)[i] <- new_id_name
   }
-  D$id_list = HD2$id_list = intersect(D1$id_list, D2$id_list)
-  HD1$df_BD = D1$df_BD[D1$df_BD$ID %in% HD1$id_list,]
-  HD2$df_BD = D2$df_BD[D2$df_BD$ID %in% HD2$id_list,]
-  HD1$mdat = D1$mdat[D1$df_BD$ID %in% HD1$id_list,,,,,drop = FALSE]
-  HD2$mdat = D2$mdat[D2$df_BD$ID %in% HD2$id_list,,,,,drop = FALSE]
-  return(list(HD1=HD1, HD2=HD2))
+  # die colnames werden uebertragen
+  colnames(mdat) <- colnames(D$mdat)
+  D$id_list <- id_list
+  D$df_BD   <- df_BD
+  D$mdat    <- mdat
+
+  return(D)
 }
 
 estimate_average_of_rows<- function(df){
   # estimate the mean of all rows
   # return a dataframe with a single row
-
-  for (i in 1:ncol(df3)){
-    cat(paste0(colnames(df3)[i]," \n"))
-    cat(paste0("i = ",i, "\n"))
-    tmpmean = 0
-    z = 0
-    found_numeric = FALSE
-    for (j in 1:nrow(df3)){
-      if (is.numeric(df3[[j,i]])){
-        as.double(dfm[[i]])
-        cat("is numeric \n")
-        tmpmean = tmpmean + df3[[j,i]]
-        z = z + 1
-        found_numeric = TRUE
+  dfm <- df[1,]
+  is_col_numeric <- unlist(lapply(df, is.numeric))
+  for (i in 1:ncol(df)){
+    # Strings bzw. not numeric
+    # nicht numerische koennen wir nicht mittelen ... daher fuegen wir zusammen
+    if (!is_col_numeric[i]){
+      my_string = "mean("
+      for (j in 1:nrow(df)){
+        my_string <- paste0(my_string, df[[j,i]] ,"+")
       }
-
-    }
-
-    if (found_numeric){
-      dfm[1,i] = tmpmean/z
+      my_string<-paste0(my_string,")")
+      dfm[1,i] <- my_string
     }else{
-      dfm[1,i] = df3[[1,i]]
+      # NUMERIC COLUMN
+      dfm[[i]]<-as.double(dfm[[i]])
+      cur_colname <- colnames(df)[i]
+      dfm[1,i] <- mean(df[[cur_colname]], na.rm = T)
     }
-    cat("sd")
   }
+  return(dfm)
 }
 
 
@@ -806,7 +948,7 @@ get_data_group_trial_freqmean <- function(data, group, trial, freq, tbl_beh = g_
   #cat(file = stderr(),paste0("filter_by_selfreq duration =",Sys.time()-start_time2,"\n"))
   #start_time2 = Sys.time()
   data_group_trial_freqmean = get_freqmean(data_group_trial_freq, method = method)
- #cat(file = stderr(), paste0("in get_data_group_trial_freqmean with dim(data_group_trial_freqmean)=",dim(data_group_trial_freqmean),"\n"))
+  #cat(file = stderr(), paste0("in get_data_group_trial_freqmean with dim(data_group_trial_freqmean)=",dim(data_group_trial_freqmean),"\n"))
   #cat(file = stderr(),paste0("get_freqmean duration =",Sys.time()-start_time2,"\n"))
 
   return(data_group_trial_freqmean)
@@ -1033,5 +1175,7 @@ means.along <- function(a, i) {
   b <- aperm(a, c(seq_len(n)[-i], i))
   rowMeans(b, dims = n - 1)
 }
+
+
 
 

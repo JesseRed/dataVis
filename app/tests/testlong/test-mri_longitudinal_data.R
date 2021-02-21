@@ -40,6 +40,24 @@ test_that("new longitudinal data analysis works",{
   t1 = 1
   t2 = 2
 
+  ####################################################################################
+  ####################################################################################
+  # Testing the Funktion delete_subject_from_data_struct<-function(D = NULL, ids_to_keep = NULL, ids_to_delete = NULL)
+  to_delete_str = D$id_list[2:5]
+  to_delete_id  = c(2:5)
+  to_keep_str   = D$id_list[-c(2:5)]
+  to_keep_id   = c(1:length(D$id_list))[-c(2:5)]
+  Dtmp1 <- delete_subject_from_data_struct(D=D, ids_to_keep = to_keep_str)
+  Dtmp2 <- delete_subject_from_data_struct(D=D, ids_to_keep = to_keep_id)
+  Dtmp3 <- delete_subject_from_data_struct(D=D, ids_to_delete = to_delete_str)
+  Dtmp4 <- delete_subject_from_data_struct(D=D, ids_to_delete = to_delete_id)
+  expect_equal(Dtmp1, Dtmp2)
+  expect_equal(Dtmp2, Dtmp3)
+  expect_equal(Dtmp3, Dtmp4)
+  expect_equal(length(Dtmp1$id_list),5)
+  expect_equal(dim(Dtmp1$mdat)[1],5)
+  expect_equal(nrow(Dtmp1$df_BD),5)
+
 
   ####################################################################################
   ####################################################################################
@@ -53,8 +71,7 @@ test_that("new longitudinal data analysis works",{
   ld_1 = "1"
   ld_2 = "2, 3"
 
-  D1    <- get_data_by_longitudinal_info(D,as.numeric(unlist(strsplit(ld_1, split=","))),
-                                         is_exclude_not_reoccuring_subj = FALSE)
+  D1    <- get_data_by_longitudinal_info(D,as.numeric(unlist(strsplit(ld_1, split=","))))
   expect_equal(length(D1$uregion_list), 3)
   expect_equal(length(dim(D1$mdat)), 5)
   expect_equal(dim(D1$mdat)[1], 5)
@@ -63,15 +80,22 @@ test_that("new longitudinal data analysis works",{
   expect_equal(dim(D1$mdat)[4], 2)
   expect_equal(dim(D1$mdat)[5], 1)
 
+
+
   # nun erneut mit Ausschluss von Subjects die nicht in beiden Messungen vorhanden sind
-  D1    <- get_data_by_longitudinal_info(D,as.numeric(unlist(strsplit(ld_1, split=","))),
-                                         is_exclude_not_reoccuring_subj = TRUE)
-  D2    <- get_data_by_longitudinal_info(D,as.numeric(unlist(strsplit(ld_2, split=","))))
+  D_new <- split_data_by_longitudinal_info(D, as.numeric(unlist(strsplit(ld_1, split=","))),
+                                           as.numeric(unlist(strsplit(ld_2, split=","))),
+                                           is_exclude_not_reoccuring_subj = TRUE,
+                                           averagelong = TRUE)
+  D1    <- D_new$D1
+  D2    <- D_new$D2
   data1 <- D1$mdat
   data2 <- D2$mdat
   expect_equal(length(D1$uregion_list), 3)
   expect_equal(length(dim(D1$mdat)), 5)
   expect_equal(dim(D1$mdat)[1], 4)
+  expect_equal(dim(D1$mdat)[1], nrow(D1$df_BD))
+  expect_equal(dim(D1$mdat)[1], length(D1$id_list))
   expect_equal(dim(D1$mdat)[2], 3)
   expect_equal(dim(D1$mdat)[3], 3)
   expect_equal(dim(D1$mdat)[4], 2)
@@ -79,10 +103,15 @@ test_that("new longitudinal data analysis works",{
   expect_equal(length(D2$uregion_list), 3)
   expect_equal(length(dim(D2$mdat)), 5)
   expect_equal(dim(D2$mdat)[1], 4)
+  expect_equal(dim(D2$mdat)[1], nrow(D2$df_BD))
+  expect_equal(dim(D2$mdat)[1], length(D2$id_list))
   expect_equal(dim(D2$mdat)[2], 3)
   expect_equal(dim(D2$mdat)[3], 3)
   expect_equal(dim(D2$mdat)[4], 2)
   expect_equal(dim(D2$mdat)[5], 1)
+
+
+
   # subject 1 Trial 1
   #            LH_Vis_1   LH_Vis_2  LH_Vis_3
   # LH_Vis_1  1.0000000 -0.2456532 0.2341862

@@ -46,7 +46,7 @@ longitudinalPlotServer <- function(id, dir_listRS) {
                    ),
                    column(6,
                           selectInput(ns("trial2"), h5("Select Trial 2", align = "center"),
-                                      choices = g_trials_named(), selected = g_groups()[2])
+                                      choices = g_trials_named(), selected = g_groups()[1])
                    )
                  )
           ),
@@ -63,7 +63,7 @@ longitudinalPlotServer <- function(id, dir_listRS) {
                           ),
                    column(6,
                           selectInput(ns("group2"), h5("Select Group 2", align = "center"),
-                                      choices = g_groups(), selected = g_groups()[3])
+                                      choices = g_groups(), selected = g_groups()[2])
                           )
                  )
           ),
@@ -271,17 +271,22 @@ longitudinalPlotServer <- function(id, dir_listRS) {
       # get the data for the second time point
       # die longitudinalen Daten sind kodiert als nummern hinter den IDs der Subjects XY001_1
       # daher teilen wir hier die Subjects einfach entsprechend auf
+      S <- reactive({split_data_by_longitudinal_info(g_D(),
+                                                     as.numeric(unlist(strsplit(input$ld_1, split=","))),
+                                                     as.numeric(unlist(strsplit(input$ld_2, split=","))),
+                                                     is_exclude_not_reoccuring_subj = input$cb_same_subjects,
+                                                     averagelong = input$averagelong)})
 
-
-      D1    <- reactive({get_data_by_longitudinal_info(g_D(),as.numeric(unlist(strsplit(input$ld_1, split=","))),
-                                                       is_exclude_not_reoccuring_subj = cb_same_subjects,
-                                                       averagelong = averagelong)})
-      D2    <- reactive({get_data_by_longitudinal_info(g_D(),as.numeric(unlist(strsplit(input$ld_2, split=","))),
-                                                       is_exclude_not_reoccuring_subj = cb_same_subjects)})
-      data1 <- reactive({D1()$mdat})
-      data2 <- reactive({D2()$mdat})
-
-
+      # D1    <- reactive({get_data_by_longitudinal_info(g_D(),as.numeric(unlist(strsplit(input$ld_1, split=","))),
+      #                                                  is_exclude_not_reoccuring_subj = cb_same_subjects,
+      #                                                  averagelong = averagelong)})
+      # D2    <- reactive({get_data_by_longitudinal_info(g_D(),as.numeric(unlist(strsplit(input$ld_2, split=","))),
+      #                                                  is_exclude_not_reoccuring_subj = cb_same_subjects)})
+      # data1 <- reactive({D1()$mdat})
+      # data2 <- reactive({D2()$mdat})
+      gS <<- S
+      D1 <- reactive({S()$D1})
+      D2 <- reactive({S()$D2})
 
 
       estimate_time_first <- reactive({input$longtimefirst})
@@ -289,13 +294,24 @@ longitudinalPlotServer <- function(id, dir_listRS) {
       curdata <- reactive({
         gD1 <<- D1()
         gD2 <<- D2()
-        M <- get_longitudinal_currently_selected_data(D1(), D2(),
-                                                      input$group1,
-                                                      input$group2,
-                                                      as.numeric(input$trial1),
-                                                      as.numeric(input$trial2),
-                                                      g_sel_freqs(),
-                                                      estimate_time_first = estimate_time_first())
+        M <- get_currently_selected_data_long(D1()$mdat,
+                                              input$group1,
+                                              input$group2,
+                                              as.numeric(input$trial1),
+                                              as.numeric(input$trial2),
+                                              g_sel_freqs(),
+                                              tbl_beh = D1()$df_BD,
+                                              datalong = D2()$mdat,
+                                              tbl_beh_long = D2()$df_BD,
+                                              estimate_time_first = estimate_time_first())
+            gM <<- M
+        # M <- get_longitudinal_currently_selected_data(D1(), D2(),
+        #                                               input$group1,
+        #                                               input$group2,
+        #                                               as.numeric(input$trial1),
+        #                                               as.numeric(input$trial2),
+        #                                               g_sel_freqs(),
+        #                                               estimate_time_first = estimate_time_first())
         return(M)
       })
 
@@ -477,7 +493,7 @@ longitudinalPlotServer <- function(id, dir_listRS) {
 
       output$hist <- renderPlot({
         glob_hist_d <<- curdata()
-        generate_histogram_plot_facet(input$group1, input$group2,
+        generate_histogram_plot_facet_long(1,2,
                                       input$trial1, input$trial2,
                                       g_sel_freqs(),
                                       level_x_rval(), level_y_rval(),
