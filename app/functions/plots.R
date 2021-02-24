@@ -165,7 +165,7 @@ generate_plot_Corrplot<-function(mat_p, mat_t,
     insig = "n"
     insig = "label_sig"
   }
-  if (inline_numbers){
+  if (inline_numbers && !(insig=="p-value")){
     method = "number"
   } else{
     method = "square"
