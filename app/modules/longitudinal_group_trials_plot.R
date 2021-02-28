@@ -146,6 +146,7 @@ longitudinalPlotServer <- function(id, dir_listRS) {
                    ),
                    column(6,
                          actionButton(ns("ExportData"), "export Data"),
+                         actionButton(ns("testexclude"), "test exclude"),
                  ),
                  ),
           )
@@ -153,6 +154,47 @@ longitudinalPlotServer <- function(id, dir_listRS) {
         fluidRow(
           column(12,
                  box(title = "Was wurde berechnet?...", width = 12, collapsible = TRUE, collapsed = TRUE, verbatimTextOutput(ns("text_explanation"))),
+          )
+        ),
+        fluidRow(
+          column(12,
+                 box(title = "Included subjects", width = 12, collapsible = TRUE, collapsed = TRUE,
+                     uiOutput(ns("includedSubjects"))
+                 ),
+          )
+        ),
+        fluidRow(
+          column(12,
+                 # checkboxGroupInput(ns("ExSubjects"), label = h3("Exclude Subjects"), inline = T,
+                 #                    choices = g_D()$df_BD$ID)
+
+                 #                   selected =  my_excluded_subjects())
+                 #
+                 box(title = "Excluded subjects", width = 12, collapsible = TRUE, collapsed = TRUE,
+                     checkboxGroupInput(ns("ExSubjects"), label = h3("Subjects"), inline = T,
+                                        choices = g_D()$df_BD$ID),
+                     # selected =  my_excluded_subjects()),
+
+                     checkboxGroupInput(ns("ExGroup1"), label = h3("Group 1"), inline = T,
+                                        choices = c()), #curdata()$df_data1$ID),
+                     #                    selected = curdata()$df_data1$ID[my_excluded_subjects_g1]),
+                     #
+                     checkboxGroupInput(ns("ExGroup2"), label = h3("Group 2"), inline = T,
+                                        choices = c()) #curdata()$df_data2$ID)
+
+                     # checkboxGroupInput(ns("ExSubjects"), label = h3("Subjects"), inline = T,
+                     #                    choices = g_D()$df_BD$ID,
+                     #                    selected =  my_excluded_subjects()),
+                     #
+                     # checkboxGroupInput("ExGroup1", label = h3("Group 1"), inline = T,
+                     #                    choices = curdata()$df_data1$ID,
+                     #                    selected = curdata()$df_data1$ID[my_excluded_subjects_g1]),
+                     #
+                     # checkboxGroupInput("ExGroup2", label = h3("Group 2"), inline = T,
+                     #                    choices = curdata()$df_data2$ID,
+                     #                    selected = curdata()$df_data2$ID[my_excluded_subjects_g2])
+#                     uiOutput(ns("excludedSubjects"))
+                 ),
           )
         ),
         fluidRow(
@@ -223,6 +265,71 @@ longitudinalPlotServer <- function(id, dir_listRS) {
 
 )
       })
+      subjects_to_exclude = c()
+      subjects_to_exclude = reactive({input$Subjects})
+
+      my_included_subjects = reactive({get_included_subjects( g_D()$df_BD$ID, subjects_to_exclude)})
+      my_included_subjects_g1 = reactive({get_included_subjects( curdata()$df_data1$ID, subjects_to_exclude)})
+      my_included_subjects_g2 = reactive({get_included_subjects( curdata()$df_data2$ID, subjects_to_exclude)})
+
+      my_excluded_subjects = reactive({
+        req(input$ExSubjects)
+        req(input$ExGroup1)
+        req(input$ExGroup2)
+
+        cat(file = stderr(), paste0("exluded subjects = ",input$ExSubjects))
+        return(input$ExSubjects)
+        })
+      my_excluded_subjects2 = reactive({
+        get_excluded_subjects()
+        req(input$ExSubjects)
+
+        cat(file = stderr(), paste0("exluded subjects = ",input$ExSubjects))
+        return(getinput$ExSubjects)
+      })
+
+      my_excluded_subjects_g1 = reactive({get_excluded_subjects( curdata()$df_data1$ID, input$ExSubjects)})
+      my_excluded_subjects_g2 = reactive({get_excluded_subjects( curdata()$df_data2$ID, input$ExSubjects)})
+#
+      observeEvent(input$testexclude, {
+        cat(file = stderr(), paste0("excluded Subjects = \n"))
+        cat(file = stderr(), paste0("excluded Subjects = ", input$ExSubjects, "\n"))
+        updateCheckboxGroupInput(session, "ExSubjects",
+                                 choices = g_D()$df_BD$ID, inline = T,
+                                 selected = c("ID001__1","ID013__2"))
+        #cat(file = stderr(), paste0("excluded Subjects = ", my_excluded_subjects(),"\n"))
+      })
+
+      observeEvent(input$ExSubjects, {
+        cat(file = stderr(), paste0("excluded Subjects = \n"))
+        cat(file = stderr(), paste0("excluded Subjects = ", input$ExSubjects, "\n"))
+        updateCheckboxGroupInput(session, "ExGroup1",
+                                 choices = curdata()$df_data1$ID, inline = T,
+                                 selected =  curdata()$df_data1$ID[my_excluded_subjects_g1()])
+
+        #cat(file = stderr(), paste0("excluded Subjects = ", my_excluded_subjects(),"\n"))
+      })
+
+
+      # output$excludedSubjects <- renderUI({
+      #
+      #   cat(file = stderr(), "into excludedSubjects \n")
+      #   #updateSliderInput(session,"freq", value = c(0,5))
+      #   fluidRow(
+      #
+      #     checkboxGroupInput(ns("ExSubjects"), label = h3("Subjects"), inline = T,
+      #                        choices = g_D()$df_BD$ID),
+      #                        # selected =  my_excluded_subjects()),
+      #
+      #     checkboxGroupInput(ns("ExGroup1"), label = h3("Group 1"), inline = T,
+      #                         choices = curdata()$df_data1$ID),
+      #     #                    selected = curdata()$df_data1$ID[my_excluded_subjects_g1]),
+      #     #
+      #     checkboxGroupInput(ns("ExGroup2"), label = h3("Group 2"), inline = T,
+      #                         choices = curdata()$df_data2$ID)
+      #     #                    selected = curdata()$df_data2$ID[my_excluded_subjects_g2])
+      #   )})
+#
 
       x1<<- NULL
       x2<<- NULL
@@ -282,38 +389,47 @@ longitudinalPlotServer <- function(id, dir_listRS) {
       # get the data for the second time point
       # die longitudinalen Daten sind kodiert als nummern hinter den IDs der Subjects XY001_1
       # daher teilen wir hier die Subjects einfach entsprechend auf
-      S <- reactive({split_data_by_longitudinal_info(g_D(),
-                                                     as.numeric(unlist(strsplit(input$ld_1, split=","))),
-                                                     as.numeric(unlist(strsplit(input$ld_2, split=","))),
-                                                     is_exclude_not_reoccuring_subj = input$cb_same_subjects,
-                                                     averagelong = input$averagelong)})
-
-      # D1    <- reactive({get_data_by_longitudinal_info(g_D(),as.numeric(unlist(strsplit(input$ld_1, split=","))),
-      #                                                  is_exclude_not_reoccuring_subj = cb_same_subjects,
-      #                                                  averagelong = averagelong)})
-      # D2    <- reactive({get_data_by_longitudinal_info(g_D(),as.numeric(unlist(strsplit(input$ld_2, split=","))),
-      #                                                  is_exclude_not_reoccuring_subj = cb_same_subjects)})
-      # data1 <- reactive({D1()$mdat})
-      # data2 <- reactive({D2()$mdat})
-      gS <<- S
-      D1 <- reactive({S()$D1})
-      D2 <- reactive({S()$D2})
+      # S <- reactive({split_data_by_longitudinal_info(g_D(),
+      #                                                as.numeric(unlist(strsplit(input$ld_1, split=","))),
+      #                                                as.numeric(unlist(strsplit(input$ld_2, split=","))),
+      #                                                is_exclude_not_reoccuring_subj = input$cb_same_subjects,
+      #                                                averagelong = input$averagelong)})
+      #
+      # gS <<- S
+      # D1 <- reactive({S()$D1})
+      # D2 <- reactive({S()$D2})
 
 
       estimate_time_first <- reactive({input$longtimefirst})
 
       curdata <- reactive({
-        gD1 <<- D1()
-        gD2 <<- D2()
-        M <- get_currently_selected_data_long(D1()$mdat,
+        req(input$group1)
+        req(input$group2)
+        req(input$trial1)
+        req(input$trial2)
+        req(input$ld_1)
+        req(input$ld_2)
+        req(input$cb_same_subjects)
+        req(input$averagelong)
+        req(input$longtimefirst)
+        #gD1 <<- D1()
+        #gD2 <<- D2()
+        cat(file = stderr(), paste0("curdata with dim(g_D()$mat)=", dim(g_D()$mat),"\n"))
+        cat(file = stderr(), paste0("curdata with length(g_D())=", length(g_D()),"\n"))
+
+        M <- get_currently_selected_data_long3(g_D(), #D1()$mdat,
                                               input$group1,
                                               input$group2,
                                               as.numeric(input$trial1),
                                               as.numeric(input$trial2),
                                               g_sel_freqs(),
-                                              tbl_beh = D1()$df_BD,
-                                              datalong = D2()$mdat,
-                                              tbl_beh_long = D2()$df_BD,
+                                              tbl_beh = g_D()$df_BD,
+                                              long_def1 = as.numeric(unlist(strsplit(input$ld_1, split=","))),
+                                              long_def2 = as.numeric(unlist(strsplit(input$ld_2, split=","))),
+                                              is_exclude_not_reoccuring_subj = input$cb_same_subjects,
+                                              averagelong = input$averagelong,
+#                                              datalong = D2()$mdat,
+#                                              tbl_beh_long = D2()$df_BD,
                                               estimate_time_first = estimate_time_first())
             gM <<- M
         # M <- get_longitudinal_currently_selected_data(D1(), D2(),
@@ -499,7 +615,7 @@ longitudinalPlotServer <- function(id, dir_listRS) {
         x = curdata()$data1[, level_y_rval(), level_x_rval()]
         y = curdata()$data2[, level_y_rval(), level_x_rval()]
         z = t.test(x,y, paired = curdata()$my_paired)
-        out <- create_my_ttest_string(z, paired = curdata()$my_paired, mean1 = mean(x), mean2 = mean(y))
+        out <- create_my_ttest_string(z, paired = curdata()$my_paired, mean1 = mean(x, na.rm = T), mean2 = mean(y, na.rm = T))
         cat(out)
       })
 
@@ -529,6 +645,52 @@ longitudinalPlotServer <- function(id, dir_listRS) {
       })
 
 
+
+
+
+      output$includedSubjects <- renderUI({
+
+        cat(file = stderr(), "into includedSubjects \n")
+        #updateSliderInput(session,"freq", value = c(0,5))
+        fluidRow(
+
+          checkboxGroupInput("Subjects", label = h3("Subjects"), inline = T,
+                             choices = g_D()$df_BD$ID,
+                             selected =  g_D()$df_BD$ID[my_included_subjects]),
+
+          checkboxGroupInput("Group1", label = h3("Group 1"), inline = T,
+                             choices = curdata()$df_data1$ID,
+                             selected = curdata()$df_data1$ID[my_included_subjects_g1]),
+
+          checkboxGroupInput("Group2", label = h3("Group 2"), inline = T,
+                             choices = curdata()$df_data2$ID,
+                             selected = curdata()$df_data2$ID[my_included_subjects_g2])
+        )
+
+
+
+          #                   selected = "2013")
+        # fluidRow(
+        #   tabBox(
+        #     title = NULL, width = 12,
+        #     # The id lets us use input$tabset1 on the server to find the current tab
+        #     id = "tabset1", height = "250px",
+        #     tabPanel("Plot", overviewPlotUI("ConOverviewPlot")),
+        #     tabPanel("Comp Plot", compareTrialsPlotUI("ConPlot")),
+        #     tabPanel("Trials Stat", compareTrialsStatsUI("ConTrialsStat")),
+        #     tabPanel("Groups Stat", compareGroupsStatsUI("ConGroupsStats")),
+        #     tabPanel("Diff Stat", compareDiffOfDiffStatsUI("ConDiffOfDiffStats")),
+        #     tabPanel("Regression", regressionStatsUI("ConRegStats")),
+        #     tabPanel("ANCOVA", ancovaStatsUI("ConAncovaStats")),
+        #     tabPanel("Options Regions", optionsUI("Options")),
+        #     tabPanel("Regions order", options_mod_orderUI("Options_order")),
+        #     tabPanel("Regions name", options_mod_nameUI("Options_name")),
+        #     tabPanel("Plot", RSPlotUI("ConnPlot")),
+        #     tabPanel("Comp Plot",  compareTrialsPlotUI("ConnPlot2")),
+        #     tabPanel("Long Plot",  longitudinalPlotUI("Conn"))
+        #   )
+        # )
+      })
 
 
 
@@ -563,33 +725,12 @@ longitudinalPlotServer <- function(id, dir_listRS) {
       }
       )
 
-      observeEvent(input$ExportData, {
-        session$sendCustomMessage(type = 'testmessage',
-                                  message = 'saving data now')
-        #ggsave(file = "tmpbutton.png")
-        #ggsave(plot = x1, filename = "x1plot.png", type = "cairo", dpi = 600)
-        req(input$trial1)
-        req(input$trial2)
-        req(input$group1)
-        req(input$group2)
-        d <- curdata()
-        data1 <- d$data1
-        data2 <- d$data2
-        string1 <-d$string1
-        mat_p <- d$mat_p
-        mat_t <- d$mat_t
-        saveRDS(mat_p, file = "./exported_variables_from_visualizer/ExportData2D_mat_p.Rds")
-        saveRDS(mat_t, file = "./exported_variables_from_visualizer/ExportData2D_mat_t.Rds")
-        saveRDS(data1, file = "./exported_variables_from_visualizer/ExportData3D_data1_subj_reg1_reg2.Rds")
-        saveRDS(data2, file = "./exported_variables_from_visualizer/ExportData3D_data2_subj_reg1_reg2.Rds")
-
-      })
+      observeEvent(input$ExportData, { export_selected_tab_data(data = curdata()) })
 
 
     }
   )
 }
-
 
 
 

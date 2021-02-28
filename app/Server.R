@@ -30,6 +30,7 @@ library(optimbase)
 library(rlang)
 library(gdata)
 library(shinyBS)
+#library(compare)
 #library(shinyWidgets)
 
 #setwd("..")
@@ -38,7 +39,7 @@ library(shinyBS)
 # for quickcor
 #devtools::install_github("hannet91/ggcor")
 
-
+options(browser = "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe")
 #source("./functions/get_data.R")
 pathnames <- list.files(pattern="[.]R$", path="functions", full.names=TRUE);
 sapply(pathnames, FUN=source);
@@ -78,13 +79,14 @@ server <- function(input, output, session) {
     g_datarootpath(val)
   })
   initialized = FALSE
-  dir_listCoh <- reactive({dir(path = g_datarootpath(), pattern = "^Coherence", full.names = F, recursive = F)})
-  dir_listTra <- reactive({dir(path = g_datarootpath(), pattern = "^Transferentropy", full.names = F, recursive = F)})
-  dir_listFre <- reactive({dir(path = g_datarootpath(), pattern = "^Frequency", full.names = F, recursive = F)})
-  dir_listGra <- reactive({dir(path = g_datarootpath(), pattern = "^Granger", full.names = F, recursive = F)})
-  dir_listERP <- reactive({dir(path = g_datarootpath(), pattern = "^ERP", full.names = F, recursive = F)})
-  dir_listRS  <- reactive({dir(path = g_datarootpath(), pattern = "^RS", full.names = F, recursive = F)})
-  dir_listBeh <- reactive({list.files(path = file.path(g_datarootpath(), "Behavioral"), pattern = ".csv$", full.names = F, recursive = F)})
+  dir_listCon <- reactive({input$dirRefreshButton; dir(path = g_datarootpath(), pattern = "^Conn", full.names = F, recursive = F)})
+  dir_listCoh <- reactive({input$dirRefreshButton; dir(path = g_datarootpath(), pattern = "^Coherence", full.names = F, recursive = F)})
+  dir_listTra <- reactive({input$dirRefreshButton; dir(path = g_datarootpath(), pattern = "^Transferentropy", full.names = F, recursive = F)})
+  dir_listFre <- reactive({input$dirRefreshButton; dir(path = g_datarootpath(), pattern = "^Frequency", full.names = F, recursive = F)})
+  dir_listGra <- reactive({input$dirRefreshButton; dir(path = g_datarootpath(), pattern = "^Granger", full.names = F, recursive = F)})
+  dir_listERP <- reactive({input$dirRefreshButton; dir(path = g_datarootpath(), pattern = "^ERP", full.names = F, recursive = F)})
+  dir_listRS  <- reactive({input$dirRefreshButton; dir(path = g_datarootpath(), pattern = "^RS", full.names = F, recursive = F)})
+  dir_listBeh <- reactive({input$dirRefreshButton; list.files(path = file.path(g_datarootpath(), "Behavioral"), pattern = ".csv$", full.names = F, recursive = F)})
 
   # dir_listCoh <- reactiveVal(value = dir(path = "../data", pattern = "^Coherence", full.names = F, recursive = F))
   # dir_listTra <- reactiveVal(value = dir(path = "../data", pattern = "^Transferentropy", full.names = F, recursive = F))
@@ -104,7 +106,8 @@ server <- function(input, output, session) {
   # Methode globale Variablen sind die in der Sidebar reaktiv geaendert werden koennen
   g_act_method <<- reactive({
     #cat(file = stderr(), paste0("g_act_method call with : input$mySidebarMenu=", input$mySidebarMenu, "\n"))
-    if        (input$mySidebarMenu == "CoherenceTab")      { return("Coherence")
+    if        (input$mySidebarMenu == "ConnectivityTab")   { return("Connectivity")
+    } else if (input$mySidebarMenu == "CoherenceTab")      { return("Coherence")
     } else if (input$mySidebarMenu == "TransferentropyTab"){ return("Transferentropy")
     } else if (input$mySidebarMenu == "FrequencyTab")      { return("Frequency")
     } else if (input$mySidebarMenu == "GrangerTab")        { return("Granger")
@@ -119,6 +122,7 @@ server <- function(input, output, session) {
   })
 
   g_act_data_dir <<- reactive({
+    if (g_act_method()=="Connectivity"){       return(file.path(g_datarootpath(),input$dataDirCon))}
     if (g_act_method()=="Coherence"){       return(file.path(g_datarootpath(),input$dataDirCoh))}
     if (g_act_method()=="Transferentropy"){ return(file.path(g_datarootpath(),input$dataDirTra))}
     if (g_act_method()=="Frequency"){       return(file.path(g_datarootpath(),input$dataDirFre))}
@@ -172,15 +176,26 @@ server <- function(input, output, session) {
   g_visprop_onlysig         <<- reactive({input$visprop_onlysig})
   g_visprop_inlinenumbers   <<- reactive({input$visprop_inlinenumbers})
 
+
+  # observeEvent(input$dirRefreshButton,{
+  #
+  # })
+
   ##################
    #### Sidebar ###
   ##################
   output$res <- renderText({
     paste("You've selected:", input$mySidebarMenu)
   })
+  output$RefreshButton <- renderUI({
+    actionButton("dirRefreshButton", "refresh")
+  })
+  output$selectDirCon <- renderUI({
+    selectInput("dataDirCon", "Connectivity",choices = dir_listCon(), selected = dir_listCon()[2])
+  })
   output$selectDirCoh <- renderUI({
     selectInput("dataDirCoh", "Coherence",choices = dir_listCoh(), selected = dir_listCoh()[2])
-    })
+  })
   output$selectDirTra <- renderUI({
     selectInput("dataDirTra", "Transferentropy",
                 choices = dir_listTra(),
@@ -255,6 +270,35 @@ server <- function(input, output, session) {
 #       )
 #     )
 #   })
+
+
+  ##################
+  #### Tabs Con ###
+  ##################
+  output$tabsCon <- renderUI({
+    cat(file = stderr(), "into output$tabsCon \n")
+    updateSliderInput(session,"freq", value = c(0,5))
+    fluidRow(
+      tabBox(
+        title = NULL, width = 12,
+        # The id lets us use input$tabset1 on the server to find the current tab
+        id = "tabset1", height = "250px",
+        tabPanel("Plot", overviewPlotUI("ConOverviewPlot")),
+        tabPanel("Comp Plot", compareTrialsPlotUI("ConPlot")),
+        tabPanel("Trials Stat", compareTrialsStatsUI("ConTrialsStat")),
+        tabPanel("Groups Stat", compareGroupsStatsUI("ConGroupsStats")),
+        tabPanel("Diff Stat", compareDiffOfDiffStatsUI("ConDiffOfDiffStats")),
+        tabPanel("Regression", regressionStatsUI("ConRegStats")),
+        tabPanel("ANCOVA", ancovaStatsUI("ConAncovaStats")),
+        tabPanel("Options Regions", optionsUI("Options")),
+        tabPanel("Regions order", options_mod_orderUI("Options_order")),
+        tabPanel("Regions name", options_mod_nameUI("Options_name")),
+        tabPanel("Plot", RSPlotUI("ConnPlot")),
+        tabPanel("Comp Plot",  compareTrialsPlotUI("ConnPlot2")),
+        tabPanel("Long Plot",  longitudinalPlotUI("Conn"))
+      )
+    )
+  })
 
 
   ##################
@@ -407,6 +451,21 @@ server <- function(input, output, session) {
       )
     )
   })
+
+  ##############################################
+  ### The new Connectivity Entity ##############
+  overviewPlotServer("ConOverviewPlot", "Connectivity", reactive(input$glob_sig), reactive(input$freq))
+  compareTrialsStatsServer("ConTrialsStat", reactive(input$glob_sig), reactive(input$freq))
+  compareTrialsPlotServer("ConPlot")
+  compareGroupsStatsServer("ConGroupsStats",  reactive(input$glob_sig), reactive(input$freq))
+  compareDiffOfDiffStatsServer("ConDiffOfDiffStats", reactive(input$glob_sig), reactive(input$freq))
+  behavioralDataStatsServer("ConBehDataStats", reactive(input$glob_sig), reactive(input$freq))
+  regressionStatsServer("ConRegStats", reactive(input$glob_sig), reactive(input$freq))
+  ancovaStatsServer("ConAncovaStats", reactive(input$glob_sig), reactive(input$freq))
+  compareTrialsPlotServer("ConnPlot2")
+  longitudinalPlotServer("Conn", dir_listCon())
+
+  ##############################################
 
   #RSPlotUI("ERPPlot")
   #RSPlotServer("RSPlot")

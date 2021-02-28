@@ -431,27 +431,7 @@ compareTrialsPlotServer <- function(id) {
       }
       )
 
-      observeEvent(input$ExportData, {
-        session$sendCustomMessage(type = 'testmessage',
-                                  message = 'saving data now')
-        #ggsave(file = "tmpbutton.png")
-        #ggsave(plot = x1, filename = "x1plot.png", type = "cairo", dpi = 600)
-        req(input$trial1)
-        req(input$trial2)
-        req(input$group1)
-        req(input$group2)
-        d <- curdata()
-        data1 <- d$data1
-        data2 <- d$data2
-        string1 <-d$string1
-        mat_p <- d$mat_p
-        mat_t <- d$mat_t
-        saveRDS(mat_p, file = "./exported_variables_from_visualizer/ExportData2D_mat_p.Rds")
-        saveRDS(mat_t, file = "./exported_variables_from_visualizer/ExportData2D_mat_t.Rds")
-        saveRDS(data1, file = "./exported_variables_from_visualizer/ExportData3D_data1_subj_reg1_reg2.Rds")
-        saveRDS(data2, file = "./exported_variables_from_visualizer/ExportData3D_data2_subj_reg1_reg2.Rds")
-
-      })
+      observeEvent(input$ExportData, { export_selected_tab_data(data = curdata()) })
 
 
     }

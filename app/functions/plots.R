@@ -184,21 +184,41 @@ generate_plot_Corrplot<-function(mat_p, mat_t,
   #cat(file = stderr(), paste0("Corr colnames = ", colnames(mat_p),"\n"))
   #cat(file = stderr(), mat_t)
 
-  if (g_act_method()=="Coherence"){
-
+  if ((g_act_method()=="Coherence") | (g_act_method()=="Connectivity")){
+    cat(file = stderr(), paste0("g_act_method is =", g_act_method() ,"\n"))
     cat(file = stderr(), paste0("insig =", insig ,"\n"))
   # Erstellt einen Histogram plot von mehreren Gruppen mit gleichen Achsenskalen
   #d = get_currently_selected_data(g_data(), group1, group2, trial1, trial2, freq())
     rownames(mat_p) = vector(mode="character", length=length(regions))
-    myplot_corr <<- corrplot(mat_p, method=method, tl.cex = cex, type = "upper", is.corr = FALSE,
-                  p.mat = mat_p, sig.level = multi_sig_level, tl.srt = 45,
-                  insig = insig, pch.cex = 0.4, pch.col = "white",
-                  order = clustering_method,
-                  addrect = num_hclust,
-                  col=colorRampPalette(c("blue","red","green"))(200))
+    myplot_corr <<- corrplot(mat_p, method=method,
+                             type = "upper",
+                             is.corr = FALSE,
+                             p.mat = mat_p,
+                             sig.level = multi_sig_level,
+                             tl.cex = cex,
+                             tl.srt = 45,
+                             insig = insig,
+                             pch.cex = 0.4,
+                             pch.col = "white",
+                             order = clustering_method,
+                             addrect = num_hclust,
+                             col=colorRampPalette(c("blue","red","green"))(200),
+                             cl.pos = "r")
   colnames(mat_t) = vector(mode="character", length=length(regions))
-  myplot_corr <- corrplot(mat_t, add = TRUE, method=method, tl.cex = cex, type = "lower", is.corr = FALSE,
-                  p.mat = mat_p, sig.level = g_sig(), insig = insig, tl.srt = 45)
+  myplot_corr <- corrplot(mat_t,
+                          add = TRUE,
+                          method=method,
+                          tl.cex = cex,
+                          type = "lower",
+                          is.corr = FALSE,
+                          p.mat = mat_p,
+                          sig.level = g_sig(),
+                          insig = insig,
+                          tl.srt = 45,
+                          order = clustering_method,
+                          addrect = num_hclust,
+                          col = colorRampPalette(c("green", "yellow","black"))(200),
+                          cl.pos = "b")
 
 
   }else if (g_act_method()=="Transferentropy") {
@@ -226,7 +246,7 @@ generate_plot_Corrplot<-function(mat_p, mat_t,
   }else if (g_act_method()=="Frequency") {
     cat(file = stderr(), "Corrplot Frequency not implemented")
     myplot_corr = NULL
-  }else if (g_act_method()=="RS") {
+  }else if ((g_act_method()=="RS")){#|(g_act_method()=="Connectivity")) {
     cat(file = stderr(), "RS in corrplot\n")
     # setzte auf leer damit keine Namen in diagonalelementen angezeigt werden
     rownames(mat_p) = vector(mode="character", length=length(regions))
