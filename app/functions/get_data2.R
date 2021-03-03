@@ -74,6 +74,7 @@ get_currently_selected_data_long3<-function(D, g1, g2, t1, t2, freq,
   # d$mat_t ... 2D matrix ... t Werte des t-tests ueber alle Regionen
   # d$string1 ... string .... eine beschreibung des durchgefuehrten Vergleiches
   # d$color1 ... col ........ die Color palette die zu den Werten passen
+  cat(file = stderr(),paste0("gcsdl3 estimate time first = ", estimate_time_first,"\n"))
 
 
   ###################
@@ -126,7 +127,7 @@ get_currently_selected_data_long3<-function(D, g1, g2, t1, t2, freq,
 
   d <- estimate_mat_t_p(d, method = method, regions = regions)
   gdx4 <<- d
-  cat(file = stderr(),paste0("get_currently_selected_datalong duration =",Sys.time()-start_time,"\n"))
+  cat(file = stderr(),paste0("get_currently_selected_datalong3 duration =",Sys.time()-start_time,"\n"))
   gd_get_long_data <<- d
   return(d)
 
@@ -156,7 +157,7 @@ update_data_structure_by_longitudinal_data<-function(d1, datalong,  g1,g2,t1,t2,
     cat(file = stderr(),paste0("update_data_structure_by_longitudinal_data dim(data)= ",dim(data),"\n"))
     cat(file = stderr(),paste0("update_data_structure_by_longitudinal_data length(dim(datalong))= ",length(dim(datalong)),"\n"))
     cat(file = stderr(),paste0("update_data_structure_by_longitudinal_data dim(datalong)= ",dim(datalong),"\n"))
-    #     cat(file = stderr(),dim(data))
+    cat(file = stderr(),paste0("estimate time first = ", estimate_time_first,"\n"))
 
     #   }
 

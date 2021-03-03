@@ -996,8 +996,8 @@ estimate_average_of_rows<- function(df){
 
 # has tests
 get_data_group <-function(data, group, tbl_beh = g_beh(), method = g_act_method()){
-  cat(file = stderr(), paste0("get_data_group with group ==", group,"\n"))
-  cat(file = stderr(), paste0("get_data_group with dim(data) ==", dim(data),"\n"))
+  #cat(file = stderr(), paste0("get_data_group with group ==", group,"\n"))
+  #cat(file = stderr(), paste0("get_data_group with dim(data) ==", dim(data),"\n"))
   if (group == "all_groups") {
     data_group = data
   } else {
@@ -1096,14 +1096,14 @@ get_data_group_region <- function(data, group, region, tbl_beh = g_beh(), method
 
 # has tests
 get_data_group_trial <- function(data, group, trial, tbl_beh = g_beh(),method = g_act_method()){
-  cat(file = stderr(), paste0("get_data_group_trial dim(data)=",dim(data),"\n"))
+  #cat(file = stderr(), paste0("get_data_group_trial dim(data)=",dim(data),"\n"))
   data_group = get_data_group(data, group, tbl_beh = tbl_beh, method = method)
-  cat(file = stderr(), paste0("in get_data_group_trial dim(data_group)=",dim(data_group),"\n"))
+  #cat(file = stderr(), paste0("in get_data_group_trial dim(data_group)=",dim(data_group),"\n"))
 
   # verhindere das die gruppe gedroppt wird wenn sie nur ein Subject hat
-  cat(file = stderr(), paste0("before drop_except dim(data_group)=",dim(data_group),"\n"))
+  #cat(file = stderr(), paste0("before drop_except dim(data_group)=",dim(data_group),"\n"))
   data_group_trial = drop_except(data_group[,,,trial,,drop=FALSE], c(1,2,3,5))
-  cat(file = stderr(), paste0("after drop_except dim(data_group_trial)=",dim(data_group_trial),"\n"))
+  #cat(file = stderr(), paste0("after drop_except dim(data_group_trial)=",dim(data_group_trial),"\n"))
 
     #cat(file = stderr(), paste0("get_data_group_trial dim(data_group_trial)=",dim(data_group_trial),"\n"))
 #  data_group_trial = data_group[,,,trial,]
@@ -1215,19 +1215,19 @@ get_data_group_trial_freq <- function(data, group, trial, freq, tbl_beh = g_beh(
 
 # has tests
 get_data_group_trial_freqmean <- function(data, group, trial, freq, tbl_beh = g_beh(), method = g_act_method()){
-  cat(file = stderr(), paste0("start get_data_group_trial_freqmean with dim(data)=",dim(data),"\n"))
+  #cat(file = stderr(), paste0("start get_data_group_trial_freqmean with dim(data)=",dim(data),"\n"))
   start_time2 = Sys.time()
   data_group_trial = get_data_group_trial(data, group, trial, tbl_beh = tbl_beh, method = method)
-  cat(file = stderr(), paste0("in get_data_group_trial_freqmean with dim(data_group_trial)=",dim(data_group_trial),"\n"))
-  cat(file = stderr(),paste0("get_data_group_trial duration =",Sys.time()-start_time2,"\n"))
+  #cat(file = stderr(), paste0("in get_data_group_trial_freqmean with dim(data_group_trial)=",dim(data_group_trial),"\n"))
+  #cat(file = stderr(),paste0("get_data_group_trial duration =",Sys.time()-start_time2,"\n"))
   start_time2 = Sys.time()
   data_group_trial_freq = filter_by_selfreq(data_group_trial, freq, method = method)
-  cat(file = stderr(), paste0("in get_data_group_trial_freqmean with dim(data_group_trial_freq)=",dim(data_group_trial_freq),"\n"))
-  cat(file = stderr(),paste0("filter_by_selfreq duration =",Sys.time()-start_time2,"\n"))
+  #cat(file = stderr(), paste0("in get_data_group_trial_freqmean with dim(data_group_trial_freq)=",dim(data_group_trial_freq),"\n"))
+  #cat(file = stderr(),paste0("filter_by_selfreq duration =",Sys.time()-start_time2,"\n"))
   start_time2 = Sys.time()
   data_group_trial_freqmean = get_freqmean(data_group_trial_freq, method = method)
-  cat(file = stderr(), paste0("in get_data_group_trial_freqmean with dim(data_group_trial_freqmean)=",dim(data_group_trial_freqmean),"\n"))
-  cat(file = stderr(),paste0("get_freqmean duration =",Sys.time()-start_time2,"\n"))
+  #cat(file = stderr(), paste0("in get_data_group_trial_freqmean with dim(data_group_trial_freqmean)=",dim(data_group_trial_freqmean),"\n"))
+  #cat(file = stderr(),paste0("get_freqmean duration =",Sys.time()-start_time2,"\n"))
 
   return(data_group_trial_freqmean)
 }

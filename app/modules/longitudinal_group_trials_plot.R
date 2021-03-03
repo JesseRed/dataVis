@@ -159,7 +159,10 @@ longitudinalPlotServer <- function(id, dir_listRS) {
 
         fluidRow(
           #  plotOutput(ns("plot"), width = "auto", height = "800px", click = ns("plot_click"))
-          plotOutput(ns("plot"), width = "auto", height = "auto", click = ns("plot_click"))
+          plotOutput(ns("plot"), width = "auto", height = "auto", click = ns("plot_click")),
+          br(),
+          br(),
+          br(),
         ),
 
         fluidRow(
@@ -225,9 +228,9 @@ longitudinalPlotServer <- function(id, dir_listRS) {
           #HTML("<div class='col-sm-4' style='min-width: 350px !important;'>"),
           column(12, box(title = "Behavioral data.frame", width = 12, collapsible = TRUE, collapsed = TRUE,
                          tableOutput(ns("head_beha")))),
-          column(12, box(title = "Behavioral data.frame", width = 12, collapsible = TRUE, collapsed = TRUE,
+          column(12, box(title = "Behavioral data.frame Group1", width = 12, collapsible = TRUE, collapsed = TRUE,
                          tableOutput(ns("head_beha_g1")))),
-          column(12, box(title = "Behavioral data.frame", width = 12, collapsible = TRUE, collapsed = TRUE,
+          column(12, box(title = "Behavioral data.frame Group2", width = 12, collapsible = TRUE, collapsed = TRUE,
                          tableOutput(ns("head_beha_g2")))),
         ),
         fluidRow(
@@ -241,7 +244,6 @@ longitudinalPlotServer <- function(id, dir_listRS) {
 
 )
       })
-      #subjects_to_exclude = c()
       subjects_to_exclude = reactive({
         # list of subjects that are not marked
         to_exclude = setdiff( g_D()$df_BD$ID, input$Subjects)
@@ -274,11 +276,6 @@ longitudinalPlotServer <- function(id, dir_listRS) {
                                  choices = curdata()$df_data2$ID, inline = T,
                                  selected =  curdata()$df_data2$ID[my_included_subjects_g2()]
                                  )
-        cat(file = stderr(), "after updata in button \n")
-        # updateCheckboxGroupInput(session, "ExSubjects",
-        #                          choices = g_D()$df_BD$ID, inline = T,
-        #                          selected = c("ID001__1","ID013__2"))
-        #cat(file = stderr(), paste0("excluded Subjects = ", my_excluded_subjects(),"\n"))
       })
 
       output$head_beha <- renderTable({
@@ -290,68 +287,6 @@ longitudinalPlotServer <- function(id, dir_listRS) {
       output$head_beha_g2 <- renderTable({
         curdata()$df_data2
       })
-
-      # observeEvent(input$Subjects, {
-      #   cat(file = stderr(), paste0("excluded Subjects = \n"))
-      #   cat(file = stderr(), paste0("excluded Subjects = ", input$Subjects, "\n"))
-      #   #
-      #   # updateCheckboxGroupInput(session, "Subjects",
-      #   #                          choices = g_D()$df_BD$ID, inline = T,
-      #   #                          selected =  g_D()$df_BD$ID[my_included_subjects()])
-      #   # updateCheckboxGroupInput(session, "Group1",
-      #   #                          choices = curdata()$df_data1$ID, inline = T,
-      #   #                          selected =  curdata()$df_data1$ID[my_included_subjects_g1()])
-      #   # updateCheckboxGroupInput(session, "Group2",
-      #   #                          choices = curdata()$df_data2$ID, inline = T,
-      #   #                          selected =  curdata()$df_data2$ID[my_included_subjects_g2()])
-      #
-      #   #cat(file = stderr(), paste0("excluded Subjects = ", my_excluded_subjects(),"\n"))
-      # })
-
-
-      # output$includedSubjects <- renderUI({
-      #
-      #   cat(file = stderr(), "into includedSubjects \n")
-      #   #updateSliderInput(session,"freq", value = c(0,5))
-      #   fluidRow(
-      #     actionButton(ns("testexclude"), "test exclude"),
-      #
-      #     checkboxGroupInput(ns("Subjects"), label = h3("Subjects"), inline = T,
-      #                        choices = g_D()$df_BD$ID), #,
-      #                        #selected =  g_D()$df_BD$ID[my_included_subjects()]),
-      #
-      #     checkboxGroupInput(ns("Group1"), label = h3("Group 1"), inline = T,
-      #                        choices = c(), #curdata()$df_data1$ID,
-      #                        selected = c()), #curdata()$df_data1$ID[my_included_subjects_g1()]),
-      #
-      #     checkboxGroupInput(ns("Group2"), label = h3("Group 2"), inline = T,
-      #                        choices = c(), #curdata()$df_data2$ID,
-      #                        selected = c()) #curdata()$df_data2$ID[my_included_subjects_g2()])
-      #   )
-      #   })
-
-
-
-
-      # output$excludedSubjects <- renderUI({
-      #
-      #   cat(file = stderr(), "into excludedSubjects \n")
-      #   #updateSliderInput(session,"freq", value = c(0,5))
-      #   fluidRow(
-      #
-      #     checkboxGroupInput(ns("ExSubjects"), label = h3("Subjects"), inline = T,
-      #                        choices = g_D()$df_BD$ID),
-      #                        # selected =  my_excluded_subjects()),
-      #
-      #     checkboxGroupInput(ns("ExGroup1"), label = h3("Group 1"), inline = T,
-      #                         choices = curdata()$df_data1$ID),
-      #     #                    selected = curdata()$df_data1$ID[my_excluded_subjects_g1]),
-      #     #
-      #     checkboxGroupInput(ns("ExGroup2"), label = h3("Group 2"), inline = T,
-      #                         choices = curdata()$df_data2$ID)
-      #     #                    selected = curdata()$df_data2$ID[my_excluded_subjects_g2])
-      #   )})
-#
 
       x1<<- NULL
       x2<<- NULL
@@ -411,29 +346,18 @@ longitudinalPlotServer <- function(id, dir_listRS) {
       # get the data for the second time point
       # die longitudinalen Daten sind kodiert als nummern hinter den IDs der Subjects XY001_1
       # daher teilen wir hier die Subjects einfach entsprechend auf
-      # S <- reactive({split_data_by_longitudinal_info(g_D(),
-      #                                                as.numeric(unlist(strsplit(input$ld_1, split=","))),
-      #                                                as.numeric(unlist(strsplit(input$ld_2, split=","))),
-      #                                                is_exclude_not_reoccuring_subj = input$cb_same_subjects,
-      #                                                averagelong = input$averagelong)})
-      #
-      # gS <<- S
-      # D1 <- reactive({S()$D1})
-      # D2 <- reactive({S()$D2})
-
-
-      estimate_time_first <- reactive({input$longtimefirst})
 
       curdata <- reactive({
+        cat(file = stderr(), paste0("curdata with dim(g_D()$mat)=", dim(g_D()$mat),"\n"))
         req(input$group1)
         req(input$group2)
         req(input$trial1)
         req(input$trial2)
         req(input$ld_1)
         req(input$ld_2)
-        req(input$cb_same_subjects)
-        req(input$averagelong)
-        req(input$longtimefirst)
+        # req(input$cb_same_subjects)
+        # req(input$averagelong)
+        # req(input$longtimefirst)
         #gD1 <<- D1()
         #gD2 <<- D2()
         cat(file = stderr(), paste0("curdata with dim(g_D()$mat)=", dim(g_D()$mat),"\n"))
@@ -452,7 +376,7 @@ longitudinalPlotServer <- function(id, dir_listRS) {
                                               averagelong = input$averagelong,
 #                                              datalong = D2()$mdat,
 #                                              tbl_beh_long = D2()$df_BD,
-                                              estimate_time_first = estimate_time_first(),
+                                              estimate_time_first = input$longtimefirst,
                                               filter_g1 = input$filterg1,
                                               filter_g2 = input$filterg2,
                                               subjects_to_exclude = subjects_to_exclude()

@@ -181,6 +181,7 @@ generate_plot_Corrplot<-function(mat_p, mat_t,
   glob_mat_p <<- mat_p
   glob_mat_t <<- mat_t
   #cat(file = stderr(), paste0("Corr regions = ", regions,"\n"))
+  cat(file = stderr(), paste0("method = ", g_act_method(),"\n"))
   #cat(file = stderr(), paste0("Corr colnames = ", colnames(mat_p),"\n"))
   #cat(file = stderr(), mat_t)
 
