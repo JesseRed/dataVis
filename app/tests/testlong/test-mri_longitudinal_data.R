@@ -66,8 +66,8 @@ test_that("new longitudinal data analysis works",{
   # get the data for the second time point
   # die longitudinalen Daten sind kodiert als nummern hinter den IDs der Subjects XY001_1
   # daher teilen wir hier die Subjects einfach entsprechend auf
-  filter_g1 = "Zeichen>0"
-  filter_g2 = "Zeichen>0"
+  filter_g1 = "Zeichen__1>0"
+  filter_g2 = "Zeichen__1>0"
   ld_1 = "1"
   ld_2 = "2, 3"
 
@@ -79,6 +79,34 @@ test_that("new longitudinal data analysis works",{
   expect_equal(dim(D1$mdat)[3], 3)
   expect_equal(dim(D1$mdat)[4], 2)
   expect_equal(dim(D1$mdat)[5], 1)
+
+  # D$df_BD$Zeichen__1 ... 297 822 488 801 268 564 202 796 257
+  Dtest <- D
+  #cat(file = stderr(), paste0("\nnrow(D)= ", nrow(D$df_BD),"\n"))
+  #cat(file = stderr(), paste0("nrow(Dtest)= ", nrow(Dtest$df_BD),"\n"))
+  myfilter = "Zeichen__1>300"
+  expect_equal(nrow(Dtest$df_BD),9)
+  Dtest <- filter_datastruct(Dtest, group = 1, myfilter = myfilter)
+  #cat(file = stderr(), paste0(Dtest2$df_BD))
+  expect_equal(nrow(Dtest$df_BD),5)
+
+  #orgIDs       ID       Gruppe ToInclude Lektion Zeichen__1 Zeichen__2 Amin__1 Amin__2 Tippfehler__1 Tippfehler__2
+  #1:  VP_05 ID005__1      1         1       3        297        442     101     153             5            16
+  #2:  VP_05 ID005__2      1         1       3        822        916     283     315            27            29
+  #3:  VP_06 ID006__1      1         1       3        488        507     168     176            15            21
+  #4:  VP_06 ID006__2      1         1       3        801        757     277     262            29            29
+  #5:  VP_07 ID007__1      1         1       3        268        334      94     118            14            19
+  #6:  VP_07 ID007__2      1         1       3        564        551     192     188            11            14
+  #7:  VP_08 ID008__1      1         1       3        202        338      68     116             2             9
+  #8:  VP_08 ID008__2      1         1       3        796        725     273     245            22            10
+  #:   VP_09 ID009__1      1         1       3        257        321      91     112            17            15
+  Dtest <- D
+  myfilter = "Zeichen__1>300, Tippfehler__1<20"
+  expect_equal(nrow(Dtest$df_BD),9)
+  Dtest <- filter_datastruct(Dtest, group = 1, myfilter = myfilter)
+  expect_equal(nrow(Dtest$df_BD),2)
+
+
 
 
 
@@ -111,6 +139,8 @@ test_that("new longitudinal data analysis works",{
   expect_equal(dim(D2$mdat)[5], 1)
 
 
+ #
+
 
   # subject 1 Trial 1
   #            LH_Vis_1   LH_Vis_2  LH_Vis_3
@@ -119,7 +149,7 @@ test_that("new longitudinal data analysis works",{
   # LH_Vis_3  0.2341862  0.3027033 1.0000000
 
 
-  # M <- get_longitudinal_currently_selected_data(D1, D2, g1, g2, t1, t2 ,freq,
+  # M <- get_longitudinal_currently_selected_data3(D1, D2, g1, g2, t1, t2 ,freq,
   #
   #                                                 input$group1,
   #                                                 input$group2,

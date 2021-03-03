@@ -1,23 +1,53 @@
 library(abind)
 
 
+# has tests
 filter_datastruct <- function(D, group = NULL, myfilter = NULL){
+  # reduziert die Datenstruktur D indem entsprechend der gruppe nach dem uebergebenen Filter gefiltert wird
+  # group : integer
+  # character :
+  # z.B. group = 1, "Zeichen__1>0, Zeichen__2>1, ToInclude==1"
+  #    -> aus dem Datensatz D werden alle Eintraege entfert die Gruppe = 1 haben und in D$df_BD eine Spalte mit Zeichen__1 Werte stehen
+  #         haben die nicht groesser 0 sind, sowie Zeichen__2 nicht groesser 0 und die nicht ToInclude==1 sind
+  #
   if (is.null(group) | is.null(myfilter)){
     cat(file = stderr(), paste0("Aufruf of filter_datastruct without proper parameters group =", group, "  filter = ", myfilter, "\n"))
     return(D)
   }
-  # entfernet whitespaces
-  myfilter = trimws(myfilter)
-  if (nchar(myfilter)==0){
+  #filter
+  vfilter = unlist(strsplit(myfilter, ","))
+  if (length(vfilter)==0){
     return(D)
   }
-  # hole alle der Gruppe
-  df_g1 <- D$df_BD %>% filter(D$df_BD$Gruppe == group)
-  # filtere nach dem filterkriterium
-  df_g1f <- df_g1 %>% filter(eval(rlang::parse_expr(myfilter)))
-  ids_to_eleminate <- setdiff(df_g1$ID,df_g1f$ID)
+  for (i in 1:length(vfilter)){
+    filter_entry = trimws(vfilter[i])
+    #cat(file= stderr(), paste0("i = ", i , "with filter_entry = , ", filter_entry, "\n"))
+    # filtere nur wenn nicht empty
+    if (nchar(filter_entry)>0){
+      # hole alle der Gruppe
+      df_g1 <- D$df_BD %>% filter(D$df_BD$Gruppe == group)
+      # filtere nach dem filterkriterium
+      df_g1f <- df_g1 %>% filter(eval(rlang::parse_expr(filter_entry)))
+      #cat(file= stderr(), paste0("df_g1 = ", df_g1f))
+      ids_to_eleminate <- setdiff(df_g1$ID,df_g1f$ID)
 
-  D <- delete_subject_from_data_struct(D = D, ids_to_delete = ids_to_eleminate)
+      D <- delete_subject_from_data_struct(D = D, ids_to_delete = ids_to_eleminate)
+    }
+  }
+  # entfernet whitespaces
+  # myfilter = trimws(myfilter)
+  # if (nchar(myfilter)==0){
+  #   return(D)
+  # }
+  # # hole alle der Gruppe
+  # df_g1 <- D$df_BD %>% filter(D$df_BD$Gruppe == group)
+  # # filtere nach dem filterkriterium
+  # df_g1f <- df_g1 %>% filter(eval(rlang::parse_expr(myfilter)))
+  # ids_to_eleminate <- setdiff(df_g1$ID,df_g1f$ID)
+  #
+  # D <- delete_subject_from_data_struct(D = D, ids_to_delete = ids_to_eleminate)
+  #cat(file = stderr(), paste0("before retrun with nrow(D) = ",nrow(D),"\n"))
+  return(D)
 }
 
 
@@ -32,7 +62,8 @@ get_currently_selected_data_long3<-function(D, g1, g2, t1, t2, freq,
                                             averagelong = TRUE,
                                             estimate_time_first = TRUE,
                                             filter_g1 = "",
-                                            filter_g2 = ""){
+                                            filter_g2 = "",
+                                            subjects_to_exclude = NULL){
 
   # die funktion gibt eine LIste von mehreren Variablen zurueck
   # gedacht fuer tabs in denen gruppen und trials ausgewaehlt werden
@@ -46,30 +77,45 @@ get_currently_selected_data_long3<-function(D, g1, g2, t1, t2, freq,
 
 
   ###################
+  # 1. Entferne die Subjects aus der exclude liste
+  if (!is.null(subjects_to_exclude)){
+    if (length(subjects_to_exclude)>0){
+      cat(file = stderr(), "subjects to exclude in get_currently_selected_data_long3 = ", subjects_to_exclude, "\n")
+      D <- delete_subject_from_data_struct(D = D, ids_to_delete = subjects_to_exclude)
+    }
+  }
+
+
+  ###################
   # 1. Filtere die Daten anhand von filter_g1 und filter_g2
-  # das Filtern muss als erstes erfolgen, da wenn wir hier Probanden
+  # das Filtern muss als erstes erfolgen, da +++wenn wir hier Probanden
   # rauswerfen hinterher die gleichen Probanden noch beim longitudinalen
   # Design rausgeworfen werden muessen
   D <- filter_datastruct(D, group = g1, myfilter = filter_g1)
   D <- filter_datastruct(D, group = g2, myfilter = filter_g2)
-
+  g_freq <<- freq
   # wenn moeglich dann teile in longitudinale Daten auf
   S<- split_data_by_longitudinal_info(D, long_def1, long_def2,
                                       is_exclude_not_reoccuring_subj = is_exclude_not_reoccuring_subj,
                                       averagelong = averagelong)
+  gdx11 <<- S$D1
+  gdx12 <<- S$D2
 
   data <- S$D1$mdat
   tbl_beh = S$D1$df_BD
   datalong <- S$D2$mdat
   start_time <- Sys.time()
   # fuer die ersten Daten (alle oder longitudinal 1)
-  d <- get_selected_data_considering_group_trial(data, g1,g2,t1,t2, freq,  trials = trials, tbl_beh = tbl_beh, method = method)
+  d <- get_selected_data_considering_group_trial(data, g1, g2, t1, t2, freq,  trials = trials, tbl_beh = tbl_beh, method = method)
 
+  gdx2<<-d
   if (!is.null(datalong)){
-    update_data_structure_by_longitudinal_data(d, datalong, g1,g2,t1,t2, freq, trials = trials,
+    cat(file = stderr(), "update \n")
+    d<-update_data_structure_by_longitudinal_data(d, datalong, g1,g2,t1,t2, freq, trials = trials,
                                                tbl_beh_long = S$D2$df_BD, method = method, estimate_time_first = estimate_time_first)
   }
 
+  gdx3 <<-d
   #####################
   # d$data1 und d$data2 sind erhoben
 
@@ -79,7 +125,7 @@ get_currently_selected_data_long3<-function(D, g1, g2, t1, t2, freq,
 
 
   d <- estimate_mat_t_p(d, method = method, regions = regions)
-
+  gdx4 <<- d
   cat(file = stderr(),paste0("get_currently_selected_datalong duration =",Sys.time()-start_time,"\n"))
   gd_get_long_data <<- d
   return(d)
@@ -205,7 +251,7 @@ update_data_structure_by_longitudinal_data<-function(d1, datalong,  g1,g2,t1,t2,
       }
     }
 
-
+ return(d)
 }
 
 
@@ -213,6 +259,7 @@ estimate_df_difference<-function(df1, df2){
   # Berchnung der Difference in den behavioralen Daten zwischen 2Dataframes
   # es wird angenommen, dass sie identische Dimensionen haben
   # anwendung fuer die longitudinalen Daten
+  # d ist die Datenstruktur des Ursprungsdatensatzes an den die Anpassung erfolgen muss
   if (nrow(df1)!= nrow(df2)){
     cat(file = stderr(), paste0("!!!ERROR in estimate_df_dfference ... "))
     cat(file = stderr(), paste0("difference in nrwos detected  ... nrow(df1)=", nrow(df1), "   nrow(df2)=", nrow(df2),"\n"))
@@ -226,10 +273,13 @@ estimate_df_difference<-function(df1, df2){
   is_col_numeric <- unlist(lapply(df1, is.numeric))
   df = df1
   for (i in 1:ncol(df1)){
+    cur_colname <- colnames(df)[i]
     # Strings bzw. not numeric
+
     # nicht numerische koennen wir nicht mittelen ... daher fuegen wir zusammen
     if (!is_col_numeric[i]){
-      # my_string = "diff("
+      df[,i] = paste0("diff(", df1[[cur_colname]], ",", df2[[cur_colname]],")")
+
       # for (j in 1:nrow(df1)){
       #   my_string <- paste0(my_string, df[[j,i]] ,"+")
       # }
@@ -237,11 +287,11 @@ estimate_df_difference<-function(df1, df2){
       # dfm[1,i] <- my_string
     }else{
       # NUMERIC COLUMN
-      cur_colname <- colnames(df)[i]
       df[,i] = df1[[cur_colname]] - df2[[cur_colname]]
 #      df[,i] <- df1[,i] - df2[,i]
     }
   }
+  return(df)
 }
 
 estimate_mat_t_p<- function(d, method = g_act_method(), regions = g_regions()){
@@ -300,11 +350,34 @@ return(d)
 get_included_subjects<-function(all_ids, ids_to_exclude){
   # creates a bool vector with false for those subjects
   # which have a pattern common with ids_to_exclude
+  #cat(file = stderr(), paste0("class(ids_to_exclude = ", class(ids_to_exclude), "\n"))
+  #cat(file = stderr(), paste0("length(ids_to_exclude = ", length(ids_to_exclude), "\n"))
+  #cat(file = stderr(), paste0("all_ids = ", all_ids, "\n"))
+  #cat(file = stderr(), paste0("get_included_subjects ids_to_exclude = ", ids_to_exclude, "\n"))
 
   all_ids_bool =  !logical(length= length(all_ids))
-  for (i in 1:length(ids_to_exclude)){
-    all_ids_bool = all_ids_bool & !str_detect(all_ids, ids_to_exclude[i])
+  #cat(file = stderr(), paste("all_ids_bool = ", all_ids_bool, "\n"))
+  if (is.null(ids_to_exclude)){
+    #cat(file = stderr(), "return because ids_to_exclude is null\n")
+    return(all_ids_bool)
   }
+
+  if (length(ids_to_exclude)==0){
+    #cat(file = stderr(), "length(ids_to_exlude = 0)\n")
+  }else{
+    for (i in 1:length(ids_to_exclude)){
+      cat(file = stderr(), paste0("in for loop i=", i,"\n"))
+      all_ids_bool = all_ids_bool & !str_detect(all_ids, ids_to_exclude[i])
+    }
+  }
+
+  gall_ids <<- all_ids
+  gids_to_exclude <<- ids_to_exclude
+
+
+
+  #cat(file = stderr(), paste("all_ids_bool before return= ", all_ids_bool, "\n"))
+
   return(all_ids_bool)
 }
 
@@ -312,9 +385,14 @@ get_included_subjects<-function(all_ids, ids_to_exclude){
 get_excluded_subjects<-function(all_ids, ids_to_exclude){
   # creates a bool vector with false for those subjects
   # which have a pattern common with ids_to_exclude
-  cat(file = stderr(), paste0("all_ids = ", all_ids, "\n"))
-  cat(file = stderr(), paste0("ids_to_exclude = ", ids_to_exclude, "\n"))
+  #cat(file = stderr(), paste0("class(ids_to_exclude = ", class(ids_to_exclude), "\n"))
+  #cat(file = stderr(), paste0("length(ids_to_exclude = ", length(ids_to_exclude), "\n"))
+  #cat(file = stderr(), paste0("all_ids = ", all_ids, "\n"))
+  #cat(file = stderr(), paste0("ids_to_exclude = ", ids_to_exclude, "\n"))
+
   all_ids_bool =  logical(length= length(all_ids))
+  if (is.null(ids_to_exclude)){ return(all_ids_bool)}
+
   for (i in 1:length(ids_to_exclude)){
     all_ids_bool = all_ids_bool | str_detect(all_ids, ids_to_exclude[i])
   }

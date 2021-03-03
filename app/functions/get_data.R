@@ -966,6 +966,7 @@ average_data_from_reoccuring_subjects<-function(D){
   return(D)
 }
 
+
 estimate_average_of_rows<- function(df){
   # estimate the mean of all rows
   # return a dataframe with a single row
