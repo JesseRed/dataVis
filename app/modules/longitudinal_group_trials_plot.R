@@ -237,6 +237,10 @@ longitudinalPlotServer <- function(id, dir_listRS) {
 
           #HTML("<div class='col-sm-4' style='min-width: 350px !important;'>"),
           column(12, box(title = "Network configuration", width = 12, collapsible = TRUE, collapsed = TRUE,
+                         DT::dataTableOutput(ns('foo')),
+                         verbatimTextOutput(ns('sel')),
+                         DT::dataTableOutput(ns('mycheckboxtable')),
+                         verbatimTextOutput(ns('sel2')),
                          actionButton(ns("usenewnetwork"), "use new network"),
 
                          actionButton(ns("useoriginalnetwork"), "use original network"),
@@ -250,7 +254,7 @@ longitudinalPlotServer <- function(id, dir_listRS) {
                            fill = TRUE,
                            inline = TRUE
                          ),
-                         DT::dataTableOutput('mycheckboxtable'),
+
                          uiOutput(ns("network"))
           ),
         )
@@ -612,9 +616,149 @@ longitudinalPlotServer <- function(id, dir_listRS) {
         )
       })
 
-      output$my
+
+      m2 = reactive({
+        m2 = matrix(
+          as.character(1:15), nrow = length(g_regions()), ncol = 15, byrow = TRUE,
+          dimnames = list(g_regions(), LETTERS[1:15])
+        )
+        m2[1,1]=1
+        m2[2,2] = 0
+        for (i in seq_len(nrow(m2))) {
+          m2[i, ] = sprintf(
+            '<input type="radio" name="%s" value="%s"/>',
+            g_regions()[i], m2[i, ]
+          )
+        }
+        return(m2)
+      })
+
+      # m = matrix(
+      #         as.character(1:5), nrow = length(g_regions()), ncol = 5, byrow = TRUE,
+      #         dimnames = list(g_regions(), LETTERS[1:5])
+      #       )
+      #       for (i in seq_len(nrow(m))) {
+      #         m[i, ] = sprintf(
+      #           '<input type="radio" name="%s" value="%s"/>',
+      #           g_regions()[i], m[i, ]
+      #         )
+      #       }
+      output$mycheckboxtable = DT::renderDataTable(
+        m2(), escape = FALSE, selection = 'none', server = FALSE,
+        options = list(dom = 't', paging = FALSE, ordering = FALSE, stateSave = TRUE,
+                       editable = 'all'),
+        callback = JS("table.rows().every(function(i, tab, row) {
+          var $this = $(this.node());
+          $this.attr('id', this.data()[0]);
+          $this.addClass('shiny-input-radiogroup');
+        });
+        Shiny.unbindAll(table.table().node());
+        Shiny.bindAll(table.table().node());")
+      )
+
+      # output$mycheckboxtable = DT::renderDataTable(
+      #   m, escape = FALSE, selection = 'none', server = FALSE,
+      #   options = list(dom = 't', paging = FALSE, ordering = FALSE),
+      #   callback = JS("table.rows().every(function(i, tab, row) {
+      #     var $this = $(this.node());
+      #     $this.attr('id', this.data()[0]);
+      #     $this.addClass('shiny-input-radiogroup');
+      #   });
+      #   Shiny.unbindAll(table.table().node());
+      #   Shiny.bindAll(table.table().node());")
+      # )
+      #
 
 
+
+      output$sel2 = renderPrint({
+        # str(input$A)
+        # str(input$mycheckboxtable_A)
+        # str(input$mycheckboxtable_1)
+        # str(input$mycheckboxtable_central)
+        # #str(input$1)
+        # str(input[["1"]])
+        #
+        # # for (i in 1:5){
+        # #   str(input[[i]])
+        # # }
+        # str(input$mycheckboxtable$A)
+        # print(input$mycheckboxtable_rows_current)
+        # print(input$mycheckboxtable_rows_all)
+        # print("cell_clicked")
+        # print(input$mycheckboxtable_cell_clicked)
+        # print("cell_info")
+        # print(input$mycheckboxtable_cell_info)
+        # print("rwos_selected")
+        # str(input$mycheckboxtable_rows_selected)
+        # print("cell_edit")
+        # str(input$mycheckboxtable_cell_edit)
+        # print("row")
+        # proxy <<- dataTableProxy('mycheckboxtable')
+
+        #str(input$mycheckboxtable_state)
+        #g_tab <<- input$mycheckboxtable_state
+        str(sapply(g_regions(), function(i) input[[i]]))
+        print("m")
+        str(m2())
+      })
+
+      filtereddata <<- eventReactive(input$usenewnetwork,{
+        #dataTableProxy('mycheckboxtable')
+        cat(file = stderr(), paste0("er cell row = ", input$mycheckboxtable_cell_clicked$row ,"\n"))
+        # return(DT::datatable(data
+        #                      ,options = list(state=input$Table_state)
+        # ))
+      })
+
+      rowclicked = reactive({
+        return(input$mycheckboxtable_cell_clicked$row)
+      })
+
+      newNetwork <- reactiveValues(
+        tmp = list()
+        for (i in 1:length(g_regions())){
+          tmp[regions()[i]]= 0
+        }
+        return(tmp)
+    })
+#       newNetwork <- reactiveValues(
+#         tmp = list()
+#         for (i in 1:length(g_regions())){
+#           tmp[regions()[i]]= 0
+#         }
+#         return(tmp)
+# })
+
+      newNetwork = reactive({
+
+        res <- str_match(input$mycheckboxtable_cell_clicked$value, "value=\"(.*?)\"/>" )
+
+        v = as.numeric(res[2])
+        row = as.numeric(input$mycheckboxtable_cell_clicked$row)
+        newNetwork[row] = v
+        return(newNetwork)
+      })
+
+
+      eventReactive(input$mycheckboxtable_cell_clicked,{
+        cat(file = stderr(), "ercell was clicked\n")
+        cat(file = stderr(), paste0("er cell row = ", input$mycheckboxtable_cell_clicked$row ,"\n"))
+        cat(file = stderr(), "er cell was clicked\n")
+
+        })
+
+      # observe(input$mycheckboxtable_cell_clicked,{
+      #   cat(file = stderr(), "cell was clicked\n")
+      #   cat(file = stderr(), paste0("cell row = ", input$mycheckboxtable_cell_clicked$row ,"\n"))
+      #   cat(file = stderr(), "cell was clicked\n")
+      #
+      # })
+
+      observeEvent(input$usenewnetwork,{
+        cat(file = stderr(),"usenew network was pressed \n")
+        myproxy <<- dataTableProxy('mycheckboxtable')
+      })
           #                   selected = "2013")
         # fluidRow(
         #   tabBox(
@@ -638,6 +782,32 @@ longitudinalPlotServer <- function(id, dir_listRS) {
         # )
       #})
 
+          m = matrix(
+            as.character(1:5), nrow = 12, ncol = 5, byrow = TRUE,
+            dimnames = list(month.abb, LETTERS[1:5])
+          )
+          for (i in seq_len(nrow(m))) {
+            m[i, ] = sprintf(
+              '<input type="radio" name="%s" value="%s"/>',
+              month.abb[i], m[i, ]
+            )
+          }
+
+
+          output$foo = DT::renderDataTable(
+            m, escape = FALSE, selection = 'none', server = FALSE,
+            options = list(dom = 't', paging = FALSE, ordering = FALSE),
+            callback = JS("table.rows().every(function(i, tab, row) {
+                var $this = $(this.node());
+                $this.attr('id', this.data()[0]);
+                $this.addClass('shiny-input-radiogroup');
+              });
+              Shiny.unbindAll(table.table().node());
+              Shiny.bindAll(table.table().node());")
+          )
+          output$sel = renderPrint({
+            str(sapply(month.abb, function(i) input[[i]]))
+          })
 
 
       # Observe Funktion fuer den zentralen Specherbutton

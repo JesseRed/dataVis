@@ -109,6 +109,9 @@ get_currently_selected_data_long3<-function(D, g1, g2, t1, t2, freq,
   # fuer die ersten Daten (alle oder longitudinal 1)
   d <- get_selected_data_considering_group_trial(data, g1, g2, t1, t2, freq,  trials = trials, tbl_beh = tbl_beh, method = method)
 
+  # Ich muss noch die regionen mit einbinden in die Datenstruktur
+  d$regions = regions
+
   gdx2<<-d
   if (!is.null(datalong)){
     cat(file = stderr(), "update \n")
