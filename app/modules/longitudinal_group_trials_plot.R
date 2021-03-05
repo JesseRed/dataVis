@@ -234,6 +234,28 @@ longitudinalPlotServer <- function(id, dir_listRS) {
                          tableOutput(ns("head_beha_g2")))),
         ),
         fluidRow(
+
+          #HTML("<div class='col-sm-4' style='min-width: 350px !important;'>"),
+          column(12, box(title = "Network configuration", width = 12, collapsible = TRUE, collapsed = TRUE,
+                         actionButton(ns("usenewnetwork"), "use new network"),
+
+                         actionButton(ns("useoriginalnetwork"), "use original network"),
+                         materialSwitch(inputId = "idxxx", label = "Primary switch", status = "info"),
+                         prettyRadioButtons(
+                           inputId = "choosenetwork",
+                           label = "Which network to use for analysis",
+                           choices = c("original network", "new network defined here"),
+                           shape = "round",
+                           status = "danger",
+                           fill = TRUE,
+                           inline = TRUE
+                         ),
+                         DT::dataTableOutput('mycheckboxtable'),
+                         uiOutput(ns("network"))
+          ),
+        )
+        ),
+        fluidRow(
           column(12,
                  box(title = "Plot ..........expand for help (comp_plot_markdown.md)", width = 12, collapsible = TRUE, collapsed = TRUE, htmlOutput(ns("htmlhelp_Comp_Plot"))),
           )
@@ -570,9 +592,27 @@ longitudinalPlotServer <- function(id, dir_listRS) {
       })
 
 
+      output$network <- renderUI({
+        fluidRow(
+        column(1, style = "background-color: #fcfcfc;",
+               style = 'border-right: 2px solid gray',
+               for (i in 1:length(g_regions())){
+                 h4(g_regions()[i], align = "center")
 
+               }
+        ),
+        column(11,
+               radioGroupButtons(inputId = ns("head_beha"),
+                                 choices = rep("X", 4),
+                                 direction = "horizontal",
+                                 individual = TRUE,
+                                 width = '200px'
+                                 )
+        ),
+        )
+      })
 
-
+      output$my
 
 
           #                   selected = "2013")
@@ -640,8 +680,43 @@ longitudinalPlotServer <- function(id, dir_listRS) {
 
 
 
-
-
+# https://yihui.shinyapps.io/DT-radio/
+# library(shiny)
+# library(DT)
+# shinyApp(
+#   ui = fluidPage(
+#     title = 'Radio buttons in a table',
+#     DT::dataTableOutput('foo'),
+#     verbatimTextOutput('sel')
+#   ),
+#   server = function(input, output, session) {
+#     m = matrix(
+#       as.character(1:5), nrow = 12, ncol = 5, byrow = TRUE,
+#       dimnames = list(month.abb, LETTERS[1:5])
+#     )
+#     for (i in seq_len(nrow(m))) {
+#       m[i, ] = sprintf(
+#         '<input type="radio" name="%s" value="%s"/>',
+#         month.abb[i], m[i, ]
+#       )
+#     }
+#     m
+#     output$foo = DT::renderDataTable(
+#       m, escape = FALSE, selection = 'none', server = FALSE,
+#       options = list(dom = 't', paging = FALSE, ordering = FALSE),
+#       callback = JS("table.rows().every(function(i, tab, row) {
+#           var $this = $(this.node());
+#           $this.attr('id', this.data()[0]);
+#           $this.addClass('shiny-input-radiogroup');
+#         });
+#         Shiny.unbindAll(table.table().node());
+#         Shiny.bindAll(table.table().node());")
+#     )
+#     output$sel = renderPrint({
+#       str(sapply(month.abb, function(i) input[[i]]))
+#     })
+#   }
+# )
 
 
 
