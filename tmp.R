@@ -1,52 +1,139 @@
-cor_tbl(extra.mat = list(mat = mat_p)) %>%
-  quickcor(mapping = aes(fill = mat_p)) +
-  #geom_square(aes(upper_fill = mat_p, upper_r0 =mat_p)) +
-  #geom_abline(slope = -1, intercept = 12)
-
-# cor_tbl(extra.mat = list(mat = mat)) %>%
-#   +     quickcor(mapping = aes(fill = mat)) + geom_colour()
+# #library(nutterb/shinydust)
+# library(shiny)
+# library(pixiedust)
+# library(shinydust)
+# checkboxTable(tbl = mtcars,
+#               inputId = paste0("carChoice", 1:nrow(mtcars)),
+#               label = rownames(mtcars),
+#               value = FALSE,
+#               table_label = "Select Vehicles",
+#               display_table=TRUE,
+#               pixie = . %>% sprinkle(bg_pattern_by = "rows"))
 #
+# ## Not run:
+# library(shiny)
+# library(pixiedust)
+# library(shinydust)
 #
-# options(scipen=999)  # turn off scientific notation like 1e+06
-# library(ggplot2)
-# data("midwest", package = "ggplot2")  # load the data
-# # midwest <- read.csv("http://goo.gl/G1K41K") # alt source
+# server <- shinyServer(function(input, output) {
+#   output$table <-
+#     renderText({
+#       cbind(rownames(mtcars), mtcars) %>%
+#         checkboxTable(inputId = paste0("chooseCar", 1:nrow(mtcars)),
+#                       label = "",
+#                       value = FALSE,
+#                       table_label = "Select a Vehicle",
+#                       pixie = . %>%
+#                         sprinkle(bg_pattern_by = "rows") %>%
+#                         sprinkle_table(pad = 7) %>%
+#                         sprinkle_colnames("rownames(mtcars)" = "",
+#                                           control = ""))
+#     })
 #
-# # Init Ggplot
-# x<-ggplot(midwest, aes(x=area, y=poptotal))  #
-# x
-
-
-# funktioniert
-
-mat_p <- matrix(runif(100),nrow=10)
-
-
-
-
-df <- as.data.frame(mat_p)
-
-
-# funktioniert
-quickcor(mtcars, cor.test = TRUE) +
-  geom_square(data = get_data(type = "lower", show.diag = FALSE)) +
-  geom_mark(data = get_data(type = "upper", show.diag = FALSE), size = 2.5) +
-  geom_abline(slope = -1, intercept = 12)
-
-# funktioniert
-
-cor_tbl(extra.mat = list(mat = mat_p)) %>%
-  +   quickcor(mapping = aes(fill = mat_p)) +
-  geom_square(data = get_data(type = "lower", show.diag = FALSE)) +
-  geom_mark(data = get_data(type = "upper", show.diag = FALSE), size = 2.5) +
-  geom_abline(slope = -1, intercept = 12)
+#   output$chooseCar1 <- renderText(paste0("Mazda RX4: ", input$chooseCar1))
+#   output$chooseCar2 <- renderText(paste0("Mazda RX4 Wag: ", input$chooseCar2))
+# })
+#
+# ui <- shinyUI(fluidPage(
+#   wellPanel(
+#     verbatimTextOutput("chooseCar1"),
+#     verbatimTextOutput("chooseCar2"),
+#     uiOutput("table")
+#   )
+# ))
+#
+# shinyApp(ui = ui, server = server)
+#
+# ## End(Not run)
+#
 
 
 
-cor_tbl(extra.mat = list(mat = mat_p)) %>%
-  +   ggcor(mapping = aes(fill=mat_p))
+#****************************
+#* Checkbox Group Table
 
+checkboxGroupTable(tbl = mtcars,
+                   inputId = "carChoice",
+                   label = rownames(mtcars),
+                   choices = paste0("car", 1:nrow(mtcars)),
+                   table_label = "Select Vehicles",
+                   display_table=TRUE,
+                   pixie = . %>% sprinkle(bg_pattern_by = "rows"))
+## Not run:
+library(shiny)
+library(pixiedust)
+library(shinydust)
 
-# funktioniert
-cor_tbl(extra.mat = list(mat = mat_p)) %>%
-  +   quickcor(mapping = aes(fill = mat_p))
+server <- shinyServer(function(input, output) {
+  output$table <-
+    renderText({
+      cbind(rownames(mtcars), mtcars) %>%
+        checkboxGroupTable(inputId = "chooseCar",
+                           label = "",
+                           choices = paste0("car", 1:nrow(mtcars)),
+                           table_label = "Select a Vehicle",
+                           pixie = . %>%
+                             sprinkle(bg_pattern_by = "rows") %>%
+                             sprinkle_table(pad = 7) %>%
+                             sprinkle_colnames("rownames(mtcars)" = "",
+                                               control = ""))
+    })
+
+  output$choice <- renderText(input$chooseCar)
+})
+
+ui <- shinyUI(fluidPage(
+  wellPanel(
+    verbatimTextOutput("choice"),
+    uiOutput("table")
+  )
+))
+
+shinyApp(ui = ui, server = server)
+
+## End(Not run)
+
+#
+# #***********************************
+# #* Radio Button Table
+# radioTable(tbl = mtcars,
+#            inputId = "chooseCar",
+#            label = rownames(mtcars),
+#            choices = paste0("car", 1:nrow(mtcars)),
+#            table_label = "Select a Vehicle",
+#            display_table=TRUE,
+#            pixie = . %>% sprinkle(bg_pattern_by = "rows"))
+#
+# ## Not run:
+# library(shiny)
+# library(pixiedust)
+# library(shinydust)
+#
+# server <- shinyServer(function(input, output) {
+#   output$table <-
+#     renderText({
+#       cbind(rownames(mtcars), mtcars) %>%
+#         radioTable(inputId = "chooseCar",
+#                    label = "",
+#                    choices = paste0("car", 1:nrow(mtcars)),
+#                    table_label = "Select a Vehicle",
+#                    pixie = . %>%
+#                      sprinkle(bg_pattern_by = "rows") %>%
+#                      sprinkle_table(pad = 7) %>%
+#                      sprinkle_colnames("rownames(mtcars)" = "",
+#                                        control = ""))
+#     })
+#
+#   output$choice <- renderText(input$chooseCar)
+# })
+#
+# ui <- shinyUI(fluidPage(
+#   wellPanel(
+#     verbatimTextOutput("choice"),
+#     uiOutput("table")
+#   )
+# ))
+#
+# shinyApp(ui = ui, server = server)
+
+## End(Not run)

@@ -63,7 +63,8 @@ get_currently_selected_data_long3<-function(D, g1, g2, t1, t2, freq,
                                             estimate_time_first = TRUE,
                                             filter_g1 = "",
                                             filter_g2 = "",
-                                            subjects_to_exclude = NULL){
+                                            subjects_to_exclude = NULL,
+                                            network = g_regions_named()){
 
   # die funktion gibt eine LIste von mehreren Variablen zurueck
   # gedacht fuer tabs in denen gruppen und trials ausgewaehlt werden
@@ -76,6 +77,13 @@ get_currently_selected_data_long3<-function(D, g1, g2, t1, t2, freq,
   # d$color1 ... col ........ die Color palette die zu den Werten passen
   cat(file = stderr(),paste0("gcsdl3 estimate time first = ", estimate_time_first,"\n"))
 
+  # if (is.null(network)){
+  #   network <-
+  #   network = list()
+  #   for (i in 1:length(g_regions())){
+  #     network[g_regions()[i]]=i
+  #   }
+  # }
 
   ###################
   # 1. Entferne die Subjects aus der exclude liste
@@ -85,6 +93,14 @@ get_currently_selected_data_long3<-function(D, g1, g2, t1, t2, freq,
       D <- delete_subject_from_data_struct(D = D, ids_to_delete = subjects_to_exclude)
     }
   }
+
+  ###################
+  # 2. Veraendere (zusammenfassen) das Netzwerk (regions x regions)
+  #    entsprechend des uebergebenen NEtzwerkes (network)
+  #
+  D <- change_network_in_data_struct(D = D, old_network = g_regions_named, new_network = network)
+
+
 
 
   ###################
