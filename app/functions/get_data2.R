@@ -98,7 +98,7 @@ get_currently_selected_data_long3<-function(D, g1, g2, t1, t2, freq,
   # 2. Veraendere (zusammenfassen) das Netzwerk (regions x regions)
   #    entsprechend des uebergebenen NEtzwerkes (network)
   #
-  D <- change_network_in_data_struct(D = D, old_network = g_regions_named, new_network = network)
+  # D <- change_network_in_data_struct(D = D, old_network = g_regions_named, new_network = network)
 
 
 

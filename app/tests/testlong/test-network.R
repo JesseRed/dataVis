@@ -60,9 +60,9 @@ test_that("network works",{
         for (l in 1:dim(D$mdat)[4]){
           for (m in 1:dim(D$mdat)[5]){
 
-            D$mdat[i,j,k,l,m] = 1.0*j
-            # if (j ==5){
-            #   D$mdat[i,j,k,l,m] = 5.0
+            D$mdat[i,j,k,l,m] = 1.0*(k*2+j)
+            # if (k ==5){
+            #    D$mdat[i,j,k,l,m] = 5.0
             # }
           }
         }
@@ -70,19 +70,56 @@ test_that("network works",{
     }
   }
 
-  new_network = D$uregion_list_named
-  new_network$Areal1 <- 2
-  new_network$Areal2 <- 3
-  new_network$Areal3 <- 3
-  new_network$Areal4 <- 5
-  new_network$Areal5 <- 5
+  new_uregion_list_named = D$uregion_list_named
+  new_uregion_list_named$Areal1 <- 2
+  new_uregion_list_named$Areal2 <- 5
+  new_uregion_list_named$Areal3 <- 3
+  new_uregion_list_named$Areal4 <- 5
+  new_uregion_list_named$Areal5 <- 3
+
+  # Loeschung lehrer Columns
+  new_uregion_list_named <- remove_empty_cols(new_uregion_list_named)
+  expect_equal(length(new_uregion_list_named),5)
+  expect_equal(length(unique(unlist(new_uregion_list_named,use.names = F))),3)
+  expect_equal(max(unique(unlist(new_uregion_list_named,use.names = F))),3)
+
+  # mit Buchstaben versehen die neue Liste von Arelaen (A-N; 1-N)
+  new_uregion_list_named_adapt <- adapt_new_network(new_uregion_list_named)
+
+  num_regions_new = length(unique(unlist(new_uregion_list_named)))
+  num_regions_old = length(unique(unlist(D$uregion_list_named)))
+
+  # erstelle das leere Datanarray
+  m_new <- create_empty_array(D, num_regions_new, new_uregion_list_named_adapt)
+  expect_equal(dim(m_new)[1],dim(D$mdat)[1])
+  expect_equal(dim(m_new)[2],length(unique(unlist(new_uregion_list_named))))
+  expect_equal(dim(m_new)[2],num_regions_new)
+  expect_equal(dim(m_new)[3],dim(m_new)[2])
+  expect_equal(dim(m_new)[3],dim(D$mdat)[1])
+  expect_equal(dim(m_new)[4],dim(D$mdat)[4])
+  expect_equal(dim(m_new)[5],dim(D$mdat)[5])
+
+  regions_to_mean = get_regions_to_mean(num_regions_new, D$uregion_list_named, new_uregion_list_named)
 
 
-  new_network <<- remove_empty_cols(new_network)
 
-  expect_equal(length(new_network),5)
-  expect_equal(length(unique(unlist(new_network,use.names = F))),3)
-  expect_equal(max(unique(unlist(new_network,use.names = F))),3)
+  gnew_uregion_list_named <<- new_uregion_list_named
+
+
+
+
+  expect_equal(get_mymean(D$mdat, 1,1,1,1,1, regions_to_mean), 1)
+  expect_equal(get_mymean(D$mdat, 1,1,2,1,1, regions_to_mean), 9)
+  expect_equal(get_mymean(D$mdat, 1,1,3,1,1, regions_to_mean), 7)
+  expect_equal(get_mymean(D$mdat, 1,2,1,1,1, regions_to_mean), 6)
+  expect_equal(get_mymean(D$mdat, 1,2,2,1,1, regions_to_mean), 1)
+  expect_equal(get_mymean(D$mdat, 1,2,3,1,1, regions_to_mean), 10)
+  expect_equal(get_mymean(D$mdat, 1,3,1,1,1, regions_to_mean), 5)
+  expect_equal(get_mymean(D$mdat, 1,3,2,1,1, regions_to_mean), 11)
+  expect_equal(get_mymean(D$mdat, 1,3,3,1,1, regions_to_mean), 1)
+
+ # gr1vr2 <<- r1vr2
+#  cat(file = stderr(), paste0(r1vr2,"\n"))
 
 
   })

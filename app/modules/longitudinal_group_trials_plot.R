@@ -209,7 +209,7 @@ longitudinalPlotServer <- function(id, dir_listRS) {
         fluidRow(
 
           #HTML("<div class='col-sm-4' style='min-width: 350px !important;'>"),
-          column(12, box(title = "Network configuration", width = 12, collapsible = TRUE, collapsed = FALSE,
+          column(12, box(title = "Network configuration", width = 12, collapsible = TRUE, collapsed = TRUE,
                          uiOutput(ns("networkRadioButtons")),
                          verbatimTextOutput(ns("outputnetworkRadioButtons")),
                          # prettyRadioButtons(
@@ -623,7 +623,7 @@ longitudinalPlotServer <- function(id, dir_listRS) {
         #req(input$resetnetwork)
         # wenn der reset Network Knopf gedrueckt wird dann
         # wird der reactive context erneut ausgefuehrt und die Radiobuttons neu gesetzt
-        input$resetnetwork
+        #input$resetnetwork
         return(g_regions_named())
         # n = list()
         # for (i in 1:length(g_regions())){
@@ -633,7 +633,7 @@ longitudinalPlotServer <- function(id, dir_listRS) {
       })
 
       network_new <- reactive({
-        #req(input$resetnetwork)
+        req(input$resetnetwork)
         n = list()
         for (i in 1:length(g_regions())){
           x<-paste0('c',i)
@@ -648,7 +648,8 @@ longitudinalPlotServer <- function(id, dir_listRS) {
 
       output$outputnetworkRadioButtons <- renderPrint({
         print("original network = ")
-        str(network_org())
+        #str(network_org())
+        str(g_regions_named())
         print("new network = ")
         str(network_new())
         new_network<<- isolate(network_new())
