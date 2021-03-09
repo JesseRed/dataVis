@@ -59,11 +59,8 @@ test_that("network works",{
       for (k in 1:dim(D$mdat)[3]){
         for (l in 1:dim(D$mdat)[4]){
           for (m in 1:dim(D$mdat)[5]){
-
+            # nicht veraendern ... ist alles per Hand nachgerchnet
             D$mdat[i,j,k,l,m] = 1.0*(k*2+j)
-            # if (k ==5){
-            #    D$mdat[i,j,k,l,m] = 5.0
-            # }
           }
         }
       }
@@ -99,6 +96,8 @@ test_that("network works",{
   expect_equal(dim(m_new)[4],dim(D$mdat)[4])
   expect_equal(dim(m_new)[5],dim(D$mdat)[5])
 
+
+
   regions_to_mean = get_regions_to_mean(num_regions_new, D$uregion_list_named, new_uregion_list_named)
 
 
@@ -118,9 +117,79 @@ test_that("network works",{
   expect_equal(get_mymean(D$mdat, 1,3,2,1,1, regions_to_mean), 11)
   expect_equal(get_mymean(D$mdat, 1,3,3,1,1, regions_to_mean), 1)
 
- # gr1vr2 <<- r1vr2
-#  cat(file = stderr(), paste0(r1vr2,"\n"))
+  expect_equal(get_mymean(D$mdat, 1,1,1,1,1, regions_to_mean), get_mymean_fast(D$mdat[1,,,1,1], 1,1, regions_to_mean))
+  expect_equal(get_mymean(D$mdat, 1,1,2,1,1, regions_to_mean), get_mymean_fast(D$mdat[1,,,1,1], 1,2, regions_to_mean))
+  expect_equal(get_mymean(D$mdat, 1,1,3,1,1, regions_to_mean), get_mymean_fast(D$mdat[1,,,1,1], 1,3, regions_to_mean))
+  expect_equal(get_mymean(D$mdat, 1,2,1,1,1, regions_to_mean), get_mymean_fast(D$mdat[1,,,1,1], 2,1, regions_to_mean))
+  expect_equal(get_mymean(D$mdat, 1,2,2,1,1, regions_to_mean), get_mymean_fast(D$mdat[1,,,1,1], 2,2, regions_to_mean))
+  expect_equal(get_mymean(D$mdat, 1,2,3,1,1, regions_to_mean), get_mymean_fast(D$mdat[1,,,1,1], 2,3, regions_to_mean))
+  expect_equal(get_mymean(D$mdat, 1,3,1,1,1, regions_to_mean), get_mymean_fast(D$mdat[1,,,1,1], 3,1, regions_to_mean))
+  expect_equal(get_mymean(D$mdat, 1,3,2,1,1, regions_to_mean), get_mymean_fast(D$mdat[1,,,1,1], 3,2, regions_to_mean))
+  expect_equal(get_mymean(D$mdat, 1,3,3,1,1, regions_to_mean), get_mymean_fast(D$mdat[1,,,1,1], 3,3, regions_to_mean))
 
+
+  mdat_new <- create_empty_array(D, num_regions_new, new_uregion_list_named_adapt)
+
+
+  tmp1 <- get_myareamean(D$mdat, mdat_new, 1,1,1, num_regions_new, regions_to_mean)[1,,,1,1]
+  tmp2 <- get_myareamean_fast(D$mdat[1,,,1,1], num_regions_new, regions_to_mean)
+  dimnames(tmp1)<-NULL
+  dimnames(tmp2)<-NULL
+  expect_equal( tmp1 , tmp2 )
+  tmp1 <- get_myareamean(D$mdat, mdat_new, 1,2,2, num_regions_new, regions_to_mean)[1,,,2,2]
+  tmp2 <- get_myareamean_fast(D$mdat[1,,,2,2], num_regions_new, regions_to_mean)
+  dimnames(tmp1)<-NULL
+  dimnames(tmp2)<-NULL
+  expect_equal( tmp1 , tmp2 )
+  tmp1 <- get_myareamean(D$mdat, mdat_new, 2,1,2, num_regions_new, regions_to_mean)[2,,,1,2]
+  tmp2 <- get_myareamean_fast(D$mdat[2,,,1,2], num_regions_new, regions_to_mean)
+  dimnames(tmp1)<-NULL
+  dimnames(tmp2)<-NULL
+  expect_equal( tmp1 , tmp2 )
+
+  #   expect_equal(get_myareamean(D$mdat, mdat_new, 1,2,2, num_regions_new, regions_to_mean)[1,,,1,1], get_myareamean_fast(D$mdat[1,,,2,2], num_regions_new, regions_to_mean))
+  # expect_equal(get_myareamean(D$mdat, mdat_new, 2,1,2, num_regions_new, regions_to_mean)[1,,,1,1], get_myareamean_fast(D$mdat[2,,,1,2], num_regions_new, regions_to_mean))
+
+  expect_equal(reestimate_mdat(D, new_uregion_list_named), reestimate_mdat_fast(D, new_uregion_list_named))
+
+  # teste die GEschwindigkeit der schnellen Variante
+  cat(file = stderr(), getwd())
+  DX <- readRDS("./data/fMRI2/Dorg.Rda")
+  new_uregion_list_namedX<- DX$uregion_list_named
+  new_uregion_list_namedX[3]<-4
+  new_uregion_list_namedX[6]<-7
+  new_uregion_list_namedX[29]<-35
+  new_uregion_list_namedX[2]<-14
+
+  DX$mdat <- DX$mdat[1:20,,,,, drop = FALSE]
+  DX1 <- DX
+  start_time <- Sys.time()
+  DXnew <- change_network_in_data_struct(D = DX1, new_uregion_list_named = new_uregion_list_namedX)
+  proc_time1 = Sys.time()-start_time
+  cat(file = stderr(), "without fast ... ", proc_time1, "\n")
+  start_time <- Sys.time()
+  DXnew <- change_network_in_data_struct(D = DX1, new_uregion_list_named = new_uregion_list_namedX, is_use_fast_algorithm = TRUE)
+  proc_time2 = Sys.time()-start_time
+  cat(file = stderr(), "with fast ... ", Sys.time()-start_time, "\n")
+  cat(file = stderr(), paste0("fast algorithm was faster by ", round((as.double(proc_time2)/as.double(proc_time1))/100,2) ,"% \n"))
+
+
+
+  Dnew <- change_network_in_data_struct(D = D, new_uregion_list_named = new_uregion_list_named)
+  handmat = matrix(c(1,6,5,9,1,11,7,10, 1), ncol = 3, nrow = 3,
+                   dimnames = list(names(Dnew$uregion_list_named),
+                                   Dnew$uregion_list
+                   ))
+  for (i in 1:dim(Dnew$mdat)[1]){
+#    for (j in 1:dim(Dnew$mdat)[2]){
+#      for (k in 1:dim(Dnew$mdat)[3]){
+        for (l in 1:dim(Dnew$mdat)[4]){
+          for (m in 1:dim(Dnew$mdat)[5]){
+            # nicht veraendern ... ist alles per Hand nachgerchnet
+            expect_equal(Dnew$mdat[i, , ,l,m], handmat)
+          }
+        }
+      }
 
   })
 

@@ -209,18 +209,18 @@ longitudinalPlotServer <- function(id, dir_listRS) {
         fluidRow(
 
           #HTML("<div class='col-sm-4' style='min-width: 350px !important;'>"),
-          column(12, box(title = "Network configuration", width = 12, collapsible = TRUE, collapsed = TRUE,
+          column(12, box(title = "Network configuration", width = 12, collapsible = TRUE, collapsed = FALSE,
                          uiOutput(ns("networkRadioButtons")),
                          verbatimTextOutput(ns("outputnetworkRadioButtons")),
-                         # prettyRadioButtons(
-                         #        inputId = "choosenetwork",
-                         #        label = "Which network to use for analysis",
-                         #        choices = c("original network", "new network defined here"),
-                         #        shape = "round",
-                         #        status = "danger",
-                         #        fill = TRUE,
-                         #        inline = TRUE
-                         #      ),
+                         prettyRadioButtons(
+                                inputId = ns("choosenetwork"),
+                                label = "Which network to use for analysis",
+                                choices = c("original network", "new network defined here"),
+                                shape = "round",
+                                status = "danger",
+                                fill = TRUE,
+                                inline = TRUE
+                              ),
                          actionButton(ns("resetnetwork"), "reset network to original state")
 
           ),
@@ -588,7 +588,11 @@ longitudinalPlotServer <- function(id, dir_listRS) {
           num_of_cols = 25
           # begrenze die radiobuttons auf die num_of_cols Anzahl
           if (i>=num_of_cols){j= num_of_cols
-          }else{j=i }
+            my_select = num_of_cols
+          }else{
+            j=i
+            my_select = network_org()[i]
+            }
 
 
           fluidRow(
@@ -613,7 +617,8 @@ longitudinalPlotServer <- function(id, dir_listRS) {
                    h4(g_regions()[i])
             ),
             column(10,
-                   radioButtons(ns(paste0('c', i)),label = NULL, choices = 1:num_of_cols,selected = network_org()[i], inline = T) #character(0),inline = T)
+                   radioButtons(ns(paste0('c', i)),label = NULL, choices = 1:num_of_cols,selected = my_select, inline = T) #character(0),inline = T)
+                   #network_org()[i]
             )
           )
         })
@@ -633,11 +638,21 @@ longitudinalPlotServer <- function(id, dir_listRS) {
       })
 
       network_new <- reactive({
-        req(input$resetnetwork)
+        #req(input$resetnetwork)
+        req(input$choosenetwork)
+        if (input$choosenetwork == "original network"){
+          cat(file = stderr(), paste0("use the original network"))
+          return(NULL)
+        }
+
         n = list()
         for (i in 1:length(g_regions())){
           x<-paste0('c',i)
           n[g_regions()[i]]=strtoi(input[[x]])
+        }
+        if (identical(g_regions_named(), n)){
+          cat(file = stderr(), "identical \n")
+          return(NULL)
         }
         return(n)
       })

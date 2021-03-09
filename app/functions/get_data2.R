@@ -64,7 +64,7 @@ get_currently_selected_data_long3<-function(D, g1, g2, t1, t2, freq,
                                             filter_g1 = "",
                                             filter_g2 = "",
                                             subjects_to_exclude = NULL,
-                                            network = g_regions_named()){
+                                            network = NULL){
 
   # die funktion gibt eine LIste von mehreren Variablen zurueck
   # gedacht fuer tabs in denen gruppen und trials ausgewaehlt werden
@@ -98,7 +98,13 @@ get_currently_selected_data_long3<-function(D, g1, g2, t1, t2, freq,
   # 2. Veraendere (zusammenfassen) das Netzwerk (regions x regions)
   #    entsprechend des uebergebenen NEtzwerkes (network)
   #
-  # D <- change_network_in_data_struct(D = D, old_network = g_regions_named, new_network = network)
+  start_time = Sys.time()
+  cat(file = stderr(),paste0("gcsdl3 bfore change_network_in_data_struct\n"))
+  if (! is.null(network)){
+    D <- change_network_in_data_struct(D = D, new_uregion_list_named = network)
+    regions <- D$uregion_list
+  }
+  cat(file = stderr(),paste0("change_network_in_data_struct duration =",Sys.time()-start_time,"\n"))
 
 
 
