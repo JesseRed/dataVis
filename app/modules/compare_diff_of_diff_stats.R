@@ -66,8 +66,8 @@ compareDiffOfDiffStatsServer <- function(id, input_glob_sig, freq) {
       output$textCompareGroupsStats <- renderPrint({
         req(input$mod_group1)
         req(input$mod_group2)
-        data1 = reactive({get_data_group_freqmean(g_data(), input$mod_group1, freq())})
-        data2 = reactive({get_data_group_freqmean(g_data(), input$mod_group2, freq())})
+        data1 = reactive({get_data_group_freqmean(g_data(), input$mod_group1, g_sel_freqs())})
+        data2 = reactive({get_data_group_freqmean(g_data(), input$mod_group2, g_sel_freqs())})
 
 
         cat(paste0("sig     = ", input_glob_sig(), "\n"))

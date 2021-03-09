@@ -68,7 +68,9 @@ compareTrialsStatsServer<- function(id, input_glob_sig, freq) {
         # cat(file = stderr(), paste0("\n\nXXXXsig     = ", input_glob_sig(), "\n"))
         # cat(file = stderr(), paste0("group   = ", input$group, "\n"))
         # cat(file = stderr(), paste0("freq    = ", freq()[1], "-", freq()[2],"\n"))
-        f_data_group_freqmean <- reactive({get_data_group_freqmean(g_data(), input$group, freq())})
+
+        f_data_group_freqmean <- reactive({get_data_group_freqmean(g_data(), input$group, g_sel_freqs())})
+#        f_data_group_freqmean <- reactive({get_data_group_freqmean(g_data(), input$group, freq())})
         data1 = f_data_group_freqmean()
         data2 = f_data_group_freqmean()
 

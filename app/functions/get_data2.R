@@ -24,14 +24,16 @@ filter_datastruct <- function(D, group = NULL, myfilter = NULL){
     #cat(file= stderr(), paste0("i = ", i , "with filter_entry = , ", filter_entry, "\n"))
     # filtere nur wenn nicht empty
     if (nchar(filter_entry)>0){
-      # hole alle der Gruppe
-      df_g1 <- D$df_BD %>% filter(D$df_BD$Gruppe == group)
-      # filtere nach dem filterkriterium
-      df_g1f <- df_g1 %>% filter(eval(rlang::parse_expr(filter_entry)))
-      #cat(file= stderr(), paste0("df_g1 = ", df_g1f))
-      ids_to_eleminate <- setdiff(df_g1$ID,df_g1f$ID)
+      if (filter_entry %in% colnames(D$df_BD)){
+            # hole alle der Gruppe
+        df_g1 <- D$df_BD %>% filter(D$df_BD$Gruppe == group)
+        # filtere nach dem filterkriterium
+        df_g1f <- df_g1 %>% filter(eval(rlang::parse_expr(filter_entry)))
+        #cat(file= stderr(), paste0("df_g1 = ", df_g1f))
+        ids_to_eleminate <- setdiff(df_g1$ID,df_g1f$ID)
 
-      D <- delete_subject_from_data_struct(D = D, ids_to_delete = ids_to_eleminate)
+        D <- delete_subject_from_data_struct(D = D, ids_to_delete = ids_to_eleminate)
+      }
     }
   }
   # entfernet whitespaces

@@ -1154,9 +1154,13 @@ get_data_group_freq <- function(data, group, freq, tbl_beh = g_beh(), method = g
 
 # has tests
 filter_by_selfreq <- function(data, freq, method = g_act_method()){
-
+  # freq ... ist in den meisten faellen g_sel_freq()
+  # ein vector von TRUE und FALSe gleicher Dimensionen wie dim(data)[5]
   # das drop=F ist hier sehr wichtig weil andere funtionen ueber die letzte Dimension mitteln
-  #cat(file = stderr(), paste0("in filter_by_selfreq freq=",freq,"\n"))
+#  cat(file = stderr(), paste0("in filter_by_selfreq freq=",freq,"\n"))
+#  cat(file = stderr(), paste0("dim(data) = ",dim(data),"\n"))
+#  gffreq <<- freq
+#  gfdata <<- data
   data_selfreq = asub(data, list(freq), length(dim(data)), drop=F)
   #
   # num_dims = length(dim(data))

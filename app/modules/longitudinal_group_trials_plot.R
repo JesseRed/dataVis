@@ -128,6 +128,14 @@ longitudinalPlotServer <- function(id, dir_listRS) {
                  ),
           )
         ),
+        # TABSET PANEL
+        fluidRow(column(12,
+                        tabsetPanel(
+                          tabPanel("MyDefault", verbatimTextOutput("summary")),
+                          tabPanel("MyDefault2", verbatimTextOutput("second"))
+                        )
+                        )
+        ),
         fluidRow(
           column(12,
                  box(title = "Was wurde berechnet?...", width = 12, collapsible = TRUE, collapsed = TRUE, verbatimTextOutput(ns("text_explanation"))),
@@ -174,10 +182,14 @@ longitudinalPlotServer <- function(id, dir_listRS) {
                                         choices = g_D()$df_BD$ID,
                                         selected =  g_D()$df_BD$ID),
 
+                     style = "background-color: #fcfcfc;",
+                     style = 'border-bottom: 2px solid gray',
                      checkboxGroupInput(ns("Group1"), label = h3("Group 1"), inline = T,
                                         choices = c()), #, #curdata()$df_data1$ID,
                      #                     selected = c()), #curdata()$df_data1$ID[my_included_subjects_g1()]),
 
+                     style = "background-color: #fcfcfc;",
+                     style = 'border-bottom: 2px solid gray',
                      checkboxGroupInput(ns("Group2"), label = h3("Group 2"), inline = T,
                                         choices = c()) #, #curdata()$df_data2$ID,
                  ),
