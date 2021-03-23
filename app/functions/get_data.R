@@ -5,7 +5,10 @@
 # tbl_beh = readRDS("../data/tbl_beh.Rda")
 library(abind)
 
-create_my_ttest_string <- function(z, paired = FALSE, mean1 = 0, mean2 = 0){
+create_my_ttest_string <- function(z, paired = FALSE, mean1 = 0, mean2 = 0,
+                                   sig_threshold = g_sig(),
+                                   p_cor_method = g_p_cor_method(),
+                                   p_cor_num = g_p_cor_num()){
   t = z$statistic
   df = z$parameter
   r = sqrt((t^2)/((t^2)+df))
@@ -22,12 +25,47 @@ create_my_ttest_string <- function(z, paired = FALSE, mean1 = 0, mean2 = 0){
                 "df=", round(z$parameter,1),"  \n",
                 "CI(",attributes(z$conf.int),")= ",round(z$conf.int[1],3)," ; ",round(z$conf.int[2],3)," \n",
                 "effect size r = ", round(r,4), "\n",
-                "r = [sqrt((t^2)/((t^2)+df))]"
+                "r = [sqrt((t^2)/((t^2)+df))]", "\n",
+                "FWE error rate (",p_cor_num ," comparisons) = ", 1-(1-sig_threshold)**p_cor_num,"\n",
+                "FWE p critical = ",sig_threshold/p_cor_num, "\n",
+                "Holm p critical = ",sig_threshold/p_cor_num, "\n"
+
+
+
   )
 
   return(out)
 }
 
+
+estimate_p_by_cor_method<-function(p_cor_method = "uncor.", p_cor_num=1, alpha= 0.05){
+  switch(p_cor_method,
+         "uncor." = {
+           cat(file = stderr(), "uncor.\n")
+           return(alpha)
+         },
+         "FWE" = {
+           cat(file = stderr(), "FWE\n")
+           return(alpha/p_cor_num)
+         },
+         "FDR" = {
+           cat(file = stderr(), "FDR\n")
+           p_fdr = alpha
+           return(p_fdr)
+         },
+         "Holm" = {
+           cat(file = stderr(), "Holm\n")
+           p_holm = alpha
+           return(p_holm)
+         },
+         "Benjamin-Hochberg" = {
+           cat(file = stderr(), "Benjamin-Hochberg\n")
+           p_benj = alpha
+           return(p_benj)
+         }
+  )
+  return(alpha)
+}
 
 my_lexical_sort <- function(x) {
   as.numeric(sort(as.character(x)))
@@ -41,7 +79,7 @@ get_longitudinal_currently_selected_data<-function(D1, D2, g1, g2, t1, t2, freq,
                                                    method = g_act_method(),
                                                    estimate_time_first = TRUE){
 
-  cat(file = stderr(),paste0("Deprecated funktion of get_longitudinal_currently_selected_data ...\n",
+  cat(file = stderr(),paste0("Deprecated function of get_longitudinal_currently_selected_data ...\n",
                              "better to use split first and than get_currently_selected_data_long\n"))
   # generierung von t- und p-Maps fuer longitudinale Daten
   # Es muss insbesondere die Gruppenintegritaet ueberprueft werden, da

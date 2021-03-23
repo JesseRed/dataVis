@@ -156,7 +156,9 @@ server <- function(input, output, session) {
   g_regions_named <<- reactive({ g_D()$uregion_list_named                     })
   g_trials_named  <<- reactive({ g_D()$utrial_list_named                      })
   g_sel_freqs     <<- reactive({ get_selected_freq_list(g_freqs(),input$freq) })
-  g_sig           <<- reactive({ input$glob_sig                               })
+  g_sig           <<- reactive({ estimate_p_by_cor_method(p_cor_method = input$p_cor_method, p_cor_num=input$p_cor_num, alpha= input$glob_sig)})
+  g_p_cor_method  <<- reactive({ input$p_cor_method                           })
+  g_p_cor_num     <<- reactive({ input$p_cor_num                              })
 
   # g_data      <<- reactive({ get_data(g_act_data_dir())                })
   # g_beh      <<- reactive({ get_global_tbl_beh(g_act_data_dir())      })
@@ -226,9 +228,24 @@ server <- function(input, output, session) {
     numericInput("glob_sig", h4("sig threshold"), min =0, max = 1, value = 0.05, step = 0.00001)
     #sliderInput("glob_sig", h4("sig threshold"), min =0 , max = 1, value = 0.05, step = 0.01)
   })
+
+
+
   output$visprop_onlysig <- renderUI({
     checkboxInput("visprop_onlysig", "show only sig.", value = FALSE)
   })
+  output$p_cor_method<-renderUI({
+    selectInput("p_cor_method", "P-Value Cor Method",
+                choices = c("uncor.","FWE","FDR","Holm","Benjamin-Hochberg"),
+                selected = "uncor."
+                )
+  })
+
+  output$p_cor_num<-renderUI({
+    numericInput("p_cor_num", h4("num of p comparisons"), min =1, max = 10000000, value = 1, step = 1)
+  })
+
+
   output$visprop_inlinenumbers <- renderUI({
     checkboxInput("visprop_inlinenumbers", "show nums in graph", value = TRUE)
   })
