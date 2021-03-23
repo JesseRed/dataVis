@@ -96,6 +96,7 @@ get_currently_selected_data_long3<-function(D, g1, g2, t1, t2, freq,
     method = "Connectivity"
   }
 
+  #cat(file = stderr() , paste0(tbl_beh))
   # if (is.null(network)){
   #   network <-
   #   network = list()
@@ -150,6 +151,14 @@ get_currently_selected_data_long3<-function(D, g1, g2, t1, t2, freq,
   datalong <- S$D2$mdat
   start_time <- Sys.time()
   # fuer die ersten Daten (alle oder longitudinal 1)
+
+
+  cat(file = stderr(),"\nlongitudinal data analyse start \n")
+  cat(file = stderr(),paste0("g1 = ",g1, "   g2 = ", g2,"\n"))
+  cat(file = stderr(),paste0("t1 = ",t1, "   t2 = ", t2,"\n"))
+  #cat(file = stderr(),paste0("freq = ",freq,"\n"))
+  cat(file = stderr(),paste0("trials = ",trials,"\n"))
+  cat(file = stderr(),paste0("method = ",method,"\n"))
   d <- get_selected_data_considering_group_trial(data, g1, g2, t1, t2, freq,  trials = trials, tbl_beh = tbl_beh, method = method)
 
   # Ich muss noch die regionen mit einbinden in die Datenstruktur

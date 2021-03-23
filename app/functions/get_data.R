@@ -521,6 +521,7 @@ get_selected_data_considering_group_trial<-function(data, g1,g2,t1,t2, freq, tri
   #cat(file = stderr(), paste0("get_selected_data_considering_group_trial \n"))
   #cat(file = stderr(), paste0("g1 = ", g1, "  g2 = ",g2, "  t1 = ", t1, "  t2 = ", t2, "\n"))
   d$explanation = "not filled"
+  g_tbl_beh_get_selected <<- tbl_beh
   d$df_data1 =  tbl_beh %>% filter(tbl_beh$Gruppe == g1)
   d$df_data2 =  tbl_beh %>% filter(tbl_beh$Gruppe == g2)
   if ((! t1 == t2) && (!g1==g2)){
@@ -887,13 +888,25 @@ split_data_by_longitudinal_info <-function(D_org, long_marker1, long_marker2,
   # Trennen des Gesamtdatensatzes in Gruppen von Zeitlichen Subjects
   S = list()
 
-
+  cat(file = stderr(), paste0("long_marker1 = ", long_marker1, "\n"))
+  cat(file = stderr(), paste0("long_marker2 = ", long_marker2, "\n"))
+  cat(file = stderr(), paste0("is_exclude_not_reoccuring_subj = ", is_exclude_not_reoccuring_subj, "\n"))
+  cat(file = stderr(), paste0("averagelong = ", averagelong, "\n"))
   # Problem ist hier, dass es noch die alten Daten gibt ohne die Formatierung __1 __2 in der id_list
   # deshalb hier eine entsprechende Abfrage ... wenn es noch das alte Design ist
   # dann gibt es keine longitudinale Info und es wird der D_org als S$D1 zurueck gegeben
   # waehrend S$D2 = NULL gesetzt wird
-  if (!is_longitudinal_info_in_data(D_org)){
-    cat(file = stderr(), paste0("split_data_by_longitudinal_info DAta in old format without longitudinal info ... \n"))
+  if (!is_longitudinal_info_in_data(D_org)) {
+    cat(file = stderr(), paste0("split_data_by_longitudinal_info Data in old format without longitudinal info ... \n"))
+    cat(file = stderr(), paste0("no longitudinal analyses possible \n"))
+
+    S$D1 = D_org
+    S$D2 = NULL
+    return(S)
+  }
+
+  if (is.null(long_marker1)){
+    cat(file = stderr(), paste0("no longitudinal marker supplied ... \n"))
     cat(file = stderr(), paste0("no longitudinal analyses possible \n"))
 
     S$D1 = D_org
@@ -929,7 +942,9 @@ split_data_by_longitudinal_info <-function(D_org, long_marker1, long_marker2,
 is_longitudinal_info_in_data<- function(D){
   # testet ob es ueberhaupt longitudinale Infos gibt ... aktuell gibt es diese
   # Infos bei den Daten von Jenny und Laura nicht
+  g_is_longitudinal_info_in_data <<- D
   if (any(str_detect(D$id_list,"__"))){
+    # falls es aber nur einen Zeitpunkt gibt dann ist letztlich auch keine longitudinale Info vorhanden
     return(TRUE)
   }
   return(FALSE)

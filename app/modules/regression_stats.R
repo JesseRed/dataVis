@@ -212,7 +212,7 @@ regressionStatsServer <- function(id, input_glob_sig, freq) {
       level_y <- reactive({abs(round(input$plot_click$y)-length(g_regions())-1)})
 
       curdata <- reactive({
-        get_currently_selected_data_long3(g_data(), input$group1, input$group2, as.numeric(input$trial1), as.numeric(input$trial2), g_sel_freqs())
+        get_currently_selected_data_long3(g_D(), input$group1, input$group2, as.numeric(input$trial1), as.numeric(input$trial2), g_sel_freqs())
       #  get_currently_selected_data(g_data(), input$group1, input$group2, as.numeric(input$trial1), as.numeric(input$trial2), freq())
       })
 

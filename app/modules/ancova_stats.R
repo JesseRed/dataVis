@@ -136,7 +136,8 @@ ancovaStatsServer <- function(id, input_glob_sig, freq) {
 
 
       curdata <- reactive({
-        get_currently_selected_data(g_data(), input$group1, input$group2, as.numeric(input$trial1), as.numeric(input$trial1), g_sel_freqs())
+        get_currently_selected_data_long3(g_D(), input$group1, input$group2, as.numeric(input$trial1), as.numeric(input$trial1), g_sel_freqs())
+        # get_currently_selected_data(g_data(), input$group1, input$group2, as.numeric(input$trial1), as.numeric(input$trial1), g_sel_freqs())
       })
 
       ############################################
@@ -246,6 +247,7 @@ ancovaStatsServer <- function(id, input_glob_sig, freq) {
         d <- curdata()
         mat_t <- d$mat_t
         mat_p <- d$mat_p
+        cat(file = stderr(), "renderplot\n")
         #         #data1 = get_data_group_trial_freqmean(data,input$group1, as.numeric(input$trial1), freq())
         # #data2 = get_data_group_trial_freqmean(data,input$group2, as.numeric(input$trial2), freq())
         # data1 = data_g1_t1()
@@ -274,7 +276,7 @@ ancovaStatsServer <- function(id, input_glob_sig, freq) {
           rownames(mat_t) = g_regions()
           # corrplot(mat_p, method="number", type = "upper", is.corr = FALSE,
           #          p.mat = mat_p, sig.level = input_glob_sig(), col = color1(100) )
-          if (g_act_method()=="Coherence") {
+          if ((g_act_method()=="Coherence") || (g_act_method()=="Connectivity")) {
             corrplot(mat_p, method="number", tl.cex = 0.9, type = "upper", is.corr = FALSE,
                      p.mat = mat_p, sig.level = input_glob_sig(),
                      title = paste0(input$group1, " vs. ", input$group2 , " of trial ", g_trials()[as.numeric(input$trial1)]),
@@ -376,6 +378,7 @@ ancovaStatsServer <- function(id, input_glob_sig, freq) {
 
 
       ancova_estimation <- function(){
+        #cat(file = stderr(), "ancova_estimation\n")
         xg1t1 <-- data_g1_t1()[,level_y(),level_x()]
         #xg1t2 = data_g1_t2()[,level_y(),level_x()]
         xg2t1 <-- data_g2_t1()[,level_y(),level_x()]
@@ -389,7 +392,7 @@ ancovaStatsServer <- function(id, input_glob_sig, freq) {
               cat("no output in case of same groups")
               return()
             }
-
+        #cat(file = stderr(), "1\n")
         xg1 = xg1t1
         xg2 = xg2t1
         # cat(file = stderr(), "length(xg1)=")
@@ -405,18 +408,23 @@ ancovaStatsServer <- function(id, input_glob_sig, freq) {
         #                    val=c(xg1, xg2))
         # mydf <- data.frame(Gruppe=c(rep(input$group1, times=length(xg1)),
         #                             rep(input$group2, times=length(xg2))))
+        #cat(file = stderr(), "before groupfac\n")
         groupfac=c(rep(input$group1, times=length(xg1)),
                  rep(input$group2, times=length(xg2)))
+        #cat(file = stderr(), "before groupfac2\n")
         groupfac<-factor(groupfac,levels = c(input$group1, input$group2), labels= c(input$group1, input$group2))
+
+        #cat(file = stderr(), "3\n")
 
 #        Y =c(xg1, xg2)
 #        df <- dataframe(val=c(xg1,xg2))
 #        df <- dataframe(Gruppe = groupfac)
         df <- data.frame(val=c(xg1,xg2))
 
+        #cat(file = stderr(), "4\n")
 
         n = c("val")
-       # cat(file = stderr(), "before the for loop\n")
+        #cat(file = stderr(), "before the for loop\n")
         for ( i in 1:length(input$regressors)){
           bg1 = get_beh_tbl_data_by_group(input$group1, input$regressors[i])
           bg2 = get_beh_tbl_data_by_group(input$group2, input$regressors[i])
@@ -436,12 +444,20 @@ ancovaStatsServer <- function(id, input_glob_sig, freq) {
        # print(file = stderr(), ncol(df))
         #print(file = stderr(), df)
         #message(df)
+        #cat(file = stderr(), "6\n")
 
         contrasts(df$Gruppe)<-contr.helmert(2)
+        #cat(file = stderr(), "7\n")
 
         myModel <-aov(val ~ . , data = df)
+        #cat(file = stderr(), "8\n")
+
         resmydf <-Anova(myModel, type = "III")
         #print(resmydf)
+        #cat(file = stderr(), "9\n")
+
+        g_myModel <<- myModel
+
         return(myModel)
         # adjustedMeans<-effect("Gruppe",df, se=TRUE)
         # print(summary(adjustedMeans))
@@ -518,13 +534,16 @@ ancovaStatsServer <- function(id, input_glob_sig, freq) {
 
       #ttest_estimation <- function(compare = "groups",
       create_df_for_boxplot_adjusted <- function(){
+        #cat(file = stderr(), "starte create_df_for_boxplot_adjusted\n")
         req(reactive_adjustedMeans())
+        #cat(file = stderr(), "b2\n")
         xg1t1 = data_g1_t1()[,level_y(),level_x()]
         # = data_g1_t2()[,level_y(),level_x()]
         xg2t1 = data_g2_t1()[,level_y(),level_x()]
         #xg2t2 = data_g2_t2()[,level_y(),level_x()]
         region_x = g_regions()[level_x()]
         region_y = g_regions()[level_y()]
+        #cat(file = stderr(), "b3\n")
 
         df <- data.frame(Gruppe = c(input$group1, paste0("adj",input$group1),
                                     input$group2, paste0("adj_",input$group2)),
@@ -532,10 +551,15 @@ ancovaStatsServer <- function(id, input_glob_sig, freq) {
                      mean(xg2t1), reactive_adjustedMeans()$fit[2]),
                      sd = c(sd(xg1t1), reactive_adjustedMeans()$se[1],
                             sd(xg2t1), reactive_adjustedMeans()$se[2]))
+        #cat(file = stderr(), "new DF\n")
+
+
         df$Gruppe <- as.character(df$Gruppe)
-        df$Gruppe <- factor(df$Gruppe, levels=c(input$group1, paste0("adj",input$group1),
+
+                df$Gruppe <- factor(df$Gruppe, levels=c(input$group1, paste0("adj",input$group1),
                                                     input$group2, paste0("adj_",input$group2)))
-        ggplot(df, aes(x=Gruppe, y=mymean)) +
+                cat(file = stderr(), "new DF2\n")
+                ggplot(df, aes(x=Gruppe, y=mymean)) +
           geom_errorbar(aes(ymin=mymean-sd, ymax=mymean+sd), width=.2) +
           geom_line() +
           geom_point()
