@@ -31,10 +31,13 @@ library(optimbase)
 library(rlang)
 library(gdata)
 library(shinyBS)
+<<<<<<< HEAD
 library(DT)
 library(cowplot)
 library(patchwork)
 #library(compare)
+=======
+>>>>>>> 2d838b8f5f94f7854c105dd6ec3a1771c6573efc
 #library(shinyWidgets)
 
 #setwd("..")
@@ -43,7 +46,11 @@ library(patchwork)
 # for quickcor
 #devtools::install_github("hannet91/ggcor")
 
+<<<<<<< HEAD
 options(browser = "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe")
+=======
+
+>>>>>>> 2d838b8f5f94f7854c105dd6ec3a1771c6573efc
 #source("./functions/get_data.R")
 pathnames <- list.files(pattern="[.]R$", path="functions", full.names=TRUE);
 sapply(pathnames, FUN=source);
@@ -83,6 +90,7 @@ server <- function(input, output, session) {
     g_datarootpath(val)
   })
   initialized = FALSE
+<<<<<<< HEAD
   dir_listCon <- reactive({input$dirRefreshButton; dir(path = g_datarootpath(), pattern = "^Conn", full.names = F, recursive = F)})
   dir_listCoh <- reactive({input$dirRefreshButton; dir(path = g_datarootpath(), pattern = "^Coherence", full.names = F, recursive = F)})
   dir_listTra <- reactive({input$dirRefreshButton; dir(path = g_datarootpath(), pattern = "^Transferentropy", full.names = F, recursive = F)})
@@ -91,6 +99,15 @@ server <- function(input, output, session) {
   dir_listERP <- reactive({input$dirRefreshButton; dir(path = g_datarootpath(), pattern = "^ERP", full.names = F, recursive = F)})
   dir_listRS  <- reactive({input$dirRefreshButton; dir(path = g_datarootpath(), pattern = "^RS", full.names = F, recursive = F)})
   dir_listBeh <- reactive({input$dirRefreshButton; list.files(path = file.path(g_datarootpath(), "Behavioral"), pattern = ".csv$", full.names = F, recursive = F)})
+=======
+  dir_listCoh <- reactive({dir(path = g_datarootpath(), pattern = "^Coherence", full.names = F, recursive = F)})
+  dir_listTra <- reactive({dir(path = g_datarootpath(), pattern = "^Transferentropy", full.names = F, recursive = F)})
+  dir_listFre <- reactive({dir(path = g_datarootpath(), pattern = "^Frequency", full.names = F, recursive = F)})
+  dir_listGra <- reactive({dir(path = g_datarootpath(), pattern = "^Granger", full.names = F, recursive = F)})
+  dir_listERP <- reactive({dir(path = g_datarootpath(), pattern = "^ERP", full.names = F, recursive = F)})
+  dir_listRS  <- reactive({dir(path = g_datarootpath(), pattern = "^RS", full.names = F, recursive = F)})
+  dir_listBeh <- reactive({list.files(path = file.path(g_datarootpath(), "Behavioral"), pattern = ".csv$", full.names = F, recursive = F)})
+>>>>>>> 2d838b8f5f94f7854c105dd6ec3a1771c6573efc
 
   # dir_listCoh <- reactiveVal(value = dir(path = "../data", pattern = "^Coherence", full.names = F, recursive = F))
   # dir_listTra <- reactiveVal(value = dir(path = "../data", pattern = "^Transferentropy", full.names = F, recursive = F))
@@ -126,7 +143,10 @@ server <- function(input, output, session) {
   })
 
   g_act_data_dir <<- reactive({
+<<<<<<< HEAD
     if (g_act_method()=="Connectivity"){       return(file.path(g_datarootpath(),input$dataDirCon))}
+=======
+>>>>>>> 2d838b8f5f94f7854c105dd6ec3a1771c6573efc
     if (g_act_method()=="Coherence"){       return(file.path(g_datarootpath(),input$dataDirCoh))}
     if (g_act_method()=="Transferentropy"){ return(file.path(g_datarootpath(),input$dataDirTra))}
     if (g_act_method()=="Frequency"){       return(file.path(g_datarootpath(),input$dataDirFre))}
@@ -179,11 +199,14 @@ server <- function(input, output, session) {
 
   g_visprop_onlysig         <<- reactive({input$visprop_onlysig})
   g_visprop_inlinenumbers   <<- reactive({input$visprop_inlinenumbers})
+<<<<<<< HEAD
 
 
   # observeEvent(input$dirRefreshButton,{
   #
   # })
+=======
+>>>>>>> 2d838b8f5f94f7854c105dd6ec3a1771c6573efc
 
   ##################
    #### Sidebar ###
@@ -226,12 +249,20 @@ server <- function(input, output, session) {
     numericInput("glob_sig", h4("sig threshold"), min =0, max = 1, value = 0.05, step = 0.00001)
     #sliderInput("glob_sig", h4("sig threshold"), min =0 , max = 1, value = 0.05, step = 0.01)
   })
+<<<<<<< HEAD
+=======
+
+>>>>>>> 2d838b8f5f94f7854c105dd6ec3a1771c6573efc
   output$visprop_onlysig <- renderUI({
     checkboxInput("visprop_onlysig", "show only sig.", value = FALSE)
   })
   output$visprop_inlinenumbers <- renderUI({
     checkboxInput("visprop_inlinenumbers", "show nums in graph", value = TRUE)
   })
+<<<<<<< HEAD
+=======
+
+>>>>>>> 2d838b8f5f94f7854c105dd6ec3a1771c6573efc
   output$saveimageButton <- renderUI({
     actionButton("saveimageButton", "save Image")
   })
@@ -272,6 +303,7 @@ server <- function(input, output, session) {
 #       )
 #     )
 #   })
+<<<<<<< HEAD
 
 
   ##################
@@ -302,6 +334,8 @@ server <- function(input, output, session) {
       )
     )
   })
+=======
+>>>>>>> 2d838b8f5f94f7854c105dd6ec3a1771c6573efc
 
 
   ##################
@@ -455,6 +489,7 @@ server <- function(input, output, session) {
     )
   })
 
+<<<<<<< HEAD
   ##############################################
   ### The new Connectivity Entity ##############
   #overviewPlotServer("ConOverviewPlot", "Connectivity", reactive(input$glob_sig), reactive(input$freq))
@@ -470,6 +505,8 @@ server <- function(input, output, session) {
   overviewPlotServer("ConOverviewPlot", "Coherence", reactive(input$glob_sig), reactive(input$freq))
   ##############################################
 
+=======
+>>>>>>> 2d838b8f5f94f7854c105dd6ec3a1771c6573efc
   #RSPlotUI("ERPPlot")
   #RSPlotServer("RSPlot")
   compareTrialsPlotServer("RSPlot2")

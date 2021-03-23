@@ -29,13 +29,17 @@ longitudinalPlotUI <- function(id){
 longitudinalPlotServer <- function(id, dir_listRS) {
   moduleServer(
     id,
+<<<<<<< HEAD
     #ns <- NS(id),
+=======
+>>>>>>> 2d838b8f5f94f7854c105dd6ec3a1771c6573efc
     function(input, output, session) {
       ns<-session$ns
 
       output$fluidRow_oben <- renderUI({
         fluidPage(
         fluidRow(
+<<<<<<< HEAD
           column(4,
                  fluidRow(
                    column(6,
@@ -115,10 +119,60 @@ longitudinalPlotServer <- function(id, dir_listRS) {
 
           ),
           column(2,
+=======
+          column(2,
+
+                 style = "background-color: #fcfcfc;",
+                 #style = 'border-bottom: 2px solid gray',
+                 style = "border-right: 2px solid black",
+                 h4("group comparison", align = "center"),
+                 fluidRow(
+                   column(6,
+                          selectInput(ns("group1"), h5("Select Group1", align = "center"),
+                                      choices = g_groups(), selected = g_groups()[2])
+                          ),
+                   column(6,
+                          selectInput(ns("group2"), h5("Select Group 2", align = "center"),
+                                      choices = g_groups(), selected = g_groups()[3])
+                          )
+                 )
+          ),
+          column(2,
+                 style = "background-color: #fcfcfc;",
+                 style = 'border-right: 2px solid gray',
+                 h4("trial comparison", align = "center"),
+                 fluidRow(
+                   column(6,
+                          selectInput(ns("trial1"), h5("Select Trial 1", align = "center"),
+                                      choices = g_trials_named(), selected = g_groups()[1])
+                   ),
+                   column(6,
+                          selectInput(ns("trial2"), h5("Select Trial 2", align = "center"),
+                                      choices = g_trials_named(), selected = g_groups()[2])
+                   )
+                 )
+          ),
+          column(2,
+                 style = "background-color: #fcfcfc;",
+                 style = 'border-right: 2px solid gray',
+                 h4("longitudinal data", align = "center"),
+                 fluidRow(
+                   column(6,
+                          selectInput(ns("comp_dir"), h5("longitudinal data"),
+                                      choices = dir_listRS, selected = dir_listRS[2]),
+                   ),
+                   column(6,
+                          checkboxInput(ns("longtimefirst"), "estimate time first", value = TRUE)
+                   )
+                 )
+          ),
+          column(1,
+>>>>>>> 2d838b8f5f94f7854c105dd6ec3a1771c6573efc
                  style = "background-color: #fcfcfc;",
                  style = 'border-right: 2px solid gray',
                  h4("Visualize", align = "center"),
                  selectInput(ns("method"), h5("method"),
+<<<<<<< HEAD
                              choices = c("Corrplot", "Corrplot_mixed", "Corrplot_clustered", "ggcorr", "Circle", "Pheatmap"), selected = 1),
                  fluidRow(
                    column(6,
@@ -128,6 +182,22 @@ longitudinalPlotServer <- function(id, dir_listRS) {
                    column(6,
                          numericInput(ns("num_hclust"),h5("num hclust"), 3)
                    )
+=======
+                             choices = c("Corrplot", "Corrplot_mixed", "Corrplot_clustered", "ggcorr", "Circle", "Pheatmap"), selected = 1)
+          ),
+          column(2,
+                 style = "background-color: #fcfcfc;",
+                 style = 'border-right: 2px solid gray',
+                 h4("Clustering", align = "center"),
+                 fluidRow(
+                    column(6,
+                          selectInput(ns("clustering"), h5("method"),
+                             choices = c("original", "FPC","PCA", "hclust"), selected = 1)
+                    ),
+                    column(6,
+                         numericInput(ns("num_hclust"),h5("num hclust"), 3)
+                    )
+>>>>>>> 2d838b8f5f94f7854c105dd6ec3a1771c6573efc
                  )
           ),
           column(2,
@@ -149,6 +219,7 @@ longitudinalPlotServer <- function(id, dir_listRS) {
                  ),
           )
         ),
+<<<<<<< HEAD
         # # TABSET PANEL
         # fluidRow(column(12,
         #                 tabsetPanel(
@@ -157,12 +228,15 @@ longitudinalPlotServer <- function(id, dir_listRS) {
         #                 )
         #                 )
         # ),
+=======
+>>>>>>> 2d838b8f5f94f7854c105dd6ec3a1771c6573efc
         fluidRow(
           column(12,
                  box(title = "Was wurde berechnet?...", width = 12, collapsible = TRUE, collapsed = TRUE, verbatimTextOutput(ns("text_explanation"))),
           )
         ),
         fluidRow(
+<<<<<<< HEAD
            # plotOutput(ns("plot"), width = "auto", height = "800px", click = ns("plot_click"))
           plotOutput(ns("plot"), width = "auto", height = "auto", click = ns("plot_click")),
           br(),
@@ -173,6 +247,35 @@ longitudinalPlotServer <- function(id, dir_listRS) {
           column(9,
 
                plotOutput(ns("hist"), width = "auto", height = "300px", click = ns("plot_click_hist")),
+=======
+          column(12,
+                 box(title = "... need skippy mode?...", width = 12, collapsible = TRUE, collapsed = TRUE,
+                     fluidRow(
+                       column(6,
+                              numericInput(ns("xx"),"xxx",0)
+                       ),
+                       column(6,
+                              numericInput(ns("own cluster algo"),"yyy",0)
+                       )
+                     ),
+                     )
+          )
+
+        ),
+
+        # fluidRow(
+        #   #  plotOutput(ns("plot"), width = "auto", height = "800px", click = ns("plot_click"))
+        #   verbatimTextOutput(ns("text_explanation"))
+        # ),
+        fluidRow(
+          #  plotOutput(ns("plot"), width = "auto", height = "800px", click = ns("plot_click"))
+          plotOutput(ns("plot"), width = "auto", height = "auto", click = ns("plot_click"))
+        ),
+
+        fluidRow(
+          column(9,
+                 plotOutput(ns("hist"), width = "auto", height = "300px", click = ns("plot_click_hist")),
+>>>>>>> 2d838b8f5f94f7854c105dd6ec3a1771c6573efc
           ),
           column(3,
                  verbatimTextOutput(ns("text_bottom")),
@@ -194,6 +297,7 @@ longitudinalPlotServer <- function(id, dir_listRS) {
                  ),
           )
         ),
+<<<<<<< HEAD
         fluidRow(
           column(12,
                  box(title = "Included subjects", width = 12, collapsible = TRUE, collapsed = TRUE,
@@ -340,6 +444,28 @@ longitudinalPlotServer <- function(id, dir_listRS) {
         curdata()$df_data2
       })
 
+=======
+        # fluidRow(
+        #   column(2, actionButton(ns("saveImage"), "save Image"),),
+        #   column(2, textInput(ns("saveimage_filename"),"filename ","mycompplotimage")),
+        #   column(2, numericInput(ns("saveimage_height"),"height (cm)",8)),
+        #   column(2, numericInput(ns("saveimage_width"),"width (cm)",8)),
+        #   column(2, numericInput(ns("saveimage_dpi"),"dpi",600)),
+        #   column(2, selectInput(ns("saveimage_fileformat"), "file format", choices = c("tiff", "pdf", "png"))),
+        # ),
+        fluidRow(
+          column(12,
+                 box(title = "Plot ..........expand for help (comp_plot_markdown.md)", width = 12, collapsible = TRUE, collapsed = TRUE, htmlOutput(ns("htmlhelp_Comp_Plot"))),
+          )
+        ),
+        fluidRow(
+          plotlyOutput(ns("myplotly"), width = "1000", height = "800px")
+        ),
+
+)
+      })
+
+>>>>>>> 2d838b8f5f94f7854c105dd6ec3a1771c6573efc
       x1<<- NULL
       x2<<- NULL
       myTabPlots <<- list()
@@ -348,7 +474,15 @@ longitudinalPlotServer <- function(id, dir_listRS) {
       data_freqmean <- reactive({
         get_data_freqmean(g_data(), g_sel_freqs())
       })
+<<<<<<< HEAD
 
+=======
+#
+#       click_x_num <- reactive({ round(input$plot_click$x)})
+#       click_y_num <- reactive({ abs(round(input$plot_click$y)-length(g_regions())-1)})
+#       click_x_reg <- reactive({ regions()[click_x_num]})
+#       click_y_reg <- reactive({ regions()[click_y_num]})
+>>>>>>> 2d838b8f5f94f7854c105dd6ec3a1771c6573efc
 
       ####################################################################################
       ####################################################################################
@@ -375,6 +509,7 @@ longitudinalPlotServer <- function(id, dir_listRS) {
       # wenn in den plot geklickt wird (funktioniert nur fuer den Corplot)
       observeEvent(input$plot_click,{
         cat(file = stderr(), "plot_click observeEvent")
+<<<<<<< HEAD
         if (input$method=="ggcorr"){
           level_x = round(input$plot_click$x)
           level_y = round(input$plot_click$y)
@@ -382,6 +517,10 @@ longitudinalPlotServer <- function(id, dir_listRS) {
           level_x = round(input$plot_click$x)
           level_y = abs(round(input$plot_click$y)-length(g_regions())-1)
         }
+=======
+        level_x = round(input$plot_click$x)
+        level_y = abs(round(input$plot_click$y)-length(g_regions())-1)
+>>>>>>> 2d838b8f5f94f7854c105dd6ec3a1771c6573efc
         region_x = (g_regions()[level_x])
         region_y = (g_regions()[level_y])
         level_x_rval(level_x)
@@ -392,6 +531,7 @@ longitudinalPlotServer <- function(id, dir_listRS) {
         updateNumericInput(session, "nif_click_y", value = level_y)
 
       })
+<<<<<<< HEAD
 
       iscausal <- reactive({
         if (input$causal == "non-directed"){
@@ -447,6 +587,47 @@ longitudinalPlotServer <- function(id, dir_listRS) {
                                             )
             gM <<- M
 
+=======
+      ####################################################################################
+      ####################################################################################
+
+#
+#       data_1 <- reactive({
+#         get_data_group_trial_freqmean(g_data(),input$group1, as.numeric(input$trial1), g_sel_freqs())
+#       })
+#       data_2 <- reactive({
+#         get_data_group_trial_freqmean(g_data(),input$group2, as.numeric(input$trial2), g_sel_freqs())
+#       })
+#       data_g1t1 <- reactive({
+#         get_data_group_trial_freqmean(g_data(),input$group1, as.numeric(input$trial1), g_sel_freqs())
+#       })
+#       data_g1t2 <- reactive({
+#         get_data_group_trial_freqmean(g_data(),input$group1, as.numeric(input$trial2), g_sel_freqs())
+#       })
+#       data_g2t1 <- reactive({
+#         get_data_group_trial_freqmean(g_data(),input$group2, as.numeric(input$trial1), g_sel_freqs())
+#       })
+#       data_g2t2 <- reactive({
+#         get_data_group_trial_freqmean(g_data(),input$group2, as.numeric(input$trial2), g_sel_freqs())
+#       })
+
+      #g_D             <<- reactive({g_reload_rVal(); get_global_D(g_act_data_dir())                })
+      #g_data          <<- reactive({ g_D()$mdat
+      D2    <- reactive({get_global_D(file.path(g_datarootpath(),input$comp_dir))})
+      data2 <- reactive({D2()$mdat})
+      estimate_time_first <- reactive({input$longtimefirst})
+
+      curdata <- reactive({
+        M <- get_longitudinal_currently_selected_data(g_D(), D2(),
+                                                       input$group1,
+                                                       input$group2,
+                                                       as.numeric(input$trial1),
+                                                       as.numeric(input$trial2),
+                                                       g_sel_freqs(),
+                                                       estimate_time_first = estimate_time_first())
+#        M1 = get_currently_selected_data(g_data(), input$group1, input$group2, as.numeric(input$trial1), as.numeric(input$trial2), g_sel_freqs())
+#        M2 = get_currently_selected_data(data2(), input$group1, input$group2, as.numeric(input$trial1), as.numeric(input$trial2), g_sel_freqs())
+>>>>>>> 2d838b8f5f94f7854c105dd6ec3a1771c6573efc
         return(M)
       })
 
@@ -508,7 +689,10 @@ longitudinalPlotServer <- function(id, dir_listRS) {
         ###################
         # CORRPLOT
         if (input$method=="Corrplot"){
+<<<<<<< HEAD
 
+=======
+>>>>>>> 2d838b8f5f94f7854c105dd6ec3a1771c6573efc
           generate_plot_Corrplot(d$mat_p, d$mat_t, regions = colnames(d$mat_p),
                                  clustering_method = input$clustering,
                                  num_hclust = input$num_hclust) #D$uregion_list)
@@ -569,7 +753,11 @@ longitudinalPlotServer <- function(id, dir_listRS) {
           #df <- as.data.frame(mat_p)
           #x <-ggplot(data = df, aes(x=frontopolar_A, y = central_A)) + geom_point()
           #x
+<<<<<<< HEAD
           p <-generate_plot_ggplot_corrplot_handmade(mat_p, mat_t, mat_mean_diff = d$mat_mean_diff)
+=======
+          p <-generate_plot_ggplot_corrplot_handmade(mat_p, mat_t)
+>>>>>>> 2d838b8f5f94f7854c105dd6ec3a1771c6573efc
 
 
 
@@ -593,6 +781,10 @@ longitudinalPlotServer <- function(id, dir_listRS) {
 
         }
         cat(file = stderr(),paste0("plot duration =",Sys.time()-start_time,"\n"))
+<<<<<<< HEAD
+=======
+
+>>>>>>> 2d838b8f5f94f7854c105dd6ec3a1771c6573efc
       }
       )
 
@@ -600,6 +792,7 @@ longitudinalPlotServer <- function(id, dir_listRS) {
         cat(file = stderr(),paste0("level_y_rval()=",level_y_rval(),"\n"))
         cat(file = stderr(),paste0("level_x_rval()=",level_x_rval(),"\n"))
         glob_text_d <<- curdata()
+<<<<<<< HEAD
 
         #req(input$choosenetwork)
         # try({
@@ -621,16 +814,27 @@ longitudinalPlotServer <- function(id, dir_listRS) {
 
         z = t.test(x,y, paired = curdata()$my_paired)
         out <- create_my_ttest_string(z, paired = curdata()$my_paired, mean1 = mean(x, na.rm = T), mean2 = mean(y, na.rm = T))
+=======
+        x = curdata()$data1[, level_y_rval(), level_x_rval()]
+        y = curdata()$data2[, level_y_rval(), level_x_rval()]
+        z = t.test(x,y, paired = curdata()$my_paired)
+        out <- create_my_ttest_string(z, paired = curdata()$my_paired, mean1 = mean(x), mean2 = mean(y))
+>>>>>>> 2d838b8f5f94f7854c105dd6ec3a1771c6573efc
         cat(out)
       })
 
       output$hist <- renderPlot({
         glob_hist_d <<- curdata()
+<<<<<<< HEAD
         generate_histogram_plot_facet_long(1,2,
+=======
+        generate_histogram_plot_facet(input$group1, input$group2,
+>>>>>>> 2d838b8f5f94f7854c105dd6ec3a1771c6573efc
                                       input$trial1, input$trial2,
                                       g_sel_freqs(),
                                       level_x_rval(), level_y_rval(),
                                       data = curdata())
+<<<<<<< HEAD
       })
 
       output$facet <- renderPlot({
@@ -638,6 +842,18 @@ longitudinalPlotServer <- function(id, dir_listRS) {
         d = data_freqmean()
         df$data1 = d[,level_x_rval(), level_y_rval(), input$trial1]
         df$num <- ave(df$data1, df$Gruppe, FUN = seq_along)
+=======
+
+      })
+
+
+      output$facet <- renderPlot({
+        df = tbl_beh
+        d = data_freqmean()
+        df$data1 = d[,level_x_rval, level_y_rval, input$trial1]
+        df$num <- ave(df$data1, df$Gruppe, FUN = seq_along)
+
+>>>>>>> 2d838b8f5f94f7854c105dd6ec3a1771c6573efc
       })
 
       output$htmlhelp_Comp_Plot <- renderUI({
@@ -649,6 +865,7 @@ longitudinalPlotServer <- function(id, dir_listRS) {
 
 
 
+<<<<<<< HEAD
       output$networkRadioButtons<- renderUI({
         h4("networkRadioButtons")
         cat(file=stderr(),"in networkRadioButtons\n")
@@ -753,6 +970,8 @@ longitudinalPlotServer <- function(id, dir_listRS) {
         #   str(input[[x]])
         # }
       })
+=======
+>>>>>>> 2d838b8f5f94f7854c105dd6ec3a1771c6573efc
 
       # Observe Funktion fuer den zentralen Specherbutton
       observeEvent(g_saveImage_button(),{
@@ -785,7 +1004,31 @@ longitudinalPlotServer <- function(id, dir_listRS) {
       }
       )
 
+<<<<<<< HEAD
       observeEvent(input$ExportData, { export_selected_tab_data(data = curdata()) })
+=======
+      observeEvent(input$ExportData, {
+        session$sendCustomMessage(type = 'testmessage',
+                                  message = 'saving data now')
+        #ggsave(file = "tmpbutton.png")
+        #ggsave(plot = x1, filename = "x1plot.png", type = "cairo", dpi = 600)
+        req(input$trial1)
+        req(input$trial2)
+        req(input$group1)
+        req(input$group2)
+        d <- curdata()
+        data1 <- d$data1
+        data2 <- d$data2
+        string1 <-d$string1
+        mat_p <- d$mat_p
+        mat_t <- d$mat_t
+        saveRDS(mat_p, file = "./exported_variables_from_visualizer/ExportData2D_mat_p.Rds")
+        saveRDS(mat_t, file = "./exported_variables_from_visualizer/ExportData2D_mat_t.Rds")
+        saveRDS(data1, file = "./exported_variables_from_visualizer/ExportData3D_data1_subj_reg1_reg2.Rds")
+        saveRDS(data2, file = "./exported_variables_from_visualizer/ExportData3D_data2_subj_reg1_reg2.Rds")
+
+      })
+>>>>>>> 2d838b8f5f94f7854c105dd6ec3a1771c6573efc
 
 
     }
@@ -794,6 +1037,7 @@ longitudinalPlotServer <- function(id, dir_listRS) {
 
 
 
+<<<<<<< HEAD
 # https://yihui.shinyapps.io/DT-radio/
 # library(shiny)
 # library(DT)
@@ -1133,6 +1377,15 @@ longitudinalPlotServer <- function(id, dir_listRS) {
 #   str(sapply(month.abb, function(i) input[[i]]))
 # })
 #
+=======
+
+
+
+
+
+
+
+>>>>>>> 2d838b8f5f94f7854c105dd6ec3a1771c6573efc
 
 
 

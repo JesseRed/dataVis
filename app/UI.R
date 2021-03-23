@@ -42,9 +42,6 @@ ui <- dashboardPage(
                            icon = icon('line-chart'))
                ),
       menuItem(id = "xxx1", "show data", tabName = "showdata", icon = icon("th"), startExpanded = TRUE,
-               menuSubItem("connectivity",
-                           tabName = "ConnectivityTab",
-                           icon = icon('line-chart')),
                menuSubItem("Coherence",
                            tabName = "CoherenceTab",
                            icon = icon('line-chart')),
@@ -68,8 +65,6 @@ ui <- dashboardPage(
                            icon = icon('line-chart'))
       ),
       menuItem("load data", tabName = "loaddata", icon = icon("file-export"), startExpanded = TRUE,
-               menuSubItem(icon = NULL, uiOutput("RefreshButton")),
-               menuSubItem(icon = NULL, uiOutput("selectDirCon")),
                menuSubItem(icon = NULL, uiOutput("selectDirCoh")),
                menuSubItem(icon = NULL, uiOutput("selectDirTra")),
                menuSubItem(icon = NULL, uiOutput("selectDirFre")),
@@ -151,14 +146,10 @@ ui <- dashboardPage(
                 mergedataUI("mergedata")
               )
       ),
-      tabItem(tabName = "ConnectivityTab",
-              uiOutput("tabsCon")
-      ),
       tabItem(tabName = "CoherenceTab",
               uiOutput("tabsCoh")
       ),
       tabItem(tabName = "TransferentropyTab",
-              #uiOutput("tabsCon")
               uiOutput("tabsTra")
       ),
       tabItem(tabName = "FrequencyTab",

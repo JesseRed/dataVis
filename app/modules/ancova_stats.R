@@ -136,8 +136,12 @@ ancovaStatsServer <- function(id, input_glob_sig, freq) {
 
 
       curdata <- reactive({
+<<<<<<< HEAD:app/modules/ancova_stats.R
         get_currently_selected_data_long3(g_D(), input$group1, input$group2, as.numeric(input$trial1), as.numeric(input$trial1), g_sel_freqs())
         # get_currently_selected_data(g_data(), input$group1, input$group2, as.numeric(input$trial1), as.numeric(input$trial1), g_sel_freqs())
+=======
+        get_currently_selected_data(g_data(), input$group1, input$group2, as.numeric(input$trial1), as.numeric(input$trial1), g_sel_freqs())
+>>>>>>> 2d838b8f5f94f7854c105dd6ec3a1771c6573efc:app/modules/ancova_stats.R
       })
 
       ############################################
@@ -247,7 +251,10 @@ ancovaStatsServer <- function(id, input_glob_sig, freq) {
         d <- curdata()
         mat_t <- d$mat_t
         mat_p <- d$mat_p
+<<<<<<< HEAD:app/modules/ancova_stats.R
         cat(file = stderr(), "renderplot\n")
+=======
+>>>>>>> 2d838b8f5f94f7854c105dd6ec3a1771c6573efc:app/modules/ancova_stats.R
         #         #data1 = get_data_group_trial_freqmean(data,input$group1, as.numeric(input$trial1), freq())
         # #data2 = get_data_group_trial_freqmean(data,input$group2, as.numeric(input$trial2), freq())
         # data1 = data_g1_t1()

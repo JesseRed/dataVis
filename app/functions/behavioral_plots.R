@@ -51,9 +51,15 @@ cat(file = stderr(),paste0("create_ggplot_individual_line_chart with num_groups=
 
   if(num_groups==1){
     p<- data %>%
+<<<<<<< HEAD
         ggplot( aes_string(x = colname1, y = colname2)) +
         geom_line(aes_string(x = colname1, y = colname2, group = "ID", colour = "ID"))+
         geom_point(aes_string(x = colname1, y = colname2, group = "ID", colour = "ID", shape = "ID"),size = 2)+ # shape = 21, color="black", fill="#69b3a2", size=6) +
+=======
+        ggplot( aes_string(x = colname1, y = colname2, group = "ID", colour = "ID", shape = "ID")) +
+        geom_line()+
+        geom_point(size = 2)+ # shape = 21, color="black", fill="#69b3a2", size=6) +
+>>>>>>> 2d838b8f5f94f7854c105dd6ec3a1771c6573efc
         ggtitle(paste0(colname1," vs. ", colname2))
 
 
@@ -82,8 +88,13 @@ create_ggplot_individual_subjects<-function(data = NULL, colname1 = NULL, colnam
   if(num_groups==1){
     p<- data %>%
       ggplot( aes_string(x = colname1, y = colname2))+ #, group = "ID", colour = "ID", shape = "ID")) +
+<<<<<<< HEAD
       #geom_line()+
       geom_point(aes_string(x = colname1, y = colname2, group = "ID", colour = "ID", shape = "ID"),size = 2)+ # shape = 21, color="black", fill="#69b3a2", size=6) +
+=======
+      geom_line()+
+      geom_point(size = 2)+ # shape = 21, color="black", fill="#69b3a2", size=6) +
+>>>>>>> 2d838b8f5f94f7854c105dd6ec3a1771c6573efc
       ggtitle(paste0(colname1," vs. ", colname2))
 
   }
@@ -102,6 +113,7 @@ create_ggplot_individual_subjects<-function(data = NULL, colname1 = NULL, colnam
 
 
 
+<<<<<<< HEAD
 add_ggplot_geomsmooth<-function(p, num_groups = 1){
   if (num_groups == 1){
     p<-p + geom_smooth(se = FALSE) +
@@ -110,6 +122,11 @@ add_ggplot_geomsmooth<-function(p, num_groups = 1){
     p<-p + geom_smooth(se = FALSE) +
       geom_smooth(method=lm , color="red", se=FALSE)
   }
+=======
+add_ggplot_geomsmooth<-function(p){
+  p + geom_smooth(se = FALSE) +
+     geom_smooth(method=lm , color="red", se=FALSE)
+>>>>>>> 2d838b8f5f94f7854c105dd6ec3a1771c6573efc
   return(p)
 }
 
