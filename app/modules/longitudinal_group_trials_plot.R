@@ -115,10 +115,12 @@ longitudinalPlotServer <- function(id, dir_listRS) {
 
           ),
           column(2,
+
                  style = "background-color: #fcfcfc;",
                  style = 'border-right: 2px solid gray',
                  h4("Visualize", align = "center"),
                  selectInput(ns("method"), h5("method"),
+
                              choices = c("Corrplot", "Corrplot_mixed", "Corrplot_clustered", "ggcorr", "Circle", "Pheatmap"), selected = 1),
                  fluidRow(
                    column(6,
@@ -128,6 +130,7 @@ longitudinalPlotServer <- function(id, dir_listRS) {
                    column(6,
                          numericInput(ns("num_hclust"),h5("num hclust"), 3)
                    )
+
                  )
           ),
           column(2,
@@ -149,6 +152,7 @@ longitudinalPlotServer <- function(id, dir_listRS) {
                  ),
           )
         ),
+
         # # TABSET PANEL
         # fluidRow(column(12,
         #                 tabsetPanel(
@@ -157,12 +161,14 @@ longitudinalPlotServer <- function(id, dir_listRS) {
         #                 )
         #                 )
         # ),
+
         fluidRow(
           column(12,
                  box(title = "Was wurde berechnet?...", width = 12, collapsible = TRUE, collapsed = TRUE, verbatimTextOutput(ns("text_explanation"))),
           )
         ),
         fluidRow(
+
            # plotOutput(ns("plot"), width = "auto", height = "800px", click = ns("plot_click"))
           plotOutput(ns("plot"), width = "auto", height = "auto", click = ns("plot_click")),
           br(),
@@ -173,6 +179,7 @@ longitudinalPlotServer <- function(id, dir_listRS) {
           column(9,
 
                plotOutput(ns("hist"), width = "auto", height = "300px", click = ns("plot_click_hist")),
+
           ),
           column(3,
                  verbatimTextOutput(ns("text_bottom")),
@@ -194,6 +201,7 @@ longitudinalPlotServer <- function(id, dir_listRS) {
                  ),
           )
         ),
+
         fluidRow(
           column(12,
                  box(title = "Included subjects", width = 12, collapsible = TRUE, collapsed = TRUE,
@@ -340,6 +348,7 @@ longitudinalPlotServer <- function(id, dir_listRS) {
         curdata()$df_data2
       })
 
+
       x1<<- NULL
       x2<<- NULL
       myTabPlots <<- list()
@@ -348,6 +357,12 @@ longitudinalPlotServer <- function(id, dir_listRS) {
       data_freqmean <- reactive({
         get_data_freqmean(g_data(), g_sel_freqs())
       })
+
+#
+#       click_x_num <- reactive({ round(input$plot_click$x)})
+#       click_y_num <- reactive({ abs(round(input$plot_click$y)-length(g_regions())-1)})
+#       click_x_reg <- reactive({ regions()[click_x_num]})
+#       click_y_reg <- reactive({ regions()[click_y_num]})
 
 
       ####################################################################################
@@ -375,6 +390,7 @@ longitudinalPlotServer <- function(id, dir_listRS) {
       # wenn in den plot geklickt wird (funktioniert nur fuer den Corplot)
       observeEvent(input$plot_click,{
         cat(file = stderr(), "plot_click observeEvent")
+
         if (input$method=="ggcorr"){
           level_x = round(input$plot_click$x)
           level_y = round(input$plot_click$y)
@@ -382,6 +398,7 @@ longitudinalPlotServer <- function(id, dir_listRS) {
           level_x = round(input$plot_click$x)
           level_y = abs(round(input$plot_click$y)-length(g_regions())-1)
         }
+
         region_x = (g_regions()[level_x])
         region_y = (g_regions()[level_y])
         level_x_rval(level_x)
@@ -392,6 +409,7 @@ longitudinalPlotServer <- function(id, dir_listRS) {
         updateNumericInput(session, "nif_click_y", value = level_y)
 
       })
+
 
       iscausal <- reactive({
         if (input$causal == "non-directed"){
@@ -446,6 +464,7 @@ longitudinalPlotServer <- function(id, dir_listRS) {
 
                                             )
             gM <<- M
+
 
         return(M)
       })
@@ -569,7 +588,9 @@ longitudinalPlotServer <- function(id, dir_listRS) {
           #df <- as.data.frame(mat_p)
           #x <-ggplot(data = df, aes(x=frontopolar_A, y = central_A)) + geom_point()
           #x
+
           p <-generate_plot_ggplot_corrplot_handmade(mat_p, mat_t, mat_mean_diff = d$mat_mean_diff)
+
 
 
 
@@ -593,6 +614,7 @@ longitudinalPlotServer <- function(id, dir_listRS) {
 
         }
         cat(file = stderr(),paste0("plot duration =",Sys.time()-start_time,"\n"))
+
       }
       )
 
@@ -600,6 +622,7 @@ longitudinalPlotServer <- function(id, dir_listRS) {
         cat(file = stderr(),paste0("level_y_rval()=",level_y_rval(),"\n"))
         cat(file = stderr(),paste0("level_x_rval()=",level_x_rval(),"\n"))
         glob_text_d <<- curdata()
+
 
         #req(input$choosenetwork)
         # try({
@@ -622,12 +645,14 @@ longitudinalPlotServer <- function(id, dir_listRS) {
         z = t.test(x,y, paired = curdata()$my_paired)
         out <- create_my_ttest_string(z, paired = curdata()$my_paired, mean1 = mean(x, na.rm = T), mean2 = mean(y, na.rm = T),
                                       corrected_p_value = curdata()$mat_p[level_y_rval(), level_x_rval()])
+
         cat(out)
       })
 
       output$hist <- renderPlot({
         glob_hist_d <<- curdata()
-        generate_histogram_plot_facet_long(1,2,
+
+        generate_histogram_plot_facet(input$group1, input$group2,
                                       input$trial1, input$trial2,
                                       g_sel_freqs(),
                                       level_x_rval(), level_y_rval(),
@@ -639,13 +664,18 @@ longitudinalPlotServer <- function(id, dir_listRS) {
         d = data_freqmean()
         df$data1 = d[,level_x_rval(), level_y_rval(), input$trial1]
         df$num <- ave(df$data1, df$Gruppe, FUN = seq_along)
+
+
       })
+
+
 
       output$htmlhelp_Comp_Plot <- renderUI({
         # if (showhtml()){
         includeMarkdown(rmarkdown::render("./documentation/longitudinal_group_trials_plot_markdown.md"))
         # }
       })
+
 
 
 
@@ -755,6 +785,7 @@ longitudinalPlotServer <- function(id, dir_listRS) {
         # }
       })
 
+
       # Observe Funktion fuer den zentralen Specherbutton
       observeEvent(g_saveImage_button(),{
         req(input$group1)
@@ -786,7 +817,9 @@ longitudinalPlotServer <- function(id, dir_listRS) {
       }
       )
 
+
       observeEvent(input$ExportData, { export_selected_tab_data(data = curdata()) })
+
 
 
     }
@@ -795,345 +828,6 @@ longitudinalPlotServer <- function(id, dir_listRS) {
 
 
 
-# https://yihui.shinyapps.io/DT-radio/
-# library(shiny)
-# library(DT)
-# shinyApp(
-#   ui = fluidPage(
-#     title = 'Radio buttons in a table',
-#     DT::dataTableOutput('foo'),
-#     verbatimTextOutput('sel')
-#   ),
-#   server = function(input, output, session) {
-#     m = matrix(
-#       as.character(1:5), nrow = 12, ncol = 5, byrow = TRUE,
-#       dimnames = list(month.abb, LETTERS[1:5])
-#     )
-#     for (i in seq_len(nrow(m))) {
-#       m[i, ] = sprintf(
-#         '<input type="radio" name="%s" value="%s"/>',
-#         month.abb[i], m[i, ]
-#       )
-#     }
-#     m
-#     output$foo = DT::renderDataTable(
-#       m, escape = FALSE, selection = 'none', server = FALSE,
-#       options = list(dom = 't', paging = FALSE, ordering = FALSE),
-#       callback = JS("table.rows().every(function(i, tab, row) {
-#           var $this = $(this.node());
-#           $this.attr('id', this.data()[0]);
-#           $this.addClass('shiny-input-radiogroup');
-#         });
-#         Shiny.unbindAll(table.table().node());
-#         Shiny.bindAll(table.table().node());")
-#     )
-#     output$sel = renderPrint({
-#       str(sapply(month.abb, function(i) input[[i]]))
-#     })
-#   }
-# )
-
-# fluidRow(
-#
-#   #HTML("<div class='col-sm-4' style='min-width: 350px !important;'>"),
-#   column(12, box(title = "Network configuration", width = 12, collapsible = TRUE, collapsed = TRUE,
-#
-#                  DT::dataTableOutput(ns('foo')),
-#                  verbatimTextOutput(ns('sel')),
-#                  DT::dataTableOutput(ns('mycheckboxtable')),
-#                  verbatimTextOutput(ns('sel2')),
-#                  actionButton(ns("usenewnetwork"), "use new network"),
-#
-#                  actionButton(ns("useoriginalnetwork"), "use original network"),
-#                  materialSwitch(inputId = "idxxx", label = "Primary switch", status = "info"),
-#                  prettyRadioButtons(
-#                    inputId = "choosenetwork",
-#                    label = "Which network to use for analysis",
-#                    choices = c("original network", "new network defined here"),
-#                    shape = "round",
-#                    status = "danger",
-#                    fill = TRUE,
-#                    inline = TRUE
-#                  ),
-#
-#                  uiOutput(ns("network"))
-#   ),
-#   )
-# ),
-# fluidRow(
-#
-#   #HTML("<div class='col-sm-4' style='min-width: 350px !important;'>"),
-#   column(12, box(title = "Network configuration", width = 12, collapsible = TRUE, collapsed = TRUE,
-#                  uiOutput(ns("networkTable")),
-#                  verbatimTextOutput(ns("choice"))
-#   ),
-#   )
-# ),
-
-#
-# data <- head(iris, 5)
-#
-# for (i in 1:nrow(data)) {
-#   data$species_selector[i] <- as.character(selectInput(ns(paste0("sel", i)), "", choices = unique(iris$Species), width = "100px"))
-# }
-#
-# m2 = reactive({
-#   m2 = matrix(
-#     as.character(1:15), nrow = length(g_regions()), ncol = 15, byrow = TRUE,
-#     dimnames = list(g_regions(), LETTERS[1:15])
-#   )
-#   m2[1,1]=1
-#   m2[2,2] = 0
-#   for (i in seq_len(nrow(m2))) {
-#     m2[i, ] = sprintf(
-#       '<input type="radio" name="%s" value="%s"/>',
-#       ns(g_regions()[i]), m2[i, ]
-#     )
-#   }
-#   return(m2)
-# })
-#
-# #
-# output$mycheckboxtable = DT::renderDataTable(
-#   m2(), escape = FALSE, selection = 'none', server = T,
-#   options = list(dom = 't', paging = FALSE, ordering = FALSE, stateSave = TRUE,
-#                  editable = 'all'),
-#   callback = JS("table.rows().every(function(i, tab, row) {
-#           var $this = $(this.node());
-#           $this.attr('id', this.data()[0]);
-#           $this.addClass('shiny-input-radiogroup');
-#         });
-#         Shiny.unbindAll(table.table().node());
-#         Shiny.bindAll(table.table().node());")
-# )
-#
-#
-#
-# # output$mycheckboxtable = DT::renderDataTable(
-# #   data, escape = FALSE, selection = 'none', server = T,
-# #   options = list(dom = 't', paging = FALSE, ordering = FALSE, stateSave = TRUE,
-# #                  editable = 'all'),
-# #   callback = JS("table.rows().every(function(i, tab, row) {
-# #     var $this = $(this.node());
-# #     $this.attr('id', this.data()[0]);
-# #     $this.addClass('shiny-input-container');
-# #   });
-# #   Shiny.unbindAll(table.table().node());
-# #   Shiny.bindAll(table.table().node());")
-# # )
-#
-# output$sel = renderPrint({
-#   for (i in 1:length(g_regions())){
-#
-#     str(input[[g_regions()[i]]])
-#   }
-#   str(input$c2)
-#
-# })
-#
-#
-# output$sel2 = renderPrint({
-#   # str(input$A)
-#   # str(input$mycheckboxtable_A)
-#   # str(input$mycheckboxtable_1)
-#   # str(input$mycheckboxtable_central)
-#   # #str(input$1)
-#   # str(input[["1"]])
-#   #
-#   # # for (i in 1:5){
-#   # #   str(input[[i]])
-#   # # }
-#   # str(input$mycheckboxtable$A)
-#   # print(input$mycheckboxtable_rows_current)
-#   # print(input$mycheckboxtable_rows_all)
-#   # print("cell_clicked")
-#   # print(input$mycheckboxtable_cell_clicked)
-#   # print("cell_info")
-#   # print(input$mycheckboxtable_cell_info)
-#   print("central")
-#   str(input)
-#   str(input$ns)
-#   str(sessionInfo)
-#   print("input[[Conn-central]]")
-#   str(input[["Conn-central"]])
-#   str(input$central)
-#   print("central2")
-#   print("cell_clicked")
-#   str(input$mycheckboxtable_cell_clicked$value)
-#   #str(Conn-input$central)
-#   print("NS(id, 'input')")
-#   str(NS(id, "input$central"))
-#
-#   str("mycheckboxtable")
-#   str(input$mycheckboxtable)
-#   str(input$mycheckboxtablesdf)
-#
-#   #str(eval(parse(text="Conn-input$central")))
-#   str("ns(input$central)")
-#   x <<- ns(input)
-#   y <<- ns(input$central)
-#   str(id)
-#   #str(x$central)
-#   #str(x[[1]])
-#   str(ns(input$central))
-#   str(input$central)
-#   str("eval(parse(text = ns(input$central)))")
-#   #str(Conn_input$central)
-#   #str(eval(parse(text = ns(input$central))))
-#   print("rows_selected")
-#   str(input$mycheckboxtable_rows_selected)
-#   # print("cell_edit")
-#   # str(input$mycheckboxtable_cell_edit)
-#   # print("row")
-#   # proxy <<- dataTableProxy('mycheckboxtable')
-#
-#   #str(input$mycheckboxtable_state)
-#   #g_tab <<- input$mycheckboxtable_state
-#   str(sapply(g_regions(), function(i) input[[g_regions()[i]]]))
-#   print("m")
-#   str(m2())
-# })
-#
-# filtereddata <<- eventReactive(input$usenewnetwork,{
-#   #dataTableProxy('mycheckboxtable')
-#   cat(file = stderr(), paste0("er cell row = ", input$mycheckboxtable_cell_clicked$row ,"\n"))
-#   # return(DT::datatable(data
-#   #                      ,options = list(state=input$Table_state)
-#   # ))
-# })
-#
-# rowclicked = reactive({
-#   return(input$mycheckboxtable_cell_clicked$row)
-# })
-#
-# # newNetwork_init <- reactive({
-# #   x <- as.list(rep(0,length(g_regions())))
-# #   names(x) <- LETTERS[1:length(g_regions())]
-# #   return(x)
-# # })
-# #
-# isNetworkInitialized <- reactiveVal(F)
-#
-# # x <- reactive({
-# #   t <- as.list(rep(0,length(g_regions())))
-# #   names(t)<- names(g_regions())
-# # })
-# #      rv <- do.call("reactiveValues",x)
-# # newNetwork <- reactiveValues(
-# #   for (i in 1:length(g_regions())){
-# #   g_regions()[i]= 0
-# # }
-# # )
-#
-#
-# #       newNetwork <- reactiveValues(
-# #         tmp = list()
-# #         for (i in 1:length(g_regions())){
-# #           tmp[regions()[i]]= 0
-# #         }
-# #         return(tmp)
-# # })
-# rv <- reactiveValues(oldNetwork=0,newNetwork=0)
-# observeEvent(input$mycheckboxtable_cell_clicked$row, {
-#   cat(file = stderr(), paste0("into observeEvent of mycheckboxtable\n"))
-#   rv$oldNetwork <- rv$newNetwork; rv$newNetwork <- newNetwork()})
-#
-#
-# newNetwork = reactive({
-#   res <- str_match(input$mycheckboxtable_cell_clicked$value, "value=\"(.*?)\"/>" )
-#
-#   v = as.numeric(res[2])
-#   row = as.numeric(input$mycheckboxtable_cell_clicked$row)
-#
-#   if (!isNetworkInitialized()){
-#     newNetwork <- as.list(rep(0,length(g_regions())))
-#     names(newNetwork) <- g_regions() #[1:length(g_regions())]
-#     isNetworkInitialized(T)
-#   }else{
-#     newNetwork <- rv$oldNetwork
-#   }
-#
-#   for (i in 1:length(newNetwork)){
-#     cat(file = stderr(), paste0("reactive newNetwork[",i,"]=", newNetwork[i], "(name) = ", names(newNetwork)[i],"\n"))
-#
-#   }
-#   cat(file = stderr(), paste0("new entry in row=",row, " for newNework[",g_regions()[row],"]=",v,"\n"))
-#   newNetwork[g_regions()[row]] = v
-#
-#   cat(file = stderr(), paste0("reactive newNetwork", newNetwork, "\n"))
-#   return(newNetwork)
-# })
-#
-#
-# eventReactive(input$mycheckboxtable_cell_clicked,{
-#   cat(file = stderr(), "ercell was clicked\n")
-#   cat(file = stderr(), paste0("er cell row = ", input$mycheckboxtable_cell_clicked$row ,"\n"))
-#   cat(file = stderr(), "er cell was clicked\n")
-#
-# })
-#
-# # observe(input$mycheckboxtable_cell_clicked,{
-# #   cat(file = stderr(), "cell was clicked\n")
-# #   cat(file = stderr(), paste0("cell row = ", input$mycheckboxtable_cell_clicked$row ,"\n"))
-# #   cat(file = stderr(), "cell was clicked\n")
-# #
-# # })
-#
-
-# observeEvent(input$usenewnetwork,{
-#   cat(file = stderr(),"usenew network was pressed \n")
-#   myproxy <<- dataTableProxy('mycheckboxtable')
-# })
-# #                   selected = "2013")
-# # fluidRow(
-# #   tabBox(
-# #     title = NULL, width = 12,
-# #     # The id lets us use input$tabset1 on the server to find the current tab
-# #     id = "tabset1", height = "250px",
-# #     tabPanel("Plot", overviewPlotUI("ConOverviewPlot")),
-# #     tabPanel("Comp Plot", compareTrialsPlotUI("ConPlot")),
-# #     tabPanel("Trials Stat", compareTrialsStatsUI("ConTrialsStat")),
-# #     tabPanel("Groups Stat", compareGroupsStatsUI("ConGroupsStats")),
-# #     tabPanel("Diff Stat", compareDiffOfDiffStatsUI("ConDiffOfDiffStats")),
-# #     tabPanel("Regression", regressionStatsUI("ConRegStats")),
-# #     tabPanel("ANCOVA", ancovaStatsUI("ConAncovaStats")),
-# #     tabPanel("Options Regions", optionsUI("Options")),
-# #     tabPanel("Regions order", options_mod_orderUI("Options_order")),
-# #     tabPanel("Regions name", options_mod_nameUI("Options_name")),
-# #     tabPanel("Plot", RSPlotUI("ConnPlot")),
-# #     tabPanel("Comp Plot",  compareTrialsPlotUI("ConnPlot2")),
-# #     tabPanel("Long Plot",  longitudinalPlotUI("Conn"))
-# #   )
-# # )
-# #})
-#
-# m = matrix(
-#   as.character(1:5), nrow = 12, ncol = 5, byrow = TRUE,
-#   dimnames = list(month.abb, LETTERS[1:5])
-# )
-# for (i in seq_len(nrow(m))) {
-#   m[i, ] = sprintf(
-#     '<input type="radio" name="%s" value="%s"/>',
-#     month.abb[i], m[i, ]
-#   )
-# }
-#
-#
-# output$foo = DT::renderDataTable(
-#   m, escape = FALSE, selection = 'none', server = FALSE,
-#   options = list(dom = 't', paging = FALSE, ordering = FALSE),
-#   callback = JS("table.rows().every(function(i, tab, row) {
-#                 var $this = $(this.node());
-#                 $this.attr('id', this.data()[0]);
-#                 $this.addClass('shiny-input-radiogroup');
-#               });
-#               Shiny.unbindAll(table.table().node());
-#               Shiny.bindAll(table.table().node());")
-# )
-# output$sel = renderPrint({
-#   str(sapply(month.abb, function(i) input[[i]]))
-# })
-#
 
 
 

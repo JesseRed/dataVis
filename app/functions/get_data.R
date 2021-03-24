@@ -16,7 +16,11 @@ create_my_ttest_string <- function(z, paired = FALSE, mean1 = 0, mean2 = 0,
   if (paired){
     meanstring <- paste0("mean of difference = ", round(z$estimate[1],3)," \nmean= ", round(mean1,3), " vs. ", round(mean2,3)," \n")
   }else{
+<<<<<<< HEAD
     meanstring <- paste0("mean= ", round(z$estimate[1],3), " vs. ", round(z$estimate[2],3)," \n")
+=======
+    meanstring <- paste0("mean= ", round(z$estimate[2],3), " vs. ", round(z$estimate[1],3)," \n")
+>>>>>>> 2d838b8f5f94f7854c105dd6ec3a1771c6573efc
   }
 
   out <- paste0(z$method,"\n\n",
@@ -76,18 +80,37 @@ get_longitudinal_currently_selected_data<-function(D1, D2, g1, g2, t1, t2, freq,
                                                    tbl_beh = g_beh(),
                                                    method = g_act_method(),
                                                    estimate_time_first = TRUE){
+<<<<<<< HEAD
 
   cat(file = stderr(),paste0("Deprecated function of get_longitudinal_currently_selected_data ...\n",
                              "better to use split first and than get_currently_selected_data_long\n"))
+=======
+>>>>>>> 2d838b8f5f94f7854c105dd6ec3a1771c6573efc
   # generierung von t- und p-Maps fuer longitudinale Daten
   # Es muss insbesondere die Gruppenintegritaet ueberprueft werden, da
   # sich die Gruppen zwischen den beiden Messungen unterscheiden werden durch drop outs
   homogen_group_data = exclude_data_from_not_reoccuring_subjects(D1,D2)
+<<<<<<< HEAD
   HD1 <- homogen_group_data$D1
   HD2 <- homogen_group_data$D2
   glob_HD1 <<-HD1
   glob_HD2 <<-HD2
 
+=======
+  HD1 <- homogen_group_data$HD1
+  HD2 <- homogen_group_data$HD2
+  glob_HD1 <<-HD1
+  glob_HD2 <<-HD2
+  # d1 = get_currently_selected_data(HD1, g1, g2, t1, t2, freq,
+  #                                  trials = HD1$utrial_list,
+  #                                  regions = HD1$uregion_list,
+  #                                  tbl_beh = HD1$df_BD)
+  #
+  # d2 = get_currently_selected_data(HD2, g1, g2, t1, t2, freq,
+  #                                  trials = HD2$utrial_list,
+  #                                  regions = HD2$uregion_list,
+  #                                  tbl_beh = HD2$df_BD)
+>>>>>>> 2d838b8f5f94f7854c105dd6ec3a1771c6573efc
   cat(file = stderr(), "now get the datalong\n")
   d = get_currently_selected_data_long(HD1$mdat, g1, g2, t1, t2, freq,
                                        trials=HD1$utrial_list,
@@ -101,6 +124,7 @@ get_longitudinal_currently_selected_data<-function(D1, D2, g1, g2, t1, t2, freq,
 }
 
 
+<<<<<<< HEAD
 
 get_currently_selected_data_long2<-function(D, g1, g2, t1, t2, freq,
                                            trials=g_trials(),
@@ -341,13 +365,18 @@ get_currently_selected_data_long2<-function(D, g1, g2, t1, t2, freq,
 
 
 
+=======
+>>>>>>> 2d838b8f5f94f7854c105dd6ec3a1771c6573efc
 get_currently_selected_data_long<-function(data, g1, g2, t1, t2, freq,
                                            trials=g_trials(),
                                            regions=g_regions(),
                                            tbl_beh = g_beh(),
                                            method = g_act_method(),
                                            datalong = NULL,
+<<<<<<< HEAD
                                            tbl_beh_long = NULL,
+=======
+>>>>>>> 2d838b8f5f94f7854c105dd6ec3a1771c6573efc
                                            estimate_time_first = TRUE){
   # die funktion gibt eine LIste von mehreren Variablen zurueck
   # gedacht fuer tabs in denen gruppen und trials ausgewaehlt werden
@@ -393,6 +422,7 @@ get_currently_selected_data_long<-function(data, g1, g2, t1, t2, freq,
   }else{
     #############################
     # longitudinale Daten
+<<<<<<< HEAD
 #    if (is_debug){
     # cat(file = stderr(),"\nlongitudinal data analyse start \n")
     # cat(file = stderr(),paste0("g1 = ",g1, "   g2 = ", g2,"\n"))
@@ -410,6 +440,13 @@ get_currently_selected_data_long<-function(data, g1, g2, t1, t2, freq,
     #cat(file = stderr(),"1\n")
     d2 <- get_selected_data_considering_group_trial(datalong, g1,g2,t1,t2, freq, trials = trials, tbl_beh = tbl_beh_long, method = method)
     #cat(file = stderr(),"2\n")
+=======
+    cat(file = stderr(),"\nlongitudinal data analyse start \n")
+    d1 <- get_selected_data_considering_group_trial(data, g1,g2,t1,t2, freq,  trials = trials, tbl_beh = tbl_beh, method = method)
+    cat(file = stderr(),"1\n")
+    d2 <- get_selected_data_considering_group_trial(datalong, g1,g2,t1,t2, freq, trials = trials, tbl_beh = tbl_beh, method = method)
+    cat(file = stderr(),"2\n")
+>>>>>>> 2d838b8f5f94f7854c105dd6ec3a1771c6573efc
     d <- d1
     glob_d1<<-d1
     glob_d2<<-d2
@@ -439,7 +476,12 @@ get_currently_selected_data_long<-function(data, g1, g2, t1, t2, freq,
                              "   Ein positiver Wert in dieser Matrix zeigt einen positiven Effekt der Zeit/Intervention an (in der 2. Messung groesser)\n",
                              "4. Es wird dann zwischen X1 und X2 ein t-test fuer jede Region gerechnet (unpaired fuer die 2 Gruppen)\n",
                              "Jedes Feld der Corrplot Matrix im Bild testet somit auf folgende Hypothese\n",
+<<<<<<< HEAD
                              "Unterscheidet sich der Einfluss der Zeit/Intervention zwischen den beiden Gruppen fuer den ausgewaehlten trial?")
+=======
+                             "Unterscheidet sich der Einfluss der Zeit/Intervention zwischen den beiden Gruppen fuer den ausgewaehlten trial?"
+      )
+>>>>>>> 2d838b8f5f94f7854c105dd6ec3a1771c6573efc
     }else{
       # 2. Vergleiche den longitudinalen Unterschied jedem trial1 und trial2
       # ttest(trial1_zeitpunkt1-trial2_zeitpunkt1 vs. trial1_zeitpunkt2-trial2_zeitpunkt2)
@@ -460,7 +502,12 @@ get_currently_selected_data_long<-function(data, g1, g2, t1, t2, freq,
                              "3. Es wird dann zwischen X1 und X2 ein t-test fuer jede Region gerechnet (paired fuer die 2 Gruppen)\n",
                              "Jedes Feld der Corrplot Matrix im Bild testet somit auf folgende Hypothese\n",
                              "Der Unterschied zwischen trial1 und trial 2 wird von der Zeit/Intervention beeinflusst\n",
+<<<<<<< HEAD
                              "Nullhypothese: Zeit/Intervention haben keinen Einfluss auf den Unterschied zwischen trial_1 und trial_2\n")
+=======
+                             "Nullhypothese: Zeit/Intervention haben keinen Einfluss auf den Unterschied zwischen trial_1 und trial_2\n"
+      )
+>>>>>>> 2d838b8f5f94f7854c105dd6ec3a1771c6573efc
       }else{
       # wenn die gruppen gleich sind, d.h. wenn wir nur 2 trials vergleichen
       # in der gleichen Gruppe dann haben wir 2 Moeglichekeiten
@@ -484,7 +531,12 @@ get_currently_selected_data_long<-function(data, g1, g2, t1, t2, freq,
                              "3. Es wird dann zwischen X1 und X2 ein t-test fuer jede Region gerechnet (paired fuer die Matrizen welche die gleichen Subjects enthalten)",
                              "Jedes Feld der Corrplot Matrix im Bild testet somit auf folgende Hypothese\n",
                              "Hypothese: Zeit/Intervention unterscheidet sich in ihrem Einfluss auf trial_1 vom Einfluss auf trial2?\n",
+<<<<<<< HEAD
                              "Nullhypothese: Der Einfluss von Zeit/Intervention ist fuer trial_1 und trial_2 gleich\n")
+=======
+                             "Nullhypothese: Der Einfluss von Zeit/Intervention ist fuer trial_1 und trial_2 gleich\n",
+      )
+>>>>>>> 2d838b8f5f94f7854c105dd6ec3a1771c6573efc
       }
     }
   }
@@ -500,10 +552,17 @@ get_currently_selected_data_long<-function(data, g1, g2, t1, t2, freq,
     d$mat_t = zeros(dim(d$data1)[2], dim(d$data1)[3])
 
     d$color1 = colorRampPalette(c("blue","red","green"))
+<<<<<<< HEAD
     #cat(file = stderr(),paste0("get_currently_selected_data_long only filter the data duration =",Sys.time()-start_time,"\n"))
 
 
     #cat(file = stderr(), "entering for loop ... now \n")
+=======
+    cat(file = stderr(),paste0("get_currently_selected_data_long only filter the data duration =",Sys.time()-start_time,"\n"))
+
+
+    cat(file = stderr(), "entering for loop ... now \n")
+>>>>>>> 2d838b8f5f94f7854c105dd6ec3a1771c6573efc
     for (i in 1:(dim(d$data1)[2])-1){
       start_idx = i+1
       if (method =="Granger"){
@@ -553,6 +612,7 @@ get_currently_selected_data_long<-function(data, g1, g2, t1, t2, freq,
 get_selected_data_considering_group_trial<-function(data, g1,g2,t1,t2, freq, trials=g_trials(), tbl_beh = g_beh(), method = g_act_method() ){
   d <- list()
   d$my_paired = FALSE
+<<<<<<< HEAD
 
   #cat(file = stderr(), paste0("get_selected_data_considering_group_trial \n"))
   #cat(file = stderr(), paste0("g1 = ", g1, "  g2 = ",g2, "  t1 = ", t1, "  t2 = ", t2, "\n"))
@@ -565,10 +625,16 @@ get_selected_data_considering_group_trial<-function(data, g1,g2,t1,t2, freq, tri
                        "unpaired t-test\n")
     d$explanation = paste0("Compare the in group diff of ", t1," vs ", t2, "between group ", g1, " and ", g2, "\n",
                            "unpaired t-test\n")
+=======
+  if ((! t1 == t2) && (!g1==g2)){
+    d$string1 = paste0("Compare the in group diff of ", t1," vs ", t2, "between groups", "\n",
+                       "unpaired t-test\n")
+>>>>>>> 2d838b8f5f94f7854c105dd6ec3a1771c6573efc
     d$data1 = get_data_group_trial_freqmean(data,g1, t1, freq, tbl_beh = tbl_beh, method=method)-get_data_group_trial_freqmean(data,g1, t2, freq, tbl_beh = tbl_beh, method=method)
     d$data2 = get_data_group_trial_freqmean(data,g2, t1, freq, tbl_beh = tbl_beh, method=method)-get_data_group_trial_freqmean(data,g2, t2, freq, tbl_beh = tbl_beh, method=method)
 
   }else{
+<<<<<<< HEAD
     Z281<<-data
     d$data1 = get_data_group_trial_freqmean(data,g1, t1, freq, tbl_beh = tbl_beh, method=method)
     d$data2 = get_data_group_trial_freqmean(data,g2, t2, freq, tbl_beh = tbl_beh, method=method)
@@ -587,10 +653,18 @@ get_selected_data_considering_group_trial<-function(data, g1,g2,t1,t2, freq, tri
       d$explanation = paste0("same trial not longitudinal... Compare the same trial between 2 groups: ", g1," vs ", g2, " in trial ", trials[t1], "\n",
                          "independent t-test\n")
 
+=======
+    d$data1 = get_data_group_trial_freqmean(data,g1, t1, freq, tbl_beh = tbl_beh, method=method)
+    d$data2 = get_data_group_trial_freqmean(data,g2, t2, freq, tbl_beh = tbl_beh, method=method)
+    if (t1 == t2) {
+      d$string1 = paste0(g1," vs ", g2, " in trial ", trials[t1], "\n",
+                         "independent t-test\n")
+>>>>>>> 2d838b8f5f94f7854c105dd6ec3a1771c6573efc
       # d$string1 = paste0(g1," vs ", g2, " in trial ", g_trials()[t1], "\n",
       #                    "independent t-test\n")
     }
     if (g1 == g2){
+<<<<<<< HEAD
       #cat(file = stderr(), "g1 == g2\n")
       d$string1 = paste0(t1," vs ", t2, "in group ", g1, "\n paired t-test\n")
       d$explanation = paste0("same group different trial not longitudinal... Compare the same group between 2 trials ", t1," vs ", t2, " in group ", g1, "\n",
@@ -598,6 +672,11 @@ get_selected_data_considering_group_trial<-function(data, g1,g2,t1,t2, freq, tri
       d$my_paired = TRUE
     }
     }
+=======
+      d$string1 = paste0(t1," vs ", t2, "in group ", g1, "\n paired t-test\n")
+      d$my_paired = TRUE
+    }
+>>>>>>> 2d838b8f5f94f7854c105dd6ec3a1771c6573efc
   }
   return(d)
 }
@@ -606,9 +685,12 @@ get_selected_data_considering_group_trial<-function(data, g1,g2,t1,t2, freq, tri
 exclude_data_from_not_reoccuring_subjects<-function(D1,D2){
   # es werden nur subjects uebernommen die in D1 und in D2 vorkommen
   # teste zuerst ob die beiden Datensaetze auch wirklich identische Eigenschaften haben
+<<<<<<< HEAD
   if (is.null(D1) | is.null(D2)){
     return(list(D1=D1, D2=D2))
   }
+=======
+>>>>>>> 2d838b8f5f94f7854c105dd6ec3a1771c6573efc
   if (!(identical(D1$method, D2$method))){
     cat(file = stderr(), paste0("selected longitudinal data have not the same method description (", D1$method,"!=",D2$method,")\n"))
   }
@@ -624,6 +706,7 @@ exclude_data_from_not_reoccuring_subjects<-function(D1,D2){
   if (!(identical(D1$dimcontent, D2$dimcontent))){
     cat(file = stderr(), paste0("selected longitudinal data have not the same dimcontent description (", D1$dimcontent,"!=",D2$dimcontent,")\n"))
   }
+<<<<<<< HEAD
 
   ids1 = sapply(strsplit(D1$id_list,"__"),"[",1)
   ids2 = sapply(strsplit(D2$id_list,"__"),"[",1)
@@ -745,6 +828,16 @@ delete_subject_from_data_struct<-function(D = NULL, ids_to_keep = NULL, ids_to_d
   }
   return(D)
 
+=======
+  HD1 = D1
+  HD2 = D2
+  HD1$id_list = HD2$id_list = intersect(D1$id_list, D2$id_list)
+  HD1$df_BD = D1$df_BD[D1$df_BD$ID %in% HD1$id_list,]
+  HD2$df_BD = D2$df_BD[D2$df_BD$ID %in% HD2$id_list,]
+  HD1$mdat = D1$mdat[D1$df_BD$ID %in% HD1$id_list,,,,,drop = FALSE]
+  HD2$mdat = D2$mdat[D2$df_BD$ID %in% HD2$id_list,,,,,drop = FALSE]
+  return(list(HD1=HD1, HD2=HD2))
+>>>>>>> 2d838b8f5f94f7854c105dd6ec3a1771c6573efc
 }
 
 
@@ -857,6 +950,7 @@ get_currently_selected_data<-function(data, g1, g2, t1, t2, freq, trials=g_trial
   return(d)
 }
 
+<<<<<<< HEAD
 
 # die gesamte Datenstruktur des D.RDS Files wird hier eingelesen und geprueft ob der vector in long_marker hier
 # enthalten ist, nur diese werden dann zurueck gegeben
@@ -1077,6 +1171,16 @@ get_data_group <-function(data, group, tbl_beh = g_beh(), method = g_act_method(
   } else {
     data_group = asub(data, list(tbl_beh$Gruppe==group), 1, drop=F)
   }
+=======
+# has tests
+get_data_group <-function(data, group, tbl_beh = g_beh(), method = g_act_method()){
+
+    if (group == "all_groups") {
+      data_group = data
+    } else {
+      data_group = asub(data, list(tbl_beh$Gruppe==group), 1, drop=F)
+    }
+>>>>>>> 2d838b8f5f94f7854c105dd6ec3a1771c6573efc
   return(data_group)
 }
 
@@ -1228,6 +1332,7 @@ get_data_group_freq <- function(data, group, freq, tbl_beh = g_beh(), method = g
 
 # has tests
 filter_by_selfreq <- function(data, freq, method = g_act_method()){
+<<<<<<< HEAD
   # freq ... ist in den meisten faellen g_sel_freq()
   # ein vector von TRUE und FALSe gleicher Dimensionen wie dim(data)[5]
   # das drop=F ist hier sehr wichtig weil andere funtionen ueber die letzte Dimension mitteln
@@ -1235,6 +1340,11 @@ filter_by_selfreq <- function(data, freq, method = g_act_method()){
 #  cat(file = stderr(), paste0("dim(data) = ",dim(data),"\n"))
 #  gffreq <<- freq
 #  gfdata <<- data
+=======
+
+  # das drop=F ist hier sehr wichtig weil andere funtionen ueber die letzte Dimension mitteln
+  #cat(file = stderr(), paste0("in filter_by_selfreq freq=",freq,"\n"))
+>>>>>>> 2d838b8f5f94f7854c105dd6ec3a1771c6573efc
   data_selfreq = asub(data, list(freq), length(dim(data)), drop=F)
   #
   # num_dims = length(dim(data))
@@ -1294,6 +1404,7 @@ get_data_group_trial_freq <- function(data, group, trial, freq, tbl_beh = g_beh(
 # has tests
 get_data_group_trial_freqmean <- function(data, group, trial, freq, tbl_beh = g_beh(), method = g_act_method()){
   #cat(file = stderr(), paste0("start get_data_group_trial_freqmean with dim(data)=",dim(data),"\n"))
+<<<<<<< HEAD
   start_time2 = Sys.time()
   data_group_trial = get_data_group_trial(data, group, trial, tbl_beh = tbl_beh, method = method)
   #cat(file = stderr(), paste0("in get_data_group_trial_freqmean with dim(data_group_trial)=",dim(data_group_trial),"\n"))
@@ -1305,6 +1416,19 @@ get_data_group_trial_freqmean <- function(data, group, trial, freq, tbl_beh = g_
   start_time2 = Sys.time()
   data_group_trial_freqmean = get_freqmean(data_group_trial_freq, method = method)
   #cat(file = stderr(), paste0("in get_data_group_trial_freqmean with dim(data_group_trial_freqmean)=",dim(data_group_trial_freqmean),"\n"))
+=======
+  #start_time2 = Sys.time()
+  data_group_trial = get_data_group_trial(data, group, trial, tbl_beh = tbl_beh, method = method)
+  #cat(file = stderr(), paste0("in get_data_group_trial_freqmean with dim(data_group_trial)=",dim(data_group_trial),"\n"))
+  #cat(file = stderr(),paste0("get_data_group_trial duration =",Sys.time()-start_time2,"\n"))
+  #start_time2 = Sys.time()
+  data_group_trial_freq = filter_by_selfreq(data_group_trial, freq, method = method)
+  #cat(file = stderr(), paste0("in get_data_group_trial_freqmean with dim(data_group_trial_freq)=",dim(data_group_trial_freq),"\n"))
+  #cat(file = stderr(),paste0("filter_by_selfreq duration =",Sys.time()-start_time2,"\n"))
+  #start_time2 = Sys.time()
+  data_group_trial_freqmean = get_freqmean(data_group_trial_freq, method = method)
+ #cat(file = stderr(), paste0("in get_data_group_trial_freqmean with dim(data_group_trial_freqmean)=",dim(data_group_trial_freqmean),"\n"))
+>>>>>>> 2d838b8f5f94f7854c105dd6ec3a1771c6573efc
   #cat(file = stderr(),paste0("get_freqmean duration =",Sys.time()-start_time2,"\n"))
 
   return(data_group_trial_freqmean)
@@ -1371,7 +1495,11 @@ read_data_from_dir<- function(directory){
 
 
 get_global_D <- function(dirname){
+<<<<<<< HEAD
   cat(file = stderr(),paste0("get_global_D ... loading DAta from file...",dirname," \n"))
+=======
+  cat(file = stderr(),"get_global_D ... loading DAta from file\n" )
+>>>>>>> 2d838b8f5f94f7854c105dd6ec3a1771c6573efc
 
   D <- readRDS(file.path(dirname,"D.Rda"))
   return(D)
@@ -1410,6 +1538,7 @@ get_global_data <- function(dirname, tbl_beh = g_beh()){
   # }
 
 }
+<<<<<<< HEAD
 #
 #
 # get_global_data_for_debugging <- function(method){
@@ -1439,6 +1568,37 @@ get_global_data <- function(dirname, tbl_beh = g_beh()){
 #
 #   #  mdatc = readRDS(file.path("../data",method,"tbl_data.Rda"))
 # }
+=======
+
+
+get_global_data_for_debugging <- function(method){
+  cat(file = stderr(), "load data into global environment for debugging\n")
+#  cat(file = stderr(),file.path("../data",method,"uregion_list.Rda") )
+  uregion_list <<- readRDS(file.path("../data",method,"uregion_list.Rda"))
+  utrial_list <<- readRDS(file.path("../data",method,"utrial_list.Rda"))
+  ufreq_list <<- readRDS(file.path("../data",method,"ufreq_list.Rda"))
+  tbl_beh <<- readRDS(file.path("../data",method,"tbl_beh.Rda"))
+  data <<- get_data(method)
+
+
+  # create a named list for selection Box
+  region_names <<- list()
+  trial_names <<- list()
+  #group_names <<- list()
+  j = 0
+  for (i in uregion_list){j=j+1;  region_names[i]=j }
+  j = 0
+  for (i in utrial_list){j=j+1;  trial_names[i]=j }
+  j = 1
+  # group_names <<- c("all_groups")
+  # for (i in unique(g_beh()$Gruppe)) {
+  #   j=j+1;  group_names[j]=paste("Group", toString(i), sep = "")
+  # }
+
+
+  #  mdatc = readRDS(file.path("../data",method,"tbl_data.Rda"))
+}
+>>>>>>> 2d838b8f5f94f7854c105dd6ec3a1771c6573efc
 
 
 
@@ -1533,5 +1693,8 @@ means.along <- function(a, i) {
 }
 
 
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> 2d838b8f5f94f7854c105dd6ec3a1771c6573efc

@@ -31,10 +31,12 @@ library(optimbase)
 library(rlang)
 library(gdata)
 library(shinyBS)
+
 library(DT)
 library(cowplot)
 library(patchwork)
 #library(compare)
+
 #library(shinyWidgets)
 
 #setwd("..")
@@ -43,7 +45,9 @@ library(patchwork)
 # for quickcor
 #devtools::install_github("hannet91/ggcor")
 
+
 options(browser = "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe")
+
 #source("./functions/get_data.R")
 pathnames <- list.files(pattern="[.]R$", path="functions", full.names=TRUE);
 sapply(pathnames, FUN=source);
@@ -83,6 +87,7 @@ server <- function(input, output, session) {
     g_datarootpath(val)
   })
   initialized = FALSE
+
   dir_listCon <- reactive({input$dirRefreshButton; dir(path = g_datarootpath(), pattern = "^Conn", full.names = F, recursive = F)})
   dir_listCoh <- reactive({input$dirRefreshButton; dir(path = g_datarootpath(), pattern = "^Coherence", full.names = F, recursive = F)})
   dir_listTra <- reactive({input$dirRefreshButton; dir(path = g_datarootpath(), pattern = "^Transferentropy", full.names = F, recursive = F)})
@@ -91,6 +96,7 @@ server <- function(input, output, session) {
   dir_listERP <- reactive({input$dirRefreshButton; dir(path = g_datarootpath(), pattern = "^ERP", full.names = F, recursive = F)})
   dir_listRS  <- reactive({input$dirRefreshButton; dir(path = g_datarootpath(), pattern = "^RS", full.names = F, recursive = F)})
   dir_listBeh <- reactive({input$dirRefreshButton; list.files(path = file.path(g_datarootpath(), "Behavioral"), pattern = ".csv$", full.names = F, recursive = F)})
+
 
   # dir_listCoh <- reactiveVal(value = dir(path = "../data", pattern = "^Coherence", full.names = F, recursive = F))
   # dir_listTra <- reactiveVal(value = dir(path = "../data", pattern = "^Transferentropy", full.names = F, recursive = F))
@@ -126,6 +132,7 @@ server <- function(input, output, session) {
   })
 
   g_act_data_dir <<- reactive({
+
     if (g_act_method()=="Connectivity"){       return(file.path(g_datarootpath(),input$dataDirCon))}
     if (g_act_method()=="Coherence"){       return(file.path(g_datarootpath(),input$dataDirCoh))}
     if (g_act_method()=="Transferentropy"){ return(file.path(g_datarootpath(),input$dataDirTra))}
@@ -171,10 +178,10 @@ server <- function(input, output, session) {
   g_visprop_onlysig         <<- reactive({input$visprop_onlysig})
   g_visprop_inlinenumbers   <<- reactive({input$visprop_inlinenumbers})
 
-
   # observeEvent(input$dirRefreshButton,{
   #
   # })
+
 
   ##################
    #### Sidebar ###
@@ -218,8 +225,6 @@ server <- function(input, output, session) {
     #sliderInput("glob_sig", h4("sig threshold"), min =0 , max = 1, value = 0.05, step = 0.01)
   })
 
-
-
   output$visprop_onlysig <- renderUI({
     checkboxInput("visprop_onlysig", "show only sig.", value = FALSE)
   })
@@ -238,6 +243,7 @@ server <- function(input, output, session) {
   output$visprop_inlinenumbers <- renderUI({
     checkboxInput("visprop_inlinenumbers", "show nums in graph", value = TRUE)
   })
+
   output$saveimageButton <- renderUI({
     actionButton("saveimageButton", "save Image")
   })
@@ -280,6 +286,7 @@ server <- function(input, output, session) {
 #   })
 
 
+
   ##################
   #### Tabs Con ###
   ##################
@@ -308,6 +315,7 @@ server <- function(input, output, session) {
       )
     )
   })
+
 
 
   ##################
@@ -460,6 +468,7 @@ server <- function(input, output, session) {
       )
     )
   })
+
 
   ##############################################
   ### The new Connectivity Entity ##############
