@@ -8,7 +8,8 @@ library(abind)
 create_my_ttest_string <- function(z, paired = FALSE, mean1 = 0, mean2 = 0,
                                    sig_threshold = g_sig(),
                                    p_cor_method = g_p_cor_method(),
-                                   p_cor_num = g_p_cor_num()){
+                                   corrected_p_value = -1
+                                  ){
   t = z$statistic
   df = z$parameter
   r = sqrt((t^2)/((t^2)+df))
@@ -21,51 +22,48 @@ create_my_ttest_string <- function(z, paired = FALSE, mean1 = 0, mean2 = 0,
   out <- paste0(z$method,"\n\n",
                 meanstring,
                 "t=", round(z$statistic,2), " \n",
-                "p=", z$p.value, "  \n",
+                "p(uncor)=", z$p.value, "  \n",
+                "p(",p_cor_method,")=", corrected_p_value,"\n",
                 "df=", round(z$parameter,1),"  \n",
                 "CI(",attributes(z$conf.int),")= ",round(z$conf.int[1],3)," ; ",round(z$conf.int[2],3)," \n",
                 "effect size r = ", round(r,4), "\n",
-                "r = [sqrt((t^2)/((t^2)+df))]", "\n",
-                "FWE error rate (",p_cor_num ," comparisons) = ", 1-(1-sig_threshold)**p_cor_num,"\n",
-                "FWE p critical = ",sig_threshold/p_cor_num, "\n",
-                "Holm p critical = ",sig_threshold/p_cor_num, "\n"
-
-
-
+                "r = [sqrt((t^2)/((t^2)+df))]", "\n"
+#                "FWE error rate (",p_cor_num ," comparisons) = ", 1-(1-sig_threshold)**p_cor_num,"\n",
+#                "FWE p critical = ",sig_threshold/p_cor_num, "\n"
   )
 
   return(out)
 }
-
-
-estimate_p_by_cor_method<-function(p_cor_method = "uncor.", p_cor_num=1, alpha= 0.05){
-  switch(p_cor_method,
-         "uncor." = {
-           cat(file = stderr(), "uncor.\n")
-           return(alpha)
-         },
-         "FWE" = {
-           cat(file = stderr(), "FWE\n")
-           return(alpha/p_cor_num)
-         },
-         "FDR" = {
-           cat(file = stderr(), "FDR\n")
-           p_fdr = alpha
-           return(p_fdr)
-         },
-         "Holm" = {
-           cat(file = stderr(), "Holm\n")
-           p_holm = alpha
-           return(p_holm)
-         },
-         "Benjamin-Hochberg" = {
-           cat(file = stderr(), "Benjamin-Hochberg\n")
-           p_benj = alpha
-           return(p_benj)
-         }
-  )
-  return(alpha)
-}
+#
+#
+# estimate_p_by_cor_method<-function(p_cor_method = "uncor.", p_cor_num=1, alpha= 0.05){
+#   switch(p_cor_method,
+#          "uncor." = {
+#            cat(file = stderr(), "uncor.\n")
+#            return(alpha)
+#          },
+#          "FWE" = {
+#            cat(file = stderr(), "FWE\n")
+#            return(alpha/p_cor_num)
+#          },
+#          "FDR" = {
+#            cat(file = stderr(), "FDR\n")
+#            p_fdr = alpha
+#            return(p_fdr)
+#          },
+#          "Holm" = {
+#            cat(file = stderr(), "Holm\n")
+#            p_holm = alpha
+#            return(p_holm)
+#          },
+#          "Benjamin-Hochberg" = {
+#            cat(file = stderr(), "Benjamin-Hochberg\n")
+#            p_benj = alpha
+#            return(p_benj)
+#          }
+#   )
+#   return(alpha)
+# }
 
 my_lexical_sort <- function(x) {
   as.numeric(sort(as.character(x)))

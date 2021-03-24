@@ -81,9 +81,8 @@ ui <- dashboardPage(
       menuItem("global Inputs", tabName = "xxx", icon = icon("globe"), startExpanded = TRUE,
                menuSubItem(icon = NULL, uiOutput("freq")),
                menuSubItem(icon = NULL, uiOutput("glob_sig")),
-               menuSubItem(icon = NULL, uiOutput("p_cor_method")),
-               menuSubItem(icon = NULL, uiOutput("p_cor_num"))
-
+               menuSubItem(icon = NULL, uiOutput("p_cor_method"))
+               #menuSubItem(icon = NULL, uiOutput("p_cor_num"))
       ),
       menuItem("visulizing properties", tabName = "xxx", icon = icon("image"), startExpanded = TRUE,
                menuSubItem(icon = NULL, uiOutput("visprop_onlysig")),

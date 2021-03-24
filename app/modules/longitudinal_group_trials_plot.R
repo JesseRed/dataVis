@@ -620,7 +620,8 @@ longitudinalPlotServer <- function(id, dir_listRS) {
         y = curdata()$data2[, level_y_rval(), level_x_rval()]
 
         z = t.test(x,y, paired = curdata()$my_paired)
-        out <- create_my_ttest_string(z, paired = curdata()$my_paired, mean1 = mean(x, na.rm = T), mean2 = mean(y, na.rm = T))
+        out <- create_my_ttest_string(z, paired = curdata()$my_paired, mean1 = mean(x, na.rm = T), mean2 = mean(y, na.rm = T),
+                                      corrected_p_value = curdata()$mat_p[level_y_rval(), level_x_rval()])
         cat(out)
       })
 
