@@ -350,14 +350,19 @@ estimate_df_difference<-function(df1, df2){
   return(df)
 }
 
-estimate_mat_t_p<- function(d, method = g_act_method(), regions = g_regions()){
-d$mat_p = ones(dim(d$data1)[2], dim(d$data1)[3])
+estimate_mat_t_p<- function(d, method = g_act_method(), regions = g_regions(),
+                            p_cor_method = g_p_cor_method(),
+                            sig_alpha = g_sig()){
+
+  d$mat_p = matrix(data = NA, nrow = dim(d$data1)[2], ncol=dim(d$data1)[3])
+
+  #d$mat_p = ones(dim(d$data1)[2], dim(d$data1)[3])
 d$mat_t = zeros(dim(d$data1)[2], dim(d$data1)[3])
+
 # berechne die mean difference um auszusagen welche Gruppe groesser ist
 # bei positiven WErten ist data1 groesser, bei negativen data2
 d$mat_mean_diff = apply(d$data1, c(2,3), function(x) mean(na.omit(x)))-apply(d$data2, c(2,3), function(x) mean(na.omit(x)))
-colnames(d$mat_p) = regions
-rownames(d$mat_p) = regions
+
 colnames(d$mat_t) = regions
 rownames(d$mat_t) = regions
 d$color1 = colorRampPalette(c("blue","red","green"))
@@ -409,9 +414,37 @@ if(!(method=="Granger") && !(method=="Transferentropy")){
 
 }
 
+# das kann ich machen weil bei nicht directen Methoden die Elemente auf NA stehen
+d$mat_p <- matrix(p.adjust(d$mat_p, method = p_cor_method),nrow=dim(d$data1)[2])
+# setze nun die Diagonalelemente auf 1
+diag(d$mat_p)<-1
+colnames(d$mat_p) = regions
+rownames(d$mat_p) = regions
+# ergaenze noch eine Matrix fuer die Schrittweise Berechnung der Significanzkorrektur
+
+# d$mat_sig = estimate_p_value_cor_matrix(mat_p = mat_p, regions = regions, p_cor_method = p_cor_method,
+#                                         p_cor_num = p_cor_num, sig_alpha = sig_alpha)
 
 return(d)
 }
+
+
+
+# aus der P-Matrix wird eine p-Wert Korrektur berechnet als bool
+# gleiche Dimension wie die P-matrix
+# estimate_p_value_cor_matrix <- function(mat_p = NULL, regions = g_regions(),
+#                                         p_cor_method = g_p_cor_method(),
+#                                         p_cor_num = g_p_cor_num(),
+#                                         sig_alpha = g_sig()){
+#   # anlegen der Significanzmatrix
+#   mat_sig <- matrix(rep(F,dim(mat_p)[1]*dim(mat_p)[2]),ncol = dim(mat_p)[2])
+#
+#
+#   return(mat_sig)
+# }
+
+
+
 
 
 get_included_subjects<-function(all_ids, ids_to_exclude){
