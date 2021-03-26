@@ -378,12 +378,14 @@ if (identical(d$data1, d$data2)){
 
 
 for (i in 1:(dim(d$data1)[2])-1){
-  start_idx = i+1
+#  start_idx = i+1
+  start_idx = i # changed 26.03.2021 for diagonal elements
   if (method =="Granger" | method == "Transferentropy"){
     start_idx = 1
   }
   for (j in start_idx:(dim(d$data1)[3])){
-    if (!(i==j)){
+
+    #if (!(i==j)){
       x <- na.omit(d$data1[,i,j])
       y <- na.omit(d$data2[,i,j])
       out<- tryCatch(
@@ -404,7 +406,7 @@ for (i in 1:(dim(d$data1)[2])-1){
           d$mat_p[i,j] = 1
           d$mat_t[i,j] = 0
         })
-    }
+    #}
   }
 }
 

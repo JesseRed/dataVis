@@ -103,7 +103,8 @@ test_that("network works",{
 
 
   gnew_uregion_list_named <<- new_uregion_list_named
-
+  gD<<-D
+  gregions_to_mean <<- regions_to_mean
 
 
 
@@ -111,11 +112,11 @@ test_that("network works",{
   expect_equal(get_mymean(D$mdat, 1,1,2,1,1, regions_to_mean), 9)
   expect_equal(get_mymean(D$mdat, 1,1,3,1,1, regions_to_mean), 7)
   expect_equal(get_mymean(D$mdat, 1,2,1,1,1, regions_to_mean), 6)
-  expect_equal(get_mymean(D$mdat, 1,2,2,1,1, regions_to_mean), 1)
+  expect_equal(get_mymean(D$mdat, 1,2,2,1,1, regions_to_mean), 12)
   expect_equal(get_mymean(D$mdat, 1,2,3,1,1, regions_to_mean), 10)
   expect_equal(get_mymean(D$mdat, 1,3,1,1,1, regions_to_mean), 5)
   expect_equal(get_mymean(D$mdat, 1,3,2,1,1, regions_to_mean), 11)
-  expect_equal(get_mymean(D$mdat, 1,3,3,1,1, regions_to_mean), 1)
+  expect_equal(get_mymean(D$mdat, 1,3,3,1,1, regions_to_mean), 9)
 
   expect_equal(get_mymean(D$mdat, 1,1,1,1,1, regions_to_mean), get_mymean_fast(D$mdat[1,,,1,1], 1,1, regions_to_mean))
   expect_equal(get_mymean(D$mdat, 1,1,2,1,1, regions_to_mean), get_mymean_fast(D$mdat[1,,,1,1], 1,2, regions_to_mean))
@@ -176,7 +177,7 @@ test_that("network works",{
 
 
   Dnew <- change_network_in_data_struct(D = D, new_uregion_list_named = new_uregion_list_named)
-  handmat = matrix(c(1,6,5,9,1,11,7,10, 1), ncol = 3, nrow = 3,
+  handmat = matrix(c(1,6,5,9,12,11,7,10, 9), ncol = 3, nrow = 3,
                    dimnames = list(names(Dnew$uregion_list_named),
                                    Dnew$uregion_list
                    ))

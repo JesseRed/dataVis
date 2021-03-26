@@ -13,7 +13,7 @@
 #     However, i will keep this for later
 
 change_network_in_data_struct<-function(D = NULL, new_uregion_list_named = NULL, is_use_fast_algorithm = FALSE){
-  if (is.null(D) | is.null(new_network)) {
+  if (is.null(D) | is.null(new_uregion_list_named)) {
     cat(file=stderr(), paste0("The function change_network_in_data_struct requiers the follwoing inputs\n"))
     cat(file=stderr(), paste0("D, new_uregion_list_named\n"))
   }
@@ -133,7 +133,11 @@ get_mymean <- function(m, s, r1, r2, t,f, regions_to_mean){
   # r2 areale sind im orginal m[ragions_to_mean[[r2]]]
   # ich mittle nun ueber alle Kombinationen dieser Areale
   # alles auf eine 5x5 Matrix per Hand nachgerechnet
-  if (r1==r2){ return(1.0)}
+
+  # wenn es ein diagonalelement ist das nur aus einem Areal besteht
+  if ((r1==r2) && (length(regions_to_mean[[r1]])==1)){
+    return(1.0)
+    }
 
   org_regions_idx1 = regions_to_mean[[r1]]
   org_regions_idx2 = regions_to_mean[[r2]]
@@ -145,17 +149,25 @@ get_mymean <- function(m, s, r1, r2, t,f, regions_to_mean){
     for (j in 1:length(org_regions_idx2)){
       idx2 = org_regions_idx2[j]
       #cat(file = stderr(), paste0("i=",i," idx1=", idx1, "  j=",j," idx2=",idx2, "\n"))
-      v =  m[s,idx1,idx2,t,f]
-      if (is.numeric(v)){
-        tmp_mean = tmp_mean + m[s,idx1,idx2,t,f]
-        #cat(file = stderr(), paste0( "tmp_mean = ", tmp_mean, "   ... added ",m[s,idx1,idx2,t,f]),"\n" )
-        add_counter = add_counter + 1
+      if (idx1!=idx2){
+        v =  m[s,idx1,idx2,t,f]
+        if (is.numeric(v)){
+          tmp_mean = tmp_mean + m[s,idx1,idx2,t,f]
+          #cat(file = stderr(), paste0( "tmp_mean = ", tmp_mean, "   ... added ",m[s,idx1,idx2,t,f]),"\n" )
+          add_counter = add_counter + 1
+        }
       }
-
     }
   }
   #cat(file = stderr(), paste0("divide",tmp_mean,"/ ", add_counter,"\n"))
-  return(tmp_mean/add_counter)
+  if (add_counter==0){
+    return(1.0)
+  }
+  result = tmp_mean/add_counter
+  if (is.nan(result)){
+    cat(file =stderr(), "Error in get_mymean ... NAN detected during estimation of field ", r1, "vs." , r2,"\n")
+  }
+  return(result)
 }
 
 
@@ -170,11 +182,8 @@ reestimate_mdat_fast<- function(D, new_uregion_list_named){
 
   num_regions_new = length(unique(unlist(new_uregion_list_named)))
   num_regions_old = length(unique(unlist(D$uregion_list_named)))
-
   m_new <- create_empty_array(D, num_regions_new, n_new_adapt)
-
   regions_to_mean = get_regions_to_mean(num_regions_new, D$uregion_list_named, new_uregion_list_named)
-
 
   # nun die Schleife um die Mittlungen an der Datenmatrix durchzufuehren
   #withProgress(message = 'Making plot', value = 0, {
@@ -211,7 +220,12 @@ get_mymean_fast <- function(m, r1, r2, regions_to_mean){
   # r2 areale sind im orginal m[ragions_to_mean[[r2]]]
   # ich mittle nun ueber alle Kombinationen dieser Areale
   # alles auf eine 5x5 Matrix per Hand nachgerechnet
-  if (r1==r2){ return(1.0)}
+  #if (r1==r2){ return(1.0)}
+
+  # wenn es ein diagonalelement ist das nur aus einem Areal besteht
+  if ((r1==r2) && (length(regions_to_mean[[r1]])==1)){
+    return(1.0)
+  }
 
   org_regions_idx1 = regions_to_mean[[r1]]
   org_regions_idx2 = regions_to_mean[[r2]]
@@ -223,16 +237,26 @@ get_mymean_fast <- function(m, r1, r2, regions_to_mean){
     for (j in 1:length(org_regions_idx2)){
       idx2 = org_regions_idx2[j]
       #cat(file = stderr(), paste0("i=",i," idx1=", idx1, "  j=",j," idx2=",idx2, "\n"))
-      v =  m[idx1,idx2]
-      if (is.numeric(v)){
-        tmp_mean = tmp_mean + m[idx1,idx2]
-        #cat(file = stderr(), paste0( "tmp_mean = ", tmp_mean, "   ... added ",m[s,idx1,idx2,t,f]),"\n" )
-        add_counter = add_counter + 1
+      if (idx1!=idx2){
+        v =  m[idx1,idx2]
+        if (is.numeric(v)){
+          tmp_mean = tmp_mean + m[idx1,idx2]
+          #cat(file = stderr(), paste0( "tmp_mean = ", tmp_mean, "   ... added ",m[s,idx1,idx2,t,f]),"\n" )
+          add_counter = add_counter + 1
+        }
       }
     }
   }
   #cat(file = stderr(), paste0("divide",tmp_mean,"/ ", add_counter,"\n"))
-  return(tmp_mean/add_counter)
+  #cat(file = stderr(), paste0("divide",tmp_mean,"/ ", add_counter,"\n"))
+  if (add_counter==0){
+    return(1.0)
+  }
+  result = tmp_mean/add_counter
+  if (is.nan(result)){
+    cat(file =stderr(), "Error in get_mymean ... NAN detected during estimation of field ", r1, "vs." , r2,"\n")
+  }
+  return(result)
 }
 
 
