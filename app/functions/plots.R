@@ -76,23 +76,50 @@ generate_histogram_plot_facet_long<-function(group1, group2, trial1, trial2, fre
 
     #d <- get_currently_selected_data_long(g_data(), group1, group2, as.numeric(trial1), as.numeric(trial2), freq)
   }else{
-    cat(file = stderr(), "get the old data\n")
+    cat(file = stderr(), "get the old datax\n")
     d<-data
   }
 
+  g_d_facetlong <<-d
+
   x = d$data1[,level_x_rval, level_y_rval]
   y = d$data2[,level_x_rval, level_y_rval]
-  df <- data.frame(Gruppe=c(rep(group1, times=length(x)),
-                            rep(group2, times=length(y))),
+  df <- data.frame(Gruppe=c(rep("A", times=length(x)),
+                            rep("B", times=length(y))),
                    val=c(x, y))
   df$num <- ave(df$val, df$Gruppe, FUN = seq_along)
   # means for geomline
-  df_hline = data.frame(Gruppe = c(group1,group2), Means=c(mean(x), mean(y)))
+  df_hline = data.frame(Gruppe = c("A","B"), Means=c(mean(x), mean(y)))
   myplot<- ggplot(df, aes(num, val, fill=Gruppe)) +
     geom_bar(stat="identity") +
     facet_wrap(~Gruppe) +
     geom_hline(data = df_hline, aes(yintercept = Means))
   return(myplot)
+  # cat(file = stderr(), "into generate_histogram_plot_facet_long\n")
+  # if (is.null(data)){
+  #   cat(file = stderr(), "data are needed error return create new data\n")
+  #   return(NULL)
+  #
+  #
+  #   #d <- get_currently_selected_data_long(g_data(), group1, group2, as.numeric(trial1), as.numeric(trial2), freq)
+  # }else{
+  #   cat(file = stderr(), "get the old data\n")
+  #   d<-data
+  # }
+  #
+  # x = d$data1[,level_x_rval, level_y_rval]
+  # y = d$data2[,level_x_rval, level_y_rval]
+  # df <- data.frame(Gruppe=c(rep(group1, times=length(x)),
+  #                           rep(group2, times=length(y))),
+  #                  val=c(x, y))
+  # df$num <- ave(df$val, df$Gruppe, FUN = seq_along)
+  # # means for geomline
+  # df_hline = data.frame(Gruppe = c(group1,group2), Means=c(mean(x), mean(y)))
+  # myplot<- ggplot(df, aes(num, val, fill=Gruppe)) +
+  #   geom_bar(stat="identity") +
+  #   facet_wrap(~Gruppe) +
+  #   geom_hline(data = df_hline, aes(yintercept = Means))
+  # return(myplot)
 
 }
 

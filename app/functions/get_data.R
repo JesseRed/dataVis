@@ -553,7 +553,14 @@ get_currently_selected_data_long<-function(data, g1, g2, t1, t2, freq,
 get_selected_data_considering_group_trial<-function(data, g1,g2,t1,t2, freq, trials=g_trials(), tbl_beh = g_beh(), method = g_act_method() ){
   d <- list()
   d$my_paired = FALSE
-
+  d$t1 = t1
+  d$t2 = t2
+  d$g1 = g1
+  d$g2 = g2
+  d$freq = freq
+  d$trials = trials
+  d$tbl_beh = tbl_beh
+  d$method = method
   #cat(file = stderr(), paste0("get_selected_data_considering_group_trial \n"))
   #cat(file = stderr(), paste0("g1 = ", g1, "  g2 = ",g2, "  t1 = ", t1, "  t2 = ", t2, "\n"))
   d$explanation = "not filled"

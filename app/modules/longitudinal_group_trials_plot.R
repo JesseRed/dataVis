@@ -314,21 +314,55 @@ longitudinalPlotServer <- function(id, dir_listRS) {
         #cat(file = stderr(), paste0("length(subjects_to_exclude = ", length(subjects_to_exclude()), "\n"))
         #cat(file = stderr(), paste0("my_included_subjects() = ", my_included_subjects(), "\n"))
 
-        updateCheckboxGroupInput(session, "Subjects",
-                                 choices = g_D()$df_BD$ID, inline = T,
-                                 selected =  g_D()$df_BD$ID[my_included_subjects()])
+        numbered_IDs_all <- get_included_subjects_with_numbers(g_D()$df_BD$ID, my_included_subjects())
+        numbered_IDs_g1 <- get_included_subjects_with_numbers(curdata()$df_data1$ID, my_included_subjects_g1())
+        numbered_IDs_g2 <- get_included_subjects_with_numbers(curdata()$df_data2$ID, my_included_subjects_g2())
+
+        # updateCheckboxGroupInput(session, "Subjects",
+        #                          choices = numbered_IDs_all, inline = T,
+        #                          selected =  numbered_IDs_all[my_included_subjects()])
+
 
         updateCheckboxGroupInput(session, "Group1",
-                                 choices = curdata()$df_data1$ID, inline = T,
-                                 selected =  curdata()$df_data1$ID[my_included_subjects_g1()]
+                                 choices = numbered_IDs_g1, inline = T,
+                                 selected =  numbered_IDs_g1[my_included_subjects_g1()]
 
         )
 
         updateCheckboxGroupInput(session, "Group2",
-                                 choices = curdata()$df_data2$ID, inline = T,
-                                 selected =  curdata()$df_data2$ID[my_included_subjects_g2()]
-                                 )
+                                 choices = numbered_IDs_g2, inline = T,
+                                 selected =  numbered_IDs_g2[my_included_subjects_g2()]
+        )
+        updateCheckboxGroupInput(session, "Subjects",
+                                 choices = g_D()$df_BD$ID, inline = T,
+                                 selected =  g_D()$df_BD$ID[my_included_subjects()])
+
+
+        # updateCheckboxGroupInput(session, "Group1",
+        #                          choices = curdata()$df_data1$ID, inline = T,
+        #                          selected =  curdata()$df_data1$ID[my_included_subjects_g1()]
+        #
+        # )
+        #
+        # updateCheckboxGroupInput(session, "Group2",
+        #                          choices = curdata()$df_data2$ID, inline = T,
+        #                          selected =  curdata()$df_data2$ID[my_included_subjects_g2()]
+        # )
       })
+
+      # Funktion um an die ausgewaehlten Subjects Numbern zu schreiben damit
+      # die Auswahl in der GUI einfacher wird
+      get_included_subjects_with_numbers <- function(IDs, is_included){
+        # nummern duerfen nur die Subjects erhalten die selectiert sind
+        idx = 1
+        for (i in 1:length(IDs)){
+            if (is_included[i]){
+              IDs[i] <- paste0(idx,". ",IDs[i])
+              idx <- idx +1
+            }
+        }
+        return(IDs)
+      }
 
       output$head_beha <- renderTable({
         g_D()$df_BD
@@ -627,7 +661,7 @@ longitudinalPlotServer <- function(id, dir_listRS) {
 
       output$hist <- renderPlot({
         glob_hist_d <<- curdata()
-        generate_histogram_plot_facet_long(1,2,
+        generate_histogram_plot_facet_long(input$group1,input$group2,
                                       input$trial1, input$trial2,
                                       g_sel_freqs(),
                                       level_x_rval(), level_y_rval(),
