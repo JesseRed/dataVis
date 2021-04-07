@@ -390,15 +390,14 @@ update_data_structure_by_longitudinal_data<-function(d1, datalong,  g1,g2,t1,t2,
     if ((d1$t1==d1$t2) ){
       cat(file=stderr(), "(d1$t1==d1$t2) && (d1$g1==d1$g2)\n")
       #estimation_performed <- estimation_performed +1
-      d$explanation = "Gleiches Trial, Gleiche Gruppen, kein longitudinales Design, -> kein statistischer Test moeglich"
+      d$explanation = "Gleiches Trial, Gleiche Gruppen, kein longitudinales Design"
       d$data1 <- d1$data1
       d$data2 <- d2$data1
       d$df_data1 <- d1$df_data1
       d$df_data2 <- d2$df_data2
       d$explanation = paste0("Was wird hier berechnet? ...\n",
                              "Longitudinales Design mit gleichen Trials und gleichen Gruppen\n",
-                             "Gleiches Trial, Gleiche Gruppen, kein longitudinales Design, -> kein statistischer Test moeglich\n",
-                             "uebergebe fuer Gruppe 1 die Orginalwerte und Gruppe 2 die gleichen Orginalwerte\n")
+                             "Hypothese: Die connectivitaet von Region x zu Region Y wird durch die ZEit beeinflusst\n")
 
     }else{
     # 2. Vergleiche den longitudinalen Unterschied jedem trial1 und trial2
