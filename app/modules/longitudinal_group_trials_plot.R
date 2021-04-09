@@ -71,22 +71,22 @@ longitudinalPlotServer <- function(id, dir_listRS) {
                           )
                    ),
                  ),
-                 fluidRow(
-                   style = "background-color: #fcfcfc;",
-                   #style = "border-top: 2px solid black",
-                   h4("is the analysis directed?", align = "left"),
-                   column(12,
-                          prettyRadioButtons(
-                            inputId = ns("causal"),
-                            label = "",
-                            choices = c("non-directed", "directed"),
-                            shape = "round",
-                            status = "danger",
-                            fill = TRUE,
-                            inline = TRUE
-                          ),
-                          ),
-                 ),
+                 # fluidRow(
+                 #   style = "background-color: #fcfcfc;",
+                 #   #style = "border-top: 2px solid black",
+                 #   h4("is the analysis directed?", align = "left"),
+                 #   column(12,
+                 #          prettyRadioButtons(
+                 #            inputId = ns("causal"),
+                 #            label = "",
+                 #            choices = c("non-directed", "directed"),
+                 #            shape = "round",
+                 #            status = "danger",
+                 #            fill = TRUE,
+                 #            inline = TRUE
+                 #          ),
+                 #          ),
+                 # ),
                  ),
 
           column(2,
@@ -244,6 +244,7 @@ longitudinalPlotServer <- function(id, dir_listRS) {
 
         #   #HTML("<div class='col-sm-4' style='min-width: 350px !important;'>"),
            column(12, box(title = "Network configuration", width = 12, collapsible = TRUE, collapsed = FALSE,
+                          h4("if delete checkbox is selected ... the region will not be included in the estimation of the new network"),
                           uiOutput(ns("networkRadioButtons")),
                           verbatimTextOutput(ns("outputnetworkRadioButtons")),
                          prettyRadioButtons(
@@ -314,21 +315,55 @@ longitudinalPlotServer <- function(id, dir_listRS) {
         #cat(file = stderr(), paste0("length(subjects_to_exclude = ", length(subjects_to_exclude()), "\n"))
         #cat(file = stderr(), paste0("my_included_subjects() = ", my_included_subjects(), "\n"))
 
-        updateCheckboxGroupInput(session, "Subjects",
-                                 choices = g_D()$df_BD$ID, inline = T,
-                                 selected =  g_D()$df_BD$ID[my_included_subjects()])
+        numbered_IDs_all <- get_included_subjects_with_numbers(g_D()$df_BD$ID, my_included_subjects())
+        numbered_IDs_g1 <- get_included_subjects_with_numbers(curdata()$df_data1$ID, my_included_subjects_g1())
+        numbered_IDs_g2 <- get_included_subjects_with_numbers(curdata()$df_data2$ID, my_included_subjects_g2())
+
+        # updateCheckboxGroupInput(session, "Subjects",
+        #                          choices = numbered_IDs_all, inline = T,
+        #                          selected =  numbered_IDs_all[my_included_subjects()])
+
 
         updateCheckboxGroupInput(session, "Group1",
-                                 choices = curdata()$df_data1$ID, inline = T,
-                                 selected =  curdata()$df_data1$ID[my_included_subjects_g1()]
+                                 choices = numbered_IDs_g1, inline = T,
+                                 selected =  numbered_IDs_g1[my_included_subjects_g1()]
 
         )
 
         updateCheckboxGroupInput(session, "Group2",
-                                 choices = curdata()$df_data2$ID, inline = T,
-                                 selected =  curdata()$df_data2$ID[my_included_subjects_g2()]
-                                 )
+                                 choices = numbered_IDs_g2, inline = T,
+                                 selected =  numbered_IDs_g2[my_included_subjects_g2()]
+        )
+        updateCheckboxGroupInput(session, "Subjects",
+                                 choices = g_D()$df_BD$ID, inline = T,
+                                 selected =  g_D()$df_BD$ID[my_included_subjects()])
+
+
+        # updateCheckboxGroupInput(session, "Group1",
+        #                          choices = curdata()$df_data1$ID, inline = T,
+        #                          selected =  curdata()$df_data1$ID[my_included_subjects_g1()]
+        #
+        # )
+        #
+        # updateCheckboxGroupInput(session, "Group2",
+        #                          choices = curdata()$df_data2$ID, inline = T,
+        #                          selected =  curdata()$df_data2$ID[my_included_subjects_g2()]
+        # )
       })
+
+      # Funktion um an die ausgewaehlten Subjects Numbern zu schreiben damit
+      # die Auswahl in der GUI einfacher wird
+      get_included_subjects_with_numbers <- function(IDs, is_included){
+        # nummern duerfen nur die Subjects erhalten die selectiert sind
+        idx = 1
+        for (i in 1:length(IDs)){
+            if (is_included[i]){
+              IDs[i] <- paste0(idx,". ",IDs[i])
+              idx <- idx +1
+            }
+        }
+        return(IDs)
+      }
 
       output$head_beha <- renderTable({
         g_D()$df_BD
@@ -393,12 +428,12 @@ longitudinalPlotServer <- function(id, dir_listRS) {
 
       })
 
-      iscausal <- reactive({
-        if (input$causal == "non-directed"){
-          return(FALSE)
-        }
-        return(TRUE)
-      })
+      # iscausal <- reactive({
+      #   if (input$causal == "non-directed"){
+      #     return(FALSE)
+      #   }
+      #   return(TRUE)
+      # })
       ####################################################################################
       ####################################################################################
 
@@ -440,7 +475,7 @@ longitudinalPlotServer <- function(id, dir_listRS) {
                                               filter_g1 = input$filterg1,
                                               filter_g2 = input$filterg2,
                                               subjects_to_exclude = subjects_to_exclude(),
-                                              iscausal = iscausal(),
+                                              #iscausal = iscausal(),
                                               network = network_new()
 
 
@@ -616,8 +651,12 @@ longitudinalPlotServer <- function(id, dir_listRS) {
         # })
 
 
-        x = curdata()$data1[, level_y_rval(), level_x_rval()]
-        y = curdata()$data2[, level_y_rval(), level_x_rval()]
+        x = na.omit(curdata()$data1[, level_y_rval(), level_x_rval()])
+        y = na.omit(curdata()$data2[, level_y_rval(), level_x_rval()])
+        if ((g_act_method() == "Coherence") | (g_act_method() == "Connectivity") | (g_act_method() == "RS")){
+          x <- atanh(x)
+          y <- atanh(y)
+        }
 
         z = t.test(x,y, paired = curdata()$my_paired)
         out <- create_my_ttest_string(z, paired = curdata()$my_paired, mean1 = mean(x, na.rm = T), mean2 = mean(y, na.rm = T),
@@ -627,7 +666,7 @@ longitudinalPlotServer <- function(id, dir_listRS) {
 
       output$hist <- renderPlot({
         glob_hist_d <<- curdata()
-        generate_histogram_plot_facet_long(1,2,
+        generate_histogram_plot_facet_long(input$group1,input$group2,
                                       input$trial1, input$trial2,
                                       g_sel_freqs(),
                                       level_x_rval(), level_y_rval(),
@@ -682,11 +721,14 @@ longitudinalPlotServer <- function(id, dir_listRS) {
             #     padding-right: 5px;
             #   }")
             # ),
+            column(1,
+                   checkboxInput(ns(paste0('d',i)), "delete", value = FALSE)
+                   ),
             column(2,
                    h4(g_regions()[i])
             ),
-            column(10,
-                   radioButtons(ns(paste0('c', i)),label = NULL, choices = 1:num_of_cols,selected = my_select, inline = T) #character(0),inline = T)
+            column(9,
+                   radioButtons(ns(paste0('c', i)),label = NULL, choices = 1:(num_of_cols),selected = my_select, inline = T) #character(0),inline = T)
                    #network_org()[i]
             )
           )
@@ -725,13 +767,22 @@ longitudinalPlotServer <- function(id, dir_listRS) {
       get_the_new_network<-function(){
         n = list()
         for (i in 1:length(g_regions())){
+          # abfrage ob loeschung
+          d<-paste0('d',i)
           x<-paste0('c',i)
-          n[g_regions()[i]]=strtoi(input[[x]])
+          new_net_num <- strtoi(input[[x]])
+          #cat(file = stderr(), paste0("input (",d,") = " , input[[d]]))
+          if (input[[d]]){
+            new_net_num <- 0
+          }
+
+          n[g_regions()[i]]=new_net_num
         }
         if (identical(g_regions_named(), n)){
           cat(file = stderr(), "identical \n")
           return(NULL)
         }
+        gnx<<- n
         return(n)
       }
 

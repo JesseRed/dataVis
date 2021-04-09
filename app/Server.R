@@ -292,7 +292,7 @@ server <- function(input, output, session) {
         # The id lets us use input$tabset1 on the server to find the current tab
         id = "tabsetCon", height = "250px",
         tabPanel("Plot", overviewPlotUI("ConOverviewPlot")),
-        tabPanel("Comp Plot",  compareTrialsPlotUI("ConnPlot2")),
+        #tabPanel("Comp Plot",  compareTrialsPlotUI("ConnPlot2")),
         tabPanel("Long Plot",  longitudinalPlotUI("Conn")),
 #        tabPanel("Comp Plot", compareTrialsPlotUI("ConPlot")),
         tabPanel("Trials Stat", compareTrialsStatsLongUI("ConTrialsStat")),
@@ -319,7 +319,7 @@ server <- function(input, output, session) {
         id = "tabsetCoh", height = "250px",
 
         tabPanel("Plot", overviewPlotUI("CohOverviewPlot")),
-        tabPanel("Comp Plot",  compareTrialsPlotUI("CohPlot")),
+       # tabPanel("Comp Plot",  compareTrialsPlotUI("CohPlot")),
         tabPanel("Long Plot",  longitudinalPlotUI("Coh")),
         #        tabPanel("Comp Plot", compareTrialsPlotUI("ConPlot")),
         tabPanel("Trials Stat", compareTrialsStatsLongUI("CohTrialsStat")),
@@ -345,7 +345,7 @@ server <- function(input, output, session) {
         # The id lets us use input$tabset1 on the server to find the current tab
         id = "tabsetTra", height = "250px",
         tabPanel("Plot", overviewPlotUI("TraOverviewPlot")),
-        tabPanel("Comp Plot",  compareTrialsPlotUI("TraPlot")),
+        #tabPanel("Comp Plot",  compareTrialsPlotUI("TraPlot")),
         tabPanel("Long Plot",  longitudinalPlotUI("Tra")),
         tabPanel("Trials Stat", compareTrialsStatsLongUI("TraTrialsStat")),
         tabPanel("Groups Stat", compareGroupsStatsUI("TraGroupsStats")),
@@ -369,7 +369,7 @@ server <- function(input, output, session) {
         # The id lets us use input$tabset1 on the server to find the current tab
         id = "tabsetGra", height = "250px",
         tabPanel("Plot", overviewPlotUI("GraOverviewPlot")),
-        tabPanel("Comp Plot",  compareTrialsPlotUI("GraPlot")),
+        #tabPanel("Comp Plot",  compareTrialsPlotUI("GraPlot")),
         tabPanel("Long Plot",  longitudinalPlotUI("Gra")),
         tabPanel("Trials Stat", compareTrialsStatsLongUI("GraTrialsStat")),
         tabPanel("Groups Stat", compareGroupsStatsUI("GraGroupsStats")),
@@ -394,7 +394,7 @@ server <- function(input, output, session) {
         # The id lets us use input$tabset1 on the server to find the current tab
         id = "tabset1", height = "250px",
         tabPanel("Plot", overviewPlotUI("RSOverviewPlot")),
-        tabPanel("Comp Plot",  compareTrialsPlotUI("RSPlot")),
+        #tabPanel("Comp Plot",  compareTrialsPlotUI("RSPlot")),
         tabPanel("Long Plot",  longitudinalPlotUI("RS")),
         tabPanel("Trials Stat", compareTrialsStatsLongUI("RSTrialsStat")),
         tabPanel("Groups Stat", compareGroupsStatsUI("RSGroupsStats")),

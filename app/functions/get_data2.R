@@ -74,7 +74,7 @@ get_currently_selected_data_long3<-function(D, g1, g2, t1, t2, freq,
                                             estimate_time_first = TRUE,
                                             filter_g1 = "",
                                             filter_g2 = "",
-                                            iscausal = FALSE,
+                                            #iscausal = FALSE,
                                             subjects_to_exclude = NULL,
                                             network = NULL){
 
@@ -90,11 +90,11 @@ get_currently_selected_data_long3<-function(D, g1, g2, t1, t2, freq,
   cat(file = stderr(),paste0("gcsdl3 estimate time first = ", estimate_time_first,"\n"))
 
   # Es gibt nun nur noch gerichtet und ungerichtet
-  if (iscausal){
-    method = "Transferentropy"
-  }else{
-    method = "Connectivity"
-  }
+  # if (iscausal){
+  #   method = "Transferentropy"
+  # }else{
+  #   method = "Connectivity"
+  # }
 
   #cat(file = stderr() , paste0(tbl_beh))
   # if (is.null(network)){
@@ -189,127 +189,676 @@ get_currently_selected_data_long3<-function(D, g1, g2, t1, t2, freq,
 }
 
 
+#
+#
+# update_data_structure_by_longitudinal_data<-function(d1, datalong,  g1,g2,t1,t2, freq,
+#                                            trials=g_trials(),
+#                                            tbl_beh_long = NULL,
+#                                            method = g_act_method(),
+#                                            estimate_time_first = TRUE){
+#
+#
+#
+#         #############################
+#     # longitudinale Daten
+#     #    if (is_debug){
+#     cat(file = stderr(),"\nlongitudinal data analyse start \n")
+#     cat(file = stderr(),paste0("g1 = ",g1, "   g2 = ", g2,"\n"))
+#     cat(file = stderr(),paste0("t1 = ",t1, "   t2 = ", t2,"\n"))
+#     cat(file = stderr(),paste0("freq = ",freq,"\n"))
+#     cat(file = stderr(),paste0("trials = ",trials,"\n"))
+#     cat(file = stderr(),paste0("method = ",method,"\n"))
+#     cat(file = stderr(),paste0("update_data_structure_by_longitudinal_data length(dim(data))= ",length(dim(data)),"\n"))
+#     cat(file = stderr(),paste0("update_data_structure_by_longitudinal_data dim(data)= ",dim(data),"\n"))
+#     cat(file = stderr(),paste0("update_data_structure_by_longitudinal_data length(dim(datalong))= ",length(dim(datalong)),"\n"))
+#     cat(file = stderr(),paste0("update_data_structure_by_longitudinal_data dim(datalong)= ",dim(datalong),"\n"))
+#     cat(file = stderr(),paste0("estimate time first = ", estimate_time_first,"\n"))
+#
+#     #   }
+#
+#     #Z127 <<- data
+#     #cat(file = stderr(),"1\n")
+#     d2 <- get_selected_data_considering_group_trial(datalong, g1,g2,t1,t2, freq, trials = trials, tbl_beh = tbl_beh_long, method = method)
+#     #cat(file = stderr(),"2\n")
+#     d <- d1
+#     glob_d1<<-d1
+#     glob_d2<<-d2
+#     glob_data<<-data
+#     glob_datalong<<-datalong
+#     # d1 und d2 sind die Daten der beiden Zeitpunkte mit jeweils
+#     # data1 and data2 sind 3D arrays
+#     # dim1 subjects ... koennen fuer data1 und data 2 die gleichen sein (d$paired = TRUE)
+#     #                           oder unterschiedliche subjects (d$paired = FALSE)
+#     # dim2 regions
+#     # dim3 regions
+#     #
+#     # wenn unterschiedliche Gruppen dann
+#     if (d2$my_paired==FALSE){
+#       #subtrahiere jeden Subject voneinander ... d2$data1 - d1$data1
+#       # Beide Gruppen haben unterschiede zwischen den 2 Zeitpunkten
+#       # Frage: gibt es einen signifikanten Unterschied zwischen diesen zeitbezogenen unterschieden?
+#       #d$explanation = "Beide Gruppen haben unterschiede zwischen den 2 Zeitpunkten .... Die Analyse testet auf signifikante Unterschiede zwischen diesen zeitbezogenen Unterschieden"
+#
+#       d$data1 <- d2$data1-d1$data1
+#       d$data2 <- d2$data2-d1$data2
+#       d$df_data1 <- estimate_df_difference(d2$df_data1, d1$df_data1)
+#       d$df_data2 <- estimate_df_difference(d2$df_data2, d1$df_data2)
+#       d$explanation = paste0("Was wird hier berechnet? ...\n",
+#                              "Gruppe ist verschieden ...beide Gruppen haben unterschiede zwischen den 2 Zeitpunkten .... Die Analyse testet auf signifikante Unterschiede zwischen diesen zeitbezogenen Unterschieden\n",
+#                              "Algorithmus:\n",
+#                              "1. entferne alle Subjects die nicht in den Daten beider Zeitpunkte zu finden sind\n",
+#                              "2. falls unterschiedliche trial gewaehlt wurden wird der subjectspezifische Unterschied zwischen den Trials berechnet\n",
+#                              "3. Berechne X1 = Data_Zeitpunkt2_group1_trial(evtl. dif) - Data_Zeitpunkt1_group1_trial(evtl. dif) (Subjects x Regions x Regions)\n",
+#                              "            X2 = Data_Zeitpunkt2_group2_trial(evtl. dif) - Data_Zeitpunkt1_group2_trial(evtl. dif) (Subjects x Regions x Regions)\n",
+#                              "   In diesen beiden 3d Matrizen steht somit der gruppenspezifische Unterschied eines Trials zwischen den Messungen\n",
+#                              "   Ein positiver Wert in dieser Matrix zeigt einen positiven Effekt der Zeit/Intervention an (in der 2. Messung groesser)\n",
+#                              "4. Es wird dann zwischen X1 und X2 ein t-test fuer jede Region gerechnet (unpaired fuer die 2 Gruppen)\n",
+#                              "Jedes Feld der Corrplot Matrix im Bild testet somit auf folgende Hypothese\n",
+#                              "Unterscheidet sich der Einfluss der Zeit/Intervention zwischen den beiden Gruppen fuer den ausgewaehlten trial?")
+#     }else{
+#       # 2. Vergleiche den longitudinalen Unterschied jedem trial1 und trial2
+#       # ttest(trial1_zeitpunkt1-trial2_zeitpunkt1 vs. trial1_zeitpunkt2-trial2_zeitpunkt2)
+#       # was ist der Unterschied in der Trialdifferenz zwischen dem ersten und dem 2. Zeitpunkt
+#       if (!(estimate_time_first)){
+#         d$explanation = "Beide Gruppen haben die selben Subjects mit unteschiedlichen Trials .... Ermittle zuerst die Unterschiede zwischen den Trials zu einem Zeitpunkt und teste dann auf signifikante Unterschiede zwischen den 2 Zeitpunkten "
+#         d$data1 <- d1$data1-d1$data2
+#         d$data2 <- d2$data1-d2$data2
+#         d$df_data1 <- estimate_df_difference(d1$df_data1, d1$df_data2)
+#         d$df_data2 <- estimate_df_difference(d2$df_data1, d2$df_data2)
+#         d$explanation = paste0("Was wird hier berechnet? ...\n",
+#                                "Gruppe ist identisch .... Die Analyse testet auf signifikante Unterschiede zwischen diesen zeitbezogenen Unterschieden\n",
+#                                "Algorithmus Time first:\n",
+#                                "1. entferne alle Subjects die nicht in den Daten beider Zeitpunkte zu finden sind\n",
+#                                "2. Berechne X1 = Data_Zeitpunkt1_group1_task1 - Data_Zeitpunkt1_group2_task2 (Subjects x Regions x Regions)\n",
+#                                "            X2 = Data_Zeitpunkt2_group2_task1 - Data_Zeitpunkt2_group2_task2 (Subjects x Regions x Regions)\n",
+#                                "   In diesen beiden 3d Matrizen steht somit der gruppenspezifische Unterschied eines Trials zwischen den Messungen\n",
+#                                "   Ein positiver Wert in dieser Matrix zeigt einen positiven Effekt der Zeit/Intervention an (in der 2. Messung groesser)\n",
+#                                "!!!wenn time first NICHT ausgewaehlt wird dann wird zuerst der Trialunterschied statt des Zeitunterschieds eines trials berechnet und dieser Unterschied anschliessen zwiechen den Zeitpunkten vergleichen\n",
+#                                "3. Es wird dann zwischen X1 und X2 ein t-test fuer jede Region gerechnet (paired fuer die 2 Gruppen)\n",
+#                                "Jedes Feld der Corrplot Matrix im Bild testet somit auf folgende Hypothese\n",
+#                                "Der Unterschied zwischen trial1 und trial 2 wird von der Zeit/Intervention beeinflusst\n",
+#                                "Nullhypothese: Zeit/Intervention haben keinen Einfluss auf den Unterschied zwischen trial_1 und trial_2\n")
+#       }else{
+#         #Wenn beide Gruppen gleich sind unterscheiden wir den FAll, dass
+#         #  1 der Unterschied zwischen 2 Trials berechnet wird
+#
+#
+#
+#         # wenn die gruppen gleich sind, d.h. wenn wir nur 2 trials vergleichen
+#         # in der gleichen Gruppe dann haben wir 2 Moeglichekeiten
+#         # den longitudinalen unterschied zu berechnen
+#         # 1. der longitudinale unterschied vom unterschied eines Zeitpunkts
+#         # was ist der Unterschied zwischen dem Unterschied von Trial1 zwischen den beiden Messzeitpunkten
+#         #     und Trial 2 zwischen den beiden MEsszeitpunkten
+#         d$explanation = "Beide Gruppen haben unterschiede zwischen den 2 Zeitpunkten .... Die Analyse testet auf signifikante Unterschiede zwischen diesen zeitbezogenen Unterschieden"
+#         d$data1 <- d2$data1-d1$data1
+#         d$data2 <- d2$data2-d1$data2
+#         d$df_data1 <- estimate_df_difference(d2$df_data1, d1$df_data1)
+#         d$df_data2 <- estimate_df_difference(d2$df_data2, d1$df_data2)
+#         d$explanation = paste0("Was wird hier berechnet? ...\n",
+#                                "Beide Gruppen haben unterschiede zwischen den 2 Zeitpunkten .... Die Analyse testet auf signifikante Unterschiede zwischen diesen zeitbezogenen Unterschieden\n",
+#                                "Algorithmus:\n",
+#                                "1. entferne alle Subjects die nicht in den Daten beider Zeitpunkte zu finden sind",
+#                                "2. Berechne X1 = Data_Zeitpunkt2_group1_task1 - Data_Zeitpunkt1_group1_task1 (Subjects x Regions x Regions)",
+#                                "            X2 = Data_Zeitpunkt2_group2_task1 - Data_Zeitpunkt1_group2_task1 (Subjects x Regions x Regions)",
+#                                "   In diesen beiden 3d Matrizen steht somit der gruppenspezifische Unterschied eines Trials zwischen den Messungen",
+#                                "   es wird somit zuerst der Gruppenunterschied berechnet und denn der Unterschied zwischen den wenn time first ausgewaehlt wird dann wird zuerst der Zeitunterschied berechnet und dieser dann zwischen den Messungen verglichen\n",
+#                                "!!!wenn time first ausgewaehlt wird dann wird zuerst der Zeitunterschied berechnet und dieser dann zwischen den Messungen verglichen\n",
+#                                "   Ein positiver Wert in dieser Matrix zeigt einen positiven Effekt der Zeit/Intervention an (in der 2. Messung groesser)",
+#                                "3. Es wird dann zwischen X1 und X2 ein t-test fuer jede Region gerechnet (paired fuer die Matrizen welche die gleichen Subjects enthalten)",
+#                                "Jedes Feld der Corrplot Matrix im Bild testet somit auf folgende Hypothese\n",
+#                                "Hypothese: Zeit/Intervention unterscheidet sich in ihrem Einfluss auf trial_1 vom Einfluss auf trial2?\n",
+#                                "Nullhypothese: Der Einfluss von Zeit/Intervention ist fuer trial_1 und trial_2 gleich\n")
+#       }
+#     }
+#
+#  return(d)
+# }
+
+
 
 
 update_data_structure_by_longitudinal_data<-function(d1, datalong,  g1,g2,t1,t2, freq,
-                                           trials=g_trials(),
-                                           tbl_beh_long = NULL,
-                                           method = g_act_method(),
-                                           estimate_time_first = TRUE){
+                                                     trials=g_trials(),
+                                                     tbl_beh_long = NULL,
+                                                     method = g_act_method(),
+                                                     estimate_time_first = TRUE){
 
 
 
-        #############################
-    # longitudinale Daten
-    #    if (is_debug){
-    cat(file = stderr(),"\nlongitudinal data analyse start \n")
-    cat(file = stderr(),paste0("g1 = ",g1, "   g2 = ", g2,"\n"))
-    cat(file = stderr(),paste0("t1 = ",t1, "   t2 = ", t2,"\n"))
-    cat(file = stderr(),paste0("freq = ",freq,"\n"))
-    cat(file = stderr(),paste0("trials = ",trials,"\n"))
-    cat(file = stderr(),paste0("method = ",method,"\n"))
-    cat(file = stderr(),paste0("update_data_structure_by_longitudinal_data length(dim(data))= ",length(dim(data)),"\n"))
-    cat(file = stderr(),paste0("update_data_structure_by_longitudinal_data dim(data)= ",dim(data),"\n"))
-    cat(file = stderr(),paste0("update_data_structure_by_longitudinal_data length(dim(datalong))= ",length(dim(datalong)),"\n"))
-    cat(file = stderr(),paste0("update_data_structure_by_longitudinal_data dim(datalong)= ",dim(datalong),"\n"))
-    cat(file = stderr(),paste0("estimate time first = ", estimate_time_first,"\n"))
+  #############################
+  # longitudinale Daten
+  #    if (is_debug){
+  cat(file = stderr(),"\nlongitudinal data analyse start \n")
+  cat(file = stderr(),paste0("g1 = ",g1, "   g2 = ", g2,"\n"))
+  cat(file = stderr(),paste0("t1 = ",t1, "   t2 = ", t2,"\n"))
+  cat(file = stderr(),paste0("freq = ",freq,"\n"))
+  cat(file = stderr(),paste0("trials = ",trials,"\n"))
+  cat(file = stderr(),paste0("method = ",method,"\n"))
+  cat(file = stderr(),paste0("update_data_structure_by_longitudinal_data length(dim(data))= ",length(dim(data)),"\n"))
+  cat(file = stderr(),paste0("update_data_structure_by_longitudinal_data dim(data)= ",dim(data),"\n"))
+  cat(file = stderr(),paste0("update_data_structure_by_longitudinal_data length(dim(datalong))= ",length(dim(datalong)),"\n"))
+  cat(file = stderr(),paste0("update_data_structure_by_longitudinal_data dim(datalong)= ",dim(datalong),"\n"))
+  cat(file = stderr(),paste0("estimate time first = ", estimate_time_first,"\n"))
 
-    #   }
+  #   }
 
-    #Z127 <<- data
-    #cat(file = stderr(),"1\n")
-    d2 <- get_selected_data_considering_group_trial(datalong, g1,g2,t1,t2, freq, trials = trials, tbl_beh = tbl_beh_long, method = method)
-    #cat(file = stderr(),"2\n")
-    d <- d1
-    glob_d1<<-d1
-    glob_d2<<-d2
-    glob_data<<-data
-    glob_datalong<<-datalong
-    # d1 und d2 sind die Daten der beiden Zeitpunkte mit jeweils
-    # data1 and data2 sind 3D arrays
-    # dim1 subjects ... koennen fuer data1 und data 2 die gleichen sein (d$paired = TRUE)
-    #                           oder unterschiedliche subjects (d$paired = FALSE)
-    # dim2 regions
-    # dim3 regions
+  #Z127 <<- data
+  #cat(file = stderr(),"1\n")
+  d2 <- get_selected_data_considering_group_trial(datalong, g1,g2,t1,t2, freq, trials = trials, tbl_beh = tbl_beh_long, method = method)
+  #cat(file = stderr(),"2\n")
+  d <- d1
+  glob_d1<<-d1
+  glob_d2<<-d2
+  glob_data<<-data
+  glob_datalong<<-datalong
+  # d1 und d2 sind die Daten der beiden Zeitpunkte mit jeweils
+  # data1 and data2 sind 3D arrays
+  # dim1 subjects ... koennen fuer data1 und data 2 die gleichen sein (d$paired = TRUE)
+  #                           oder unterschiedliche subjects (d$paired = FALSE)
+  # dim2 regions
+  # dim3 regions
+  #
+  # wenn unterschiedliche Gruppen dann
+  if (d1$g1!=d1$g2){
+    #subtrahiere jeden Subject voneinander ... d2$data1 - d1$data1
+    # Beide Gruppen haben unterschiede zwischen den 2 Zeitpunkten
+    # Frage: gibt es einen signifikanten Unterschied zwischen diesen zeitbezogenen unterschieden?
+    #d$explanation = "Beide Gruppen haben unterschiede zwischen den 2 Zeitpunkten .... Die Analyse testet auf signifikante Unterschiede zwischen diesen zeitbezogenen Unterschieden"
+
+    d$data1 <- d2$data1-d1$data1
+    d$data2 <- d2$data2-d1$data2
+    d$df_data1 <- estimate_df_difference(d2$df_data1, d1$df_data1)
+    d$df_data2 <- estimate_df_difference(d2$df_data2, d1$df_data2)
+    d$explanation = paste0("Was wird hier berechnet? ...\n",
+                           "Gruppe ist verschieden ...beide Gruppen haben unterschiede zwischen den 2 Zeitpunkten .... Die Analyse testet auf signifikante Unterschiede zwischen diesen zeitbezogenen Unterschieden\n",
+                           "Algorithmus:\n",
+                           "1. entferne alle Subjects die nicht in den Daten beider Zeitpunkte zu finden sind\n",
+                           "2. falls unterschiedliche trial gewaehlt wurden wird der subjectspezifische Unterschied zwischen den Trials berechnet\n",
+                           "3. Berechne X1 = Data_Zeitpunkt2_group1_trial(evtl. dif) - Data_Zeitpunkt1_group1_trial(evtl. dif) (Subjects x Regions x Regions)\n",
+                           "            X2 = Data_Zeitpunkt2_group2_trial(evtl. dif) - Data_Zeitpunkt1_group2_trial(evtl. dif) (Subjects x Regions x Regions)\n",
+                           "   In diesen beiden 3d Matrizen steht somit der gruppenspezifische Unterschied eines Trials zwischen den Messungen\n",
+                           "   Ein positiver Wert in dieser Matrix zeigt einen positiven Effekt der Zeit/Intervention an (in der 2. Messung groesser)\n",
+                           "4. Es wird dann zwischen X1 und X2 ein t-test fuer jede Region gerechnet (unpaired fuer die 2 Gruppen)\n",
+                           "Jedes Feld der Corrplot Matrix im Bild testet somit auf folgende Hypothese\n",
+                           "Unterscheidet sich der Einfluss der Zeit/Intervention zwischen den beiden Gruppen fuer den ausgewaehlten trial?")
+  }else{
+    #######################
+    # Wenn gleiche Gruppe
     #
-    # wenn unterschiedliche Gruppen dann
-    if (d2$my_paired==FALSE){
-      #subtrahiere jeden Subject voneinander ... d2$data1 - d1$data1
-      # Beide Gruppen haben unterschiede zwischen den 2 Zeitpunkten
-      # Frage: gibt es einen signifikanten Unterschied zwischen diesen zeitbezogenen unterschieden?
-      #d$explanation = "Beide Gruppen haben unterschiede zwischen den 2 Zeitpunkten .... Die Analyse testet auf signifikante Unterschiede zwischen diesen zeitbezogenen Unterschieden"
+    # Wenn Gruppe und Trial gleich ist
+    if ((d1$t1==d1$t2) ){
+      cat(file=stderr(), "(d1$t1==d1$t2) && (d1$g1==d1$g2)\n")
+      #estimation_performed <- estimation_performed +1
+      d$explanation = "Gleiches Trial, Gleiche Gruppen, kein longitudinales Design"
+      d$data1 <- d1$data1
+      d$data2 <- d2$data1
+      d$df_data1 <- d1$df_data1
+      d$df_data2 <- d2$df_data2
+      d$explanation = paste0("Was wird hier berechnet? ...\n",
+                             "Longitudinales Design mit gleichen Trials und gleichen Gruppen\n",
+                             "Hypothese: Die connectivitaet von Region x zu Region Y wird durch die ZEit beeinflusst\n")
 
+    }else{
+    # 2. Vergleiche den longitudinalen Unterschied jedem trial1 und trial2
+    # ttest(trial1_zeitpunkt1-trial2_zeitpunkt1 vs. trial1_zeitpunkt2-trial2_zeitpunkt2)
+    # was ist der Unterschied in der Trialdifferenz zwischen dem ersten und dem 2. Zeitpunkt
+    if (!(estimate_time_first)){
+      d$explanation = "Beide Gruppen haben die selben Subjects mit unteschiedlichen Trials .... Ermittle zuerst die Unterschiede zwischen den Trials zu einem Zeitpunkt und teste dann auf signifikante Unterschiede zwischen den 2 Zeitpunkten "
+      d$data1 <- d1$data1-d1$data2
+      d$data2 <- d2$data1-d2$data2
+      d$df_data1 <- estimate_df_difference(d1$df_data1, d1$df_data2)
+      d$df_data2 <- estimate_df_difference(d2$df_data1, d2$df_data2)
+      d$explanation = paste0("Was wird hier berechnet? ...\n",
+                             "Gruppe ist identisch .... Die Analyse testet auf signifikante Unterschiede zwischen diesen zeitbezogenen Unterschieden\n",
+                             "Algorithmus Time first:\n",
+                             "1. entferne alle Subjects die nicht in den Daten beider Zeitpunkte zu finden sind\n",
+                             "2. Berechne X1 = Data_Zeitpunkt1_group1_task1 - Data_Zeitpunkt1_group2_task2 (Subjects x Regions x Regions)\n",
+                             "            X2 = Data_Zeitpunkt2_group2_task1 - Data_Zeitpunkt2_group2_task2 (Subjects x Regions x Regions)\n",
+                             "   In diesen beiden 3d Matrizen steht somit der gruppenspezifische Unterschied eines Trials zwischen den Messungen\n",
+                             "   Ein positiver Wert in dieser Matrix zeigt einen positiven Effekt der Zeit/Intervention an (in der 2. Messung groesser)\n",
+                             "!!!wenn time first NICHT ausgewaehlt wird dann wird zuerst der Trialunterschied statt des Zeitunterschieds eines trials berechnet und dieser Unterschied anschliessen zwiechen den Zeitpunkten vergleichen\n",
+                             "3. Es wird dann zwischen X1 und X2 ein t-test fuer jede Region gerechnet (paired fuer die 2 Gruppen)\n",
+                             "Jedes Feld der Corrplot Matrix im Bild testet somit auf folgende Hypothese\n",
+                             "Der Unterschied zwischen trial1 und trial 2 wird von der Zeit/Intervention beeinflusst\n",
+                             "Nullhypothese: Zeit/Intervention haben keinen Einfluss auf den Unterschied zwischen trial_1 und trial_2\n")
+    }else{
+      #Wenn beide Gruppen gleich sind unterscheiden wir den FAll, dass
+      #  1 der Unterschied zwischen 2 Trials berechnet wird
+
+
+
+      # wenn die gruppen gleich sind, d.h. wenn wir nur 2 trials vergleichen
+      # in der gleichen Gruppe dann haben wir 2 Moeglichekeiten
+      # den longitudinalen unterschied zu berechnen
+      # 1. der longitudinale unterschied vom unterschied eines Zeitpunkts
+      # was ist der Unterschied zwischen dem Unterschied von Trial1 zwischen den beiden Messzeitpunkten
+      #     und Trial 2 zwischen den beiden MEsszeitpunkten
+      d$explanation = "Beide Gruppen haben unterschiede zwischen den 2 Zeitpunkten .... Die Analyse testet auf signifikante Unterschiede zwischen diesen zeitbezogenen Unterschieden"
       d$data1 <- d2$data1-d1$data1
       d$data2 <- d2$data2-d1$data2
       d$df_data1 <- estimate_df_difference(d2$df_data1, d1$df_data1)
       d$df_data2 <- estimate_df_difference(d2$df_data2, d1$df_data2)
       d$explanation = paste0("Was wird hier berechnet? ...\n",
-                             "Gruppe ist verschieden ...beide Gruppen haben unterschiede zwischen den 2 Zeitpunkten .... Die Analyse testet auf signifikante Unterschiede zwischen diesen zeitbezogenen Unterschieden\n",
+                             "Beide Gruppen haben unterschiede zwischen den 2 Zeitpunkten .... Die Analyse testet auf signifikante Unterschiede zwischen diesen zeitbezogenen Unterschieden\n",
                              "Algorithmus:\n",
-                             "1. entferne alle Subjects die nicht in den Daten beider Zeitpunkte zu finden sind\n",
-                             "2. falls unterschiedliche trial gewaehlt wurden wird der subjectspezifische Unterschied zwischen den Trials berechnet\n",
-                             "3. Berechne X1 = Data_Zeitpunkt2_group1_trial(evtl. dif) - Data_Zeitpunkt1_group1_trial(evtl. dif) (Subjects x Regions x Regions)\n",
-                             "            X2 = Data_Zeitpunkt2_group2_trial(evtl. dif) - Data_Zeitpunkt1_group2_trial(evtl. dif) (Subjects x Regions x Regions)\n",
-                             "   In diesen beiden 3d Matrizen steht somit der gruppenspezifische Unterschied eines Trials zwischen den Messungen\n",
-                             "   Ein positiver Wert in dieser Matrix zeigt einen positiven Effekt der Zeit/Intervention an (in der 2. Messung groesser)\n",
-                             "4. Es wird dann zwischen X1 und X2 ein t-test fuer jede Region gerechnet (unpaired fuer die 2 Gruppen)\n",
+                             "1. entferne alle Subjects die nicht in den Daten beider Zeitpunkte zu finden sind",
+                             "2. Berechne X1 = Data_Zeitpunkt2_group1_task1 - Data_Zeitpunkt1_group1_task1 (Subjects x Regions x Regions)",
+                             "            X2 = Data_Zeitpunkt2_group2_task1 - Data_Zeitpunkt1_group2_task1 (Subjects x Regions x Regions)",
+                             "   In diesen beiden 3d Matrizen steht somit der gruppenspezifische Unterschied eines Trials zwischen den Messungen",
+                             "   es wird somit zuerst der Gruppenunterschied berechnet und denn der Unterschied zwischen den wenn time first ausgewaehlt wird dann wird zuerst der Zeitunterschied berechnet und dieser dann zwischen den Messungen verglichen\n",
+                             "!!!wenn time first ausgewaehlt wird dann wird zuerst der Zeitunterschied berechnet und dieser dann zwischen den Messungen verglichen\n",
+                             "   Ein positiver Wert in dieser Matrix zeigt einen positiven Effekt der Zeit/Intervention an (in der 2. Messung groesser)",
+                             "3. Es wird dann zwischen X1 und X2 ein t-test fuer jede Region gerechnet (paired fuer die Matrizen welche die gleichen Subjects enthalten)",
                              "Jedes Feld der Corrplot Matrix im Bild testet somit auf folgende Hypothese\n",
-                             "Unterscheidet sich der Einfluss der Zeit/Intervention zwischen den beiden Gruppen fuer den ausgewaehlten trial?")
-    }else{
-      # 2. Vergleiche den longitudinalen Unterschied jedem trial1 und trial2
-      # ttest(trial1_zeitpunkt1-trial2_zeitpunkt1 vs. trial1_zeitpunkt2-trial2_zeitpunkt2)
-      # was ist der Unterschied in der Trialdifferenz zwischen dem ersten und dem 2. Zeitpunkt
-      if (!(estimate_time_first)){
-        d$explanation = "Beide Gruppen haben die selben Subjects mit unteschiedlichen Trials .... Ermittle zuerst die Unterschiede zwischen den Trials zu einem Zeitpunkt und teste dann auf signifikante Unterschiede zwischen den 2 Zeitpunkten "
-        d$data1 <- d1$data1-d1$data2
-        d$data2 <- d2$data1-d2$data2
-        d$df_data1 <- estimate_df_difference(d1$df_data1, d1$df_data2)
-        d$df_data2 <- estimate_df_difference(d2$df_data1, d2$df_data2)
-        d$explanation = paste0("Was wird hier berechnet? ...\n",
-                               "Gruppe ist identisch .... Die Analyse testet auf signifikante Unterschiede zwischen diesen zeitbezogenen Unterschieden\n",
-                               "Algorithmus Time first:\n",
-                               "1. entferne alle Subjects die nicht in den Daten beider Zeitpunkte zu finden sind\n",
-                               "2. Berechne X1 = Data_Zeitpunkt1_group1_task1 - Data_Zeitpunkt1_group2_task2 (Subjects x Regions x Regions)\n",
-                               "            X2 = Data_Zeitpunkt2_group2_task1 - Data_Zeitpunkt2_group2_task2 (Subjects x Regions x Regions)\n",
-                               "   In diesen beiden 3d Matrizen steht somit der gruppenspezifische Unterschied eines Trials zwischen den Messungen\n",
-                               "   Ein positiver Wert in dieser Matrix zeigt einen positiven Effekt der Zeit/Intervention an (in der 2. Messung groesser)\n",
-                               "!!!wenn time first NICHT ausgewaehlt wird dann wird zuerst der Trialunterschied statt des Zeitunterschieds eines trials berechnet und dieser Unterschied anschliessen zwiechen den Zeitpunkten vergleichen\n",
-                               "3. Es wird dann zwischen X1 und X2 ein t-test fuer jede Region gerechnet (paired fuer die 2 Gruppen)\n",
-                               "Jedes Feld der Corrplot Matrix im Bild testet somit auf folgende Hypothese\n",
-                               "Der Unterschied zwischen trial1 und trial 2 wird von der Zeit/Intervention beeinflusst\n",
-                               "Nullhypothese: Zeit/Intervention haben keinen Einfluss auf den Unterschied zwischen trial_1 und trial_2\n")
-      }else{
-        # wenn die gruppen gleich sind, d.h. wenn wir nur 2 trials vergleichen
-        # in der gleichen Gruppe dann haben wir 2 Moeglichekeiten
-        # den longitudinalen unterschied zu berechnen
-        # 1. der longitudinale unterschied vom unterschied eines Zeitpunkts
-        # was ist der Unterschied zwischen dem Unterschied von Trial1 zwischen den beiden Messzeitpunkten
-        #     und Trial 2 zwischen den beiden MEsszeitpunkten
-        d$explanation = "Beide Gruppen haben unterschiede zwischen den 2 Zeitpunkten .... Die Analyse testet auf signifikante Unterschiede zwischen diesen zeitbezogenen Unterschieden"
-        d$data1 <- d2$data1-d1$data1
-        d$data2 <- d2$data2-d1$data2
-        d$df_data1 <- estimate_df_difference(d2$df_data1, d1$df_data1)
-        d$df_data2 <- estimate_df_difference(d2$df_data2, d1$df_data2)
-        d$explanation = paste0("Was wird hier berechnet? ...\n",
-                               "Beide Gruppen haben unterschiede zwischen den 2 Zeitpunkten .... Die Analyse testet auf signifikante Unterschiede zwischen diesen zeitbezogenen Unterschieden\n",
-                               "Algorithmus:\n",
-                               "1. entferne alle Subjects die nicht in den Daten beider Zeitpunkte zu finden sind",
-                               "2. Berechne X1 = Data_Zeitpunkt2_group1_task1 - Data_Zeitpunkt1_group1_task1 (Subjects x Regions x Regions)",
-                               "            X2 = Data_Zeitpunkt2_group2_task1 - Data_Zeitpunkt1_group2_task1 (Subjects x Regions x Regions)",
-                               "   In diesen beiden 3d Matrizen steht somit der gruppenspezifische Unterschied eines Trials zwischen den Messungen",
-                               "   es wird somit zuerst der Gruppenunterschied berechnet und denn der Unterschied zwischen den wenn time first ausgewaehlt wird dann wird zuerst der Zeitunterschied berechnet und dieser dann zwischen den Messungen verglichen\n",
-                               "!!!wenn time first ausgewaehlt wird dann wird zuerst der Zeitunterschied berechnet und dieser dann zwischen den Messungen verglichen\n",
-                               "   Ein positiver Wert in dieser Matrix zeigt einen positiven Effekt der Zeit/Intervention an (in der 2. Messung groesser)",
-                               "3. Es wird dann zwischen X1 und X2 ein t-test fuer jede Region gerechnet (paired fuer die Matrizen welche die gleichen Subjects enthalten)",
-                               "Jedes Feld der Corrplot Matrix im Bild testet somit auf folgende Hypothese\n",
-                               "Hypothese: Zeit/Intervention unterscheidet sich in ihrem Einfluss auf trial_1 vom Einfluss auf trial2?\n",
-                               "Nullhypothese: Der Einfluss von Zeit/Intervention ist fuer trial_1 und trial_2 gleich\n")
-      }
+                             "Hypothese: Zeit/Intervention unterscheidet sich in ihrem Einfluss auf trial_1 vom Einfluss auf trial2?\n",
+                             "Nullhypothese: Der Einfluss von Zeit/Intervention ist fuer trial_1 und trial_2 gleich\n")
     }
+  }
+  }
 
- return(d)
+  return(d)
 }
-
+#
+#
+# update_data_structure_by_longitudinal_data<-function(d1, datalong,  g1,g2,t1,t2, freq,
+#                                                      trials=g_trials(),
+#                                                      tbl_beh_long = NULL,
+#                                                      method = g_act_method(),
+#                                                      estimate_time_first = TRUE){
+#
+#
+#
+#   #############################
+#   # longitudinale Daten
+#   #    if (is_debug){
+#   cat(file = stderr(),"\nlongitudinal data analyse start \n")
+#   cat(file = stderr(),paste0("g1 = ",g1, "   g2 = ", g2,"\n"))
+#   cat(file = stderr(),paste0("t1 = ",t1, "   t2 = ", t2,"\n"))
+#   cat(file = stderr(),paste0("freq = ",freq,"\n"))
+#   cat(file = stderr(),paste0("trials = ",trials,"\n"))
+#   cat(file = stderr(),paste0("method = ",method,"\n"))
+#   cat(file = stderr(),paste0("update_data_structure_by_longitudinal_data length(dim(data))= ",length(dim(data)),"\n"))
+#   cat(file = stderr(),paste0("update_data_structure_by_longitudinal_data dim(data)= ",dim(data),"\n"))
+#   cat(file = stderr(),paste0("update_data_structure_by_longitudinal_data length(dim(datalong))= ",length(dim(datalong)),"\n"))
+#   cat(file = stderr(),paste0("update_data_structure_by_longitudinal_data dim(datalong)= ",dim(datalong),"\n"))
+#   cat(file = stderr(),paste0("estimate time first = ", estimate_time_first,"\n"))
+#
+#   #   }
+#
+#   #Z127 <<- data
+#   #cat(file = stderr(),"1\n")
+#   d2 <- get_selected_data_considering_group_trial(datalong, g1,g2,t1,t2, freq, trials = trials, tbl_beh = tbl_beh_long, method = method)
+#   #cat(file = stderr(),"2\n")
+#   d <- d1
+#   glob_d1<<-d1
+#   glob_d2<<-d2
+#   glob_data<<-data
+#   glob_datalong<<-datalong
+#   # d1 und d2 sind die Daten der beiden Zeitpunkte mit jeweils
+#   # data1 and data2 sind 3D arrays
+#   # dim1 subjects ... koennen fuer data1 und data 2 die gleichen sein (d$paired = TRUE)
+#   #                           oder unterschiedliche subjects (d$paired = FALSE)
+#   # dim2 regions
+#   # dim3 regions
+#   #
+#   estimation_performed = 0
+#   cat(file=stderr(), paste0("(d1$t1=",d1$t1, " d1$t2=", d1$t2, " d1$g1=", d1$g1, " d1$g2=", d1$g2, " d1$mypaired=", d1$my_paired,"\n"))
+#
+#   if ((d1$t1==d1$t2) && (d1$g1==d1$g2) && (d1$my_paired==TRUE)){
+#     cat(file=stderr(), "(d1$t1==d1$t2) && (d1$g1==d1$g2) && (d1$my_paired==TRUE)\n")
+#     estimation_performed <- estimation_performed +1
+#     # wenn die gruppen gleich sind und die trials auch gleich sind vergleichen wir den Unterschied
+#     # nur zwischen den 2 Zeitpunkten
+#     d$explanation = "Beide Gruppen haben unterschiede zwischen den 2 Zeitpunkten .... Die Analyse testet auf signifikante Unterschiede zwischen diesen zeitbezogenen Unterschieden fuer den gleichen Trial"
+#     d$data1 <- d1$data1
+#     d$data2 <- d2$data1
+#     d$df_data1 <- d1$df_data1
+#     d$df_data2 <- d2$df_data2
+#     d$explanation = paste0("Was wird hier berechnet? ...\n",
+#                            "Longitudinales Design mit gleichen Trials und gleichen Gruppen\n",
+#                            "Gruppe 1 besteht aus Orginalwerten des ersten Zeitpunkts\n",
+#                            "Gruppe 2 besteht aus Orginalwerten des zweiten Zeitpunkts\n",
+#                            "Diese Werte werden im Histogramm gezeigt\n",
+#                            "Der statistische Test tested auf unterschiede zwischen den beiden Zeitpunkten mittels paired t-test\n",
+#                            "Algorithmus:\n",
+#                            "1. entferne alle Subjects die nicht in den Daten beider Zeitpunkte zu finden sind",
+#                            "2. Berechne X1 = Data_Zeitpunkt1_group1_task1 (Subjects x Regions x Regions)",
+#                            "            X2 = Data_Zeitpunkt2_group1_task1 (Subjects x Regions x Regions)",
+#                            "   In diesen beiden 3d Matrizen steht somit der gruppenspezifische Werte eines Trials der gewaehlten Gruppe des gewaehlten Zeitpunkts, .. keine Differenzen",
+#                            "  Die Option time - first hat hier keine Bedeutung\n",
+#                            "3. Es wird dann zwischen X1 und X2 ein t-test fuer jede Region gerechnet (paired fuer die Matrizen welche die gleichen Subjects enthalten)",
+#                            "Jedes Feld der Corrplot Matrix im Bild testet somit auf folgende Hypothese\n",
+#                            "Hypothese: Gibt es einen Unterschied zwischen den beiden Zeitpunkten fuer die gewaehlte Region?\n",
+#                            "Nullhypothese: Die Zeit hat keinen Der Einfluss\n")
+#   }
+#
+#   if (d1$my_paired == TRUE){
+#
+#
+#     if ((d1$t1==d1$t2) && (d1$g1==d1$g2) ){
+#       cat(file=stderr(), "(d1$t1==d1$t2) && (d1$g1==d1$g2) && (d1$my_paired==FALSE)\n")
+#       estimation_performed <- estimation_performed +1
+#       d$explanation = "Gleiches Trial, Gleiche Gruppen, kein longitudinales Design, -> kein statistischer Test moeglich"
+#       d$data1 <- d1$data1
+#       d$data2 <- d2$data1
+#       d$df_data1 <- d1$df_data1
+#       d$df_data2 <- d2$df_data2
+#       d$explanation = paste0("Was wird hier berechnet? ...\n",
+#                              "Kein Longitudinales Design mit gleichen Trials und gleichen Gruppen\n",
+#                              "Gleiches Trial, Gleiche Gruppen, kein longitudinales Design, -> kein statistischer Test moeglich\n",
+#                              "uebergebe fuer Gruppe 1 die Orginalwerte und Gruppe 2 die gleichen Orginalwerte\n")
+#
+#       # 2. Vergleiche den longitudinalen Unterschied jedem trial1 und trial2
+#       # ttest(trial1_zeitpunkt1-trial2_zeitpunkt1 vs. trial1_zeitpunkt2-trial2_zeitpunkt2)
+#       # was ist der Unterschied in der Trialdifferenz zwischen dem ersten und dem 2. Zeitpunkt
+#     }else{
+#       if (!(estimate_time_first)){
+#         d$explanation = "Beide Gruppen haben die selben Subjects mit unteschiedlichen Trials .... Ermittle zuerst die Unterschiede zwischen den Trials zu einem Zeitpunkt und teste dann auf signifikante Unterschiede zwischen den 2 Zeitpunkten "
+#         d$data1 <- d1$data1-d1$data2
+#         d$data2 <- d2$data1-d2$data2
+#         d$df_data1 <- estimate_df_difference(d1$df_data1, d1$df_data2)
+#         d$df_data2 <- estimate_df_difference(d2$df_data1, d2$df_data2)
+#         d$explanation = paste0("Was wird hier berechnet? ...\n",
+#                                "Gruppe ist identisch .... Die Analyse testet auf signifikante Unterschiede zwischen diesen zeitbezogenen Unterschieden\n",
+#                                "Algorithmus Time first:\n",
+#                                "1. entferne alle Subjects die nicht in den Daten beider Zeitpunkte zu finden sind\n",
+#                                "2. Berechne X1 = Data_Zeitpunkt1_group1_task1 - Data_Zeitpunkt1_group2_task2 (Subjects x Regions x Regions)\n",
+#                                "            X2 = Data_Zeitpunkt2_group2_task1 - Data_Zeitpunkt2_group2_task2 (Subjects x Regions x Regions)\n",
+#                                "   In diesen beiden 3d Matrizen steht somit der gruppenspezifische Unterschied eines Trials zwischen den Messungen\n",
+#                                "   Ein positiver Wert in dieser Matrix zeigt einen positiven Effekt der Zeit/Intervention an (in der 2. Messung groesser)\n",
+#                                "!!!wenn time first NICHT ausgewaehlt wird dann wird zuerst der Trialunterschied statt des Zeitunterschieds eines trials berechnet und dieser Unterschied anschliessen zwiechen den Zeitpunkten vergleichen\n",
+#                                "3. Es wird dann zwischen X1 und X2 ein t-test fuer jede Region gerechnet (paired fuer die 2 Gruppen)\n",
+#                                "Jedes Feld der Corrplot Matrix im Bild testet somit auf folgende Hypothese\n",
+#                                "Der Unterschied zwischen trial1 und trial 2 wird von der Zeit/Intervention beeinflusst\n",
+#                                "Nullhypothese: Zeit/Intervention haben keinen Einfluss auf den Unterschied zwischen trial_1 und trial_2\n")
+#       }else{
+#         #Wenn beide Gruppen gleich sind unterscheiden wir den FAll, dass
+#         #  1 der Unterschied zwischen 2 Trials berechnet wird
+#
+#
+#
+#         # wenn die gruppen gleich sind, d.h. wenn wir nur 2 trials vergleichen
+#         # in der gleichen Gruppe dann haben wir 2 Moeglichekeiten
+#         # den longitudinalen unterschied zu berechnen
+#         # 1. der longitudinale unterschied vom unterschied eines Zeitpunkts
+#         # was ist der Unterschied zwischen dem Unterschied von Trial1 zwischen den beiden Messzeitpunkten
+#         #     und Trial 2 zwischen den beiden MEsszeitpunkten
+#         d$explanation = "Beide Gruppen haben unterschiede zwischen den 2 Zeitpunkten .... Die Analyse testet auf signifikante Unterschiede zwischen diesen zeitbezogenen Unterschieden"
+#         d$data1 <- d2$data1-d1$data1
+#         d$data2 <- d2$data2-d1$data2
+#         d$df_data1 <- estimate_df_difference(d2$df_data1, d1$df_data1)
+#         d$df_data2 <- estimate_df_difference(d2$df_data2, d1$df_data2)
+#         d$explanation = paste0("Was wird hier berechnet? ...\n",
+#                                "Beide Gruppen haben unterschiede zwischen den 2 Zeitpunkten .... Die Analyse testet auf signifikante Unterschiede zwischen diesen zeitbezogenen Unterschieden\n",
+#                                "Algorithmus:\n",
+#                                "1. entferne alle Subjects die nicht in den Daten beider Zeitpunkte zu finden sind",
+#                                "2. Berechne X1 = Data_Zeitpunkt2_group1_task1 - Data_Zeitpunkt1_group1_task1 (Subjects x Regions x Regions)",
+#                                "            X2 = Data_Zeitpunkt2_group2_task1 - Data_Zeitpunkt1_group2_task1 (Subjects x Regions x Regions)",
+#                                "   In diesen beiden 3d Matrizen steht somit der gruppenspezifische Unterschied eines Trials zwischen den Messungen",
+#                                "   es wird somit zuerst der Gruppenunterschied berechnet und denn der Unterschied zwischen den wenn time first ausgewaehlt wird dann wird zuerst der Zeitunterschied berechnet und dieser dann zwischen den Messungen verglichen\n",
+#                                "!!!wenn time first ausgewaehlt wird dann wird zuerst der Zeitunterschied berechnet und dieser dann zwischen den Messungen verglichen\n",
+#                                "   Ein positiver Wert in dieser Matrix zeigt einen positiven Effekt der Zeit/Intervention an (in der 2. Messung groesser)",
+#                                "3. Es wird dann zwischen X1 und X2 ein t-test fuer jede Region gerechnet (paired fuer die Matrizen welche die gleichen Subjects enthalten)",
+#                                "Jedes Feld der Corrplot Matrix im Bild testet somit auf folgende Hypothese\n",
+#                                "Hypothese: Zeit/Intervention unterscheidet sich in ihrem Einfluss auf trial_1 vom Einfluss auf trial2?\n",
+#                                "Nullhypothese: Der Einfluss von Zeit/Intervention ist fuer trial_1 und trial_2 gleich\n")
+#       }
+#
+#     }
+#     }
+#   #
+#   # if ((d1$t1!=d1$t2) && (d1$g1==d1$g2) && (d1$my_paired==TRUE)){
+#   #   cat(file=stderr(), "(d1$t1!=d1$t2) && (d1$g1==d1$g2) && (d1$my_paired==TRUE)\n")
+#   #   estimation_performed <- estimation_performed +1
+#   #   # wenn die gruppen gleich sind aber die Trials unterschiedlich sind vergleichenwir diese Trials
+#   #   # in der gleichen Gruppe dann haben wir 2 Moeglichekeiten
+#   #   # den longitudinalen unterschied zu berechnen
+#   #   # 1. der longitudinale unterschied vom unterschied eines Zeitpunkts
+#   #   # was ist der Unterschied zwischen dem Unterschied von Trial1 zwischen den beiden Messzeitpunkten
+#   #   #     und Trial 2 zwischen den beiden MEsszeitpunkten
+#   #   d$explanation = "Beide Gruppen haben unterschiede zwischen den 2 Zeitpunkten .... Die Analyse testet auf signifikante Unterschiede zwischen diesen zeitbezogenen Unterschieden"
+#   #   d$data1 <- d2$data1-d1$data1
+#   #   d$data2 <- d2$data2-d1$data2
+#   #   d$df_data1 <- estimate_df_difference(d2$df_data1, d1$df_data1)
+#   #   d$df_data2 <- estimate_df_difference(d2$df_data2, d1$df_data2)
+#   #   d$explanation = paste0("Was wird hier berechnet? ...\n",
+#   #                          "Beide Gruppen haben unterschiede zwischen den 2 Zeitpunkten .... Die Analyse testet auf signifikante Unterschiede zwischen diesen zeitbezogenen Unterschieden\n",
+#   #                          "Algorithmus:\n",
+#   #                          "1. entferne alle Subjects die nicht in den Daten beider Zeitpunkte zu finden sind",
+#   #                          "2. Berechne X1 = Data_Zeitpunkt2_group1_task1 - Data_Zeitpunkt1_group1_task1 (Subjects x Regions x Regions)",
+#   #                          "            X2 = Data_Zeitpunkt2_group2_task1 - Data_Zeitpunkt1_group2_task1 (Subjects x Regions x Regions)",
+#   #                          "   In diesen beiden 3d Matrizen steht somit der gruppenspezifische Unterschied eines Trials zwischen den Messungen",
+#   #                          "   es wird somit zuerst der Gruppenunterschied berechnet und denn der Unterschied zwischen den wenn time first ausgewaehlt wird dann wird zuerst der Zeitunterschied berechnet und dieser dann zwischen den Messungen verglichen\n",
+#   #                          "!!!wenn time first ausgewaehlt wird dann wird zuerst der Zeitunterschied berechnet und dieser dann zwischen den Messungen verglichen\n",
+#   #                          "   Ein positiver Wert in dieser Matrix zeigt einen positiven Effekt der Zeit/Intervention an (in der 2. Messung groesser)",
+#   #                          "3. Es wird dann zwischen X1 und X2 ein t-test fuer jede Region gerechnet (paired fuer die Matrizen welche die gleichen Subjects enthalten)",
+#   #                          "Jedes Feld der Corrplot Matrix im Bild testet somit auf folgende Hypothese\n",
+#   #                          "Hypothese: Zeit/Intervention unterscheidet sich in ihrem Einfluss auf trial_1 vom Einfluss auf trial2?\n",
+#   #                          "Nullhypothese: Der Einfluss von Zeit/Intervention ist fuer trial_1 und trial_2 gleich\n")
+#   #
+#   # }
+#
+#   # if (!(estimate_time_first)){
+#   #   d$explanation = "Beide Gruppen haben die selben Subjects mit unteschiedlichen Trials .... Ermittle zuerst die Unterschiede zwischen den Trials zu einem Zeitpunkt und teste dann auf signifikante Unterschiede zwischen den 2 Zeitpunkten "
+#   #   d$data1 <- d1$data1-d1$data2
+#   #   d$data2 <- d2$data1-d2$data2
+#   #   d$df_data1 <- estimate_df_difference(d1$df_data1, d1$df_data2)
+#   #   d$df_data2 <- estimate_df_difference(d2$df_data1, d2$df_data2)
+#   #   d$explanation = paste0("Was wird hier berechnet? ...\n",
+#   #                          "Gruppe ist identisch .... Die Analyse testet auf signifikante Unterschiede zwischen diesen zeitbezogenen Unterschieden\n",
+#   #                          "Algorithmus Time first:\n",
+#   #                          "1. entferne alle Subjects die nicht in den Daten beider Zeitpunkte zu finden sind\n",
+#   #                          "2. Berechne X1 = Data_Zeitpunkt1_group1_task1 - Data_Zeitpunkt1_group2_task2 (Subjects x Regions x Regions)\n",
+#   #                          "            X2 = Data_Zeitpunkt2_group2_task1 - Data_Zeitpunkt2_group2_task2 (Subjects x Regions x Regions)\n",
+#   #                          "   In diesen beiden 3d Matrizen steht somit der gruppenspezifische Unterschied eines Trials zwischen den Messungen\n",
+#   #                          "   Ein positiver Wert in dieser Matrix zeigt einen positiven Effekt der Zeit/Intervention an (in der 2. Messung groesser)\n",
+#   #                          "!!!wenn time first NICHT ausgewaehlt wird dann wird zuerst der Trialunterschied statt des Zeitunterschieds eines trials berechnet und dieser Unterschied anschliessen zwiechen den Zeitpunkten vergleichen\n",
+#   #                          "3. Es wird dann zwischen X1 und X2 ein t-test fuer jede Region gerechnet (paired fuer die 2 Gruppen)\n",
+#   #                          "Jedes Feld der Corrplot Matrix im Bild testet somit auf folgende Hypothese\n",
+#   #                          "Der Unterschied zwischen trial1 und trial 2 wird von der Zeit/Intervention beeinflusst\n",
+#   #                          "Nullhypothese: Zeit/Intervention haben keinen Einfluss auf den Unterschied zwischen trial_1 und trial_2\n")
+#   # }else{
+#
+#   # if ((d1$t1==d1$t2) && (d1$g1!=d1$g2) && (d1$my_paired==TRUE)){
+#   #   cat(file=stderr(), "(d1$t1==d1$t2) && (d1$g1!=d1$g2) && (d1$my_paired==TRUE)\n")
+#   #   estimation_performed <- estimation_performed +1
+#   #
+#   # }
+#   #
+#   # if ((d1$t1!=d1$t2) && (d1$g1!=d1$g2) && (d1$my_paired==TRUE)){
+#   #   cat(file=stderr(), "(d1$t1!=d1$t2) && (d1$g1!=d1$g2) && (d1$my_paired==TRUE)\n")
+#   #   estimation_performed <- estimation_performed +1
+#   #
+#   # }
+#
+#
+#
+#
+#   if (d1$my_paired==FALSE){
+#
+#     if ((d1$t1==d1$t2) && (d1$g1==d1$g2) ){
+#       cat(file=stderr(), "(d1$t1==d1$t2) && (d1$g1==d1$g2) && (d1$my_paired==FALSE)\n")
+#       estimation_performed <- estimation_performed +1
+#       d$explanation = "Gleiches Trial, Gleiche Gruppen, kein longitudinales Design, -> kein statistischer Test moeglich"
+#       d$data1 <- d1$data1
+#       d$data2 <- d2$data1
+#       d$df_data1 <- d1$df_data1
+#       d$df_data2 <- d2$df_data2
+#       d$explanation = paste0("Problem ... bei gleicher Gruppe sollte paired nicht FALSE sein PROBLEM\n",
+#                              "Was wird hier berechnet? ...\n",
+#                              "Longitudinales Design mit gleichen Trials und gleichen Gruppen\n",
+#                              "Gleiches Trial, Gleiche Gruppen, kein longitudinales Design, -> kein statistischer Test moeglich\n",
+#                              "uebergebe fuer Gruppe 1 die Orginalwerte und Gruppe 2 die gleichen Orginalwerte\n")
+#     }else{
+#
+#       if ((d1$t1!=d1$t2) && (d1$g1==d1$g2) ){
+#         cat(file=stderr(), "(d1$t1!=d1$t2) && (d1$g1==d1$g2) && (d1$my_paired==FALSE)\n")
+#         cat(file=stderr(), paste0("(d1$t1=",d1$t1, " d1$t2=", d1$t2, " d1$g1=", d1$g1, " d1$g2=", d1$g2, " d1$mypaired=", d1$my_paired,"\n"))
+#
+#         #subtrahiere jeden Subject voneinander ... d2$data1 - d1$data1
+#         # Beide Gruppen haben unterschiede zwischen den 2 Zeitpunkten
+#         # Frage: gibt es einen signifikanten Unterschied zwischen diesen zeitbezogenen unterschieden?
+#         #d$explanation = "Beide Gruppen haben unterschiede zwischen den 2 Zeitpunkten .... Die Analyse testet auf signifikante Unterschiede zwischen diesen zeitbezogenen Unterschieden"
+#
+#         d$data1 <- d2$data1-d1$data1
+#         d$data2 <- d2$data2-d1$data2
+#         d$df_data1 <- estimate_df_difference(d2$df_data1, d1$df_data1)
+#         d$df_data2 <- estimate_df_difference(d2$df_data2, d1$df_data2)
+#         d$explanation = paste0("Problem ... bei gleicher Gruppe sollte paired nicht FALSE sein PROBLEM\n",
+#                                "Was wird hier berechnet? ...\n",
+#                                "Gruppe ist verschieden ...beide Gruppen haben unterschiede zwischen den 2 Zeitpunkten .... Die Analyse testet auf signifikante Unterschiede zwischen diesen zeitbezogenen Unterschieden\n",
+#                                "Algorithmus:\n",
+#                                "1. entferne alle Subjects die nicht in den Daten beider Zeitpunkte zu finden sind\n",
+#                                "2. falls unterschiedliche trial gewaehlt wurden wird der subjectspezifische Unterschied zwischen den Trials berechnet\n",
+#                                "3. Berechne X1 = Data_Zeitpunkt2_group1_trial(evtl. dif) - Data_Zeitpunkt1_group1_trial(evtl. dif) (Subjects x Regions x Regions)\n",
+#                                "            X2 = Data_Zeitpunkt2_group2_trial(evtl. dif) - Data_Zeitpunkt1_group2_trial(evtl. dif) (Subjects x Regions x Regions)\n",
+#                                "   In diesen beiden 3d Matrizen steht somit der gruppenspezifische Unterschied eines Trials zwischen den Messungen\n",
+#                                "   Ein positiver Wert in dieser Matrix zeigt einen positiven Effekt der Zeit/Intervention an (in der 2. Messung groesser)\n",
+#                                "4. Es wird dann zwischen X1 und X2 ein t-test fuer jede Region gerechnet (unpaired fuer die 2 Gruppen)\n",
+#                                "Jedes Feld der Corrplot Matrix im Bild testet somit auf folgende Hypothese\n",
+#                                "Unterscheidet sich der Einfluss der Zeit/Intervention zwischen den beiden Gruppen fuer den ausgewaehlten trial?")
+#
+#
+#       }
+#       if ((d1$t1==d1$t2) && (d1$g1!=d1$g2) ){
+#         cat(file=stderr(), "(d1$t1==d1$t2) && (d1$g1!=d1$g2) && (d1$my_paired==FALSE)\n")
+#         cat(file=stderr(), paste0("(d1$t1=",d1$t1, " d1$t2=", d1$t2, " d1$g1=", d1$g1, " d1$g2=", d1$g2, " d1$mypaired=", d1$my_paired,"\n"))
+#
+#         #subtrahiere jeden Subject voneinander ... d2$data1 - d1$data1
+#         # Beide Gruppen haben unterschiede zwischen den 2 Zeitpunkten
+#         # Frage: gibt es einen signifikanten Unterschied zwischen diesen zeitbezogenen unterschieden?
+#         #d$explanation = "Beide Gruppen haben unterschiede zwischen den 2 Zeitpunkten .... Die Analyse testet auf signifikante Unterschiede zwischen diesen zeitbezogenen Unterschieden"
+#
+#         d$data1 <- d2$data1-d1$data1
+#         d$data2 <- d2$data2-d1$data2
+#         d$df_data1 <- estimate_df_difference(d2$df_data1, d1$df_data1)
+#         d$df_data2 <- estimate_df_difference(d2$df_data2, d1$df_data2)
+#         d$explanation = paste0("Was wird hier berechnet? ...\n",
+#                                "Gruppe ist verschieden ...beide Gruppen haben unterschiede zwischen den 2 Zeitpunkten .... Die Analyse testet auf signifikante Unterschiede zwischen diesen zeitbezogenen Unterschieden\n",
+#                                "Algorithmus:\n",
+#                                "1. entferne alle Subjects die nicht in den Daten beider Zeitpunkte zu finden sind\n",
+#                                "2. falls unterschiedliche trial gewaehlt wurden wird der subjectspezifische Unterschied zwischen den Trials berechnet\n",
+#                                "3. Berechne X1 = Data_Zeitpunkt2_group1_trial(evtl. dif) - Data_Zeitpunkt1_group1_trial(evtl. dif) (Subjects x Regions x Regions)\n",
+#                                "            X2 = Data_Zeitpunkt2_group2_trial(evtl. dif) - Data_Zeitpunkt1_group2_trial(evtl. dif) (Subjects x Regions x Regions)\n",
+#                                "   In diesen beiden 3d Matrizen steht somit der gruppenspezifische Unterschied eines Trials zwischen den Messungen\n",
+#                                "   Ein positiver Wert in dieser Matrix zeigt einen positiven Effekt der Zeit/Intervention an (in der 2. Messung groesser)\n",
+#                                "4. Es wird dann zwischen X1 und X2 ein t-test fuer jede Region gerechnet (unpaired fuer die 2 Gruppen)\n",
+#                                "Jedes Feld der Corrplot Matrix im Bild testet somit auf folgende Hypothese\n",
+#                                "Unterscheidet sich der Einfluss der Zeit/Intervention zwischen den beiden Gruppen fuer den ausgewaehlten trial?")
+#
+#
+#       }
+#       if ((d1$t1!=d1$t2) && (d1$g1==d1$g2) ){
+#         cat(file=stderr(), "(d1$t1!=d1$t2) && (d1$g1==d1$g2) && (d1$my_paired==FALSE)\n")
+#         cat(file=stderr(), paste0("(d1$t1=",d1$t1, " d1$t2=", d1$t2, " d1$g1=", d1$g1, " d1$g2=", d1$g2, " d1$mypaired=", d1$my_paired,"\n"))
+#
+#         #subtrahiere jeden Subject voneinander ... d2$data1 - d1$data1
+#         # Beide Gruppen haben unterschiede zwischen den 2 Zeitpunkten
+#         # Frage: gibt es einen signifikanten Unterschied zwischen diesen zeitbezogenen unterschieden?
+#         #d$explanation = "Beide Gruppen haben unterschiede zwischen den 2 Zeitpunkten .... Die Analyse testet auf signifikante Unterschiede zwischen diesen zeitbezogenen Unterschieden"
+#
+#         d$data1 <- d2$data1-d1$data1
+#         d$data2 <- d2$data2-d1$data2
+#         d$df_data1 <- estimate_df_difference(d2$df_data1, d1$df_data1)
+#         d$df_data2 <- estimate_df_difference(d2$df_data2, d1$df_data2)
+#         d$explanation = paste0("Was wird hier berechnet? ...\n",
+#                                "Gruppe ist verschieden ...beide Gruppen haben unterschiede zwischen den 2 Zeitpunkten .... Die Analyse testet auf signifikante Unterschiede zwischen diesen zeitbezogenen Unterschieden\n",
+#                                "Algorithmus:\n",
+#                                "1. entferne alle Subjects die nicht in den Daten beider Zeitpunkte zu finden sind\n",
+#                                "2. falls unterschiedliche trial gewaehlt wurden wird der subjectspezifische Unterschied zwischen den Trials berechnet\n",
+#                                "3. Berechne X1 = Data_Zeitpunkt2_group1_trial(evtl. dif) - Data_Zeitpunkt1_group1_trial(evtl. dif) (Subjects x Regions x Regions)\n",
+#                                "            X2 = Data_Zeitpunkt2_group2_trial(evtl. dif) - Data_Zeitpunkt1_group2_trial(evtl. dif) (Subjects x Regions x Regions)\n",
+#                                "   In diesen beiden 3d Matrizen steht somit der gruppenspezifische Unterschied eines Trials zwischen den Messungen\n",
+#                                "   Ein positiver Wert in dieser Matrix zeigt einen positiven Effekt der Zeit/Intervention an (in der 2. Messung groesser)\n",
+#                                "4. Es wird dann zwischen X1 und X2 ein t-test fuer jede Region gerechnet (unpaired fuer die 2 Gruppen)\n",
+#                                "Jedes Feld der Corrplot Matrix im Bild testet somit auf folgende Hypothese\n",
+#                                "Unterscheidet sich der Einfluss der Zeit/Intervention zwischen den beiden Gruppen fuer den ausgewaehlten trial?")
+#
+#
+#       }
+#     }
+#     # if ((d1$t1==d1$t2) && (d1$g1!=d1$g2) && (d1$my_paired==FALSE)){
+#     #   cat(file=stderr(), "(d1$t1==d1$t2) && (d1$g1!=d1$g2) && (d1$my_paired==FALSE)\n")
+#     #
+#     #   estimation_performed <- estimation_performed +1
+#     #
+#     # }
+#     #
+#     # if ((d1$t1!=d1$t2) && (d1$g1!=d1$g2) && (d1$my_paired==FALSE)){
+#     #   cat(file=stderr(), "(d1$t1!=d1$t2) && (d1$g1!=d1$g2) && (d1$my_paired==FALSE)\n")
+#     #   estimation_performed <- estimation_performed +1
+#     #
+#     # }
+#
+#
+#
+#
+#
+#     # wenn unterschiedliche Gruppen dann
+#     #
+#     #     if (d2$my_paired==FALSE){
+#     #       #subtrahiere jeden Subject voneinander ... d2$data1 - d1$data1
+#     #       # Beide Gruppen haben unterschiede zwischen den 2 Zeitpunkten
+#     #       # Frage: gibt es einen signifikanten Unterschied zwischen diesen zeitbezogenen unterschieden?
+#     #       #d$explanation = "Beide Gruppen haben unterschiede zwischen den 2 Zeitpunkten .... Die Analyse testet auf signifikante Unterschiede zwischen diesen zeitbezogenen Unterschieden"
+#     #
+#     #       d$data1 <- d2$data1-d1$data1
+#     #       d$data2 <- d2$data2-d1$data2
+#     #       d$df_data1 <- estimate_df_difference(d2$df_data1, d1$df_data1)
+#     #       d$df_data2 <- estimate_df_difference(d2$df_data2, d1$df_data2)
+#     #       d$explanation = paste0("Was wird hier berechnet? ...\n",
+#     #                              "Gruppe ist verschieden ...beide Gruppen haben unterschiede zwischen den 2 Zeitpunkten .... Die Analyse testet auf signifikante Unterschiede zwischen diesen zeitbezogenen Unterschieden\n",
+#     #                              "Algorithmus:\n",
+#     #                              "1. entferne alle Subjects die nicht in den Daten beider Zeitpunkte zu finden sind\n",
+#     #                              "2. falls unterschiedliche trial gewaehlt wurden wird der subjectspezifische Unterschied zwischen den Trials berechnet\n",
+#     #                              "3. Berechne X1 = Data_Zeitpunkt2_group1_trial(evtl. dif) - Data_Zeitpunkt1_group1_trial(evtl. dif) (Subjects x Regions x Regions)\n",
+#     #                              "            X2 = Data_Zeitpunkt2_group2_trial(evtl. dif) - Data_Zeitpunkt1_group2_trial(evtl. dif) (Subjects x Regions x Regions)\n",
+#     #                              "   In diesen beiden 3d Matrizen steht somit der gruppenspezifische Unterschied eines Trials zwischen den Messungen\n",
+#     #                              "   Ein positiver Wert in dieser Matrix zeigt einen positiven Effekt der Zeit/Intervention an (in der 2. Messung groesser)\n",
+#     #                              "4. Es wird dann zwischen X1 und X2 ein t-test fuer jede Region gerechnet (unpaired fuer die 2 Gruppen)\n",
+#     #                              "Jedes Feld der Corrplot Matrix im Bild testet somit auf folgende Hypothese\n",
+#     #                              "Unterscheidet sich der Einfluss der Zeit/Intervention zwischen den beiden Gruppen fuer den ausgewaehlten trial?")
+#     #     }else{
+#     #       # 2. Vergleiche den longitudinalen Unterschied jedem trial1 und trial2
+#     #       # ttest(trial1_zeitpunkt1-trial2_zeitpunkt1 vs. trial1_zeitpunkt2-trial2_zeitpunkt2)
+#     #       # was ist der Unterschied in der Trialdifferenz zwischen dem ersten und dem 2. Zeitpunkt
+#     #       if (!(estimate_time_first)){
+#     #         d$explanation = "Beide Gruppen haben die selben Subjects mit unteschiedlichen Trials .... Ermittle zuerst die Unterschiede zwischen den Trials zu einem Zeitpunkt und teste dann auf signifikante Unterschiede zwischen den 2 Zeitpunkten "
+#     #         d$data1 <- d1$data1-d1$data2
+#     #         d$data2 <- d2$data1-d2$data2
+#     #         d$df_data1 <- estimate_df_difference(d1$df_data1, d1$df_data2)
+#     #         d$df_data2 <- estimate_df_difference(d2$df_data1, d2$df_data2)
+#     #         d$explanation = paste0("Was wird hier berechnet? ...\n",
+#     #                                "Gruppe ist identisch .... Die Analyse testet auf signifikante Unterschiede zwischen diesen zeitbezogenen Unterschieden\n",
+#     #                                "Algorithmus Time first:\n",
+#     #                                "1. entferne alle Subjects die nicht in den Daten beider Zeitpunkte zu finden sind\n",
+#     #                                "2. Berechne X1 = Data_Zeitpunkt1_group1_task1 - Data_Zeitpunkt1_group2_task2 (Subjects x Regions x Regions)\n",
+#     #                                "            X2 = Data_Zeitpunkt2_group2_task1 - Data_Zeitpunkt2_group2_task2 (Subjects x Regions x Regions)\n",
+#     #                                "   In diesen beiden 3d Matrizen steht somit der gruppenspezifische Unterschied eines Trials zwischen den Messungen\n",
+#     #                                "   Ein positiver Wert in dieser Matrix zeigt einen positiven Effekt der Zeit/Intervention an (in der 2. Messung groesser)\n",
+#     #                                "!!!wenn time first NICHT ausgewaehlt wird dann wird zuerst der Trialunterschied statt des Zeitunterschieds eines trials berechnet und dieser Unterschied anschliessen zwiechen den Zeitpunkten vergleichen\n",
+#     #                                "3. Es wird dann zwischen X1 und X2 ein t-test fuer jede Region gerechnet (paired fuer die 2 Gruppen)\n",
+#     #                                "Jedes Feld der Corrplot Matrix im Bild testet somit auf folgende Hypothese\n",
+#     #                                "Der Unterschied zwischen trial1 und trial 2 wird von der Zeit/Intervention beeinflusst\n",
+#     #                                "Nullhypothese: Zeit/Intervention haben keinen Einfluss auf den Unterschied zwischen trial_1 und trial_2\n")
+#     #       }else{
+#     #         #Wenn beide Gruppen gleich sind unterscheiden wir den FAll, dass
+#     #         #  1 der Unterschied zwischen 2 Trials berechnet wird
+#     #
+#     #         #  2 die trails gleich sind
+#     #
+#     #
+#     #         #1
+#     #
+#     #         if (d$t1 != d$t2){
+#     #
+#     #         }
+#     #       }
+#   }
+#
+#   return(d)
+# }
 
 estimate_df_difference<-function(df1, df2){
   # Berchnung der Difference in den behavioralen Daten zwischen 2Dataframes
@@ -377,7 +926,7 @@ if (identical(d$data1, d$data2)){
 #cat(file = stderr(),paste0("get_currently_selected_data_long only filter the data duration =",Sys.time()-start_time,"\n"))
 
 
-for (i in 1:(dim(d$data1)[2])-1){
+for (i in 1:(dim(d$data1)[2])){
 #  start_idx = i+1
   start_idx = i # changed 26.03.2021 for diagonal elements
   if (method =="Granger" | method == "Transferentropy"){
@@ -386,8 +935,16 @@ for (i in 1:(dim(d$data1)[2])-1){
   for (j in start_idx:(dim(d$data1)[3])){
 
     #if (!(i==j)){
+
       x <- na.omit(d$data1[,i,j])
       y <- na.omit(d$data2[,i,j])
+
+      # fishers Z-transformation
+      if ((method == "Coherence") | (method == "Connectivity") | (method == "RS")){
+        x <- atanh(x)
+        y <- atanh(y)
+      }
+
       out<- tryCatch(
         {
           z = t.test(x,y, paired = d$my_paired)
