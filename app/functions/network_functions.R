@@ -22,15 +22,23 @@ change_network_in_data_struct<-function(D = NULL, new_uregion_list_named = NULL,
   # 1. uregion_list
   # 2. uregion_list_named
   # 3. mdat
-  mdat_org = D$mdat
-  uregion_list_org = D$uregion_list
-  uregion_list_named_org = D$uregion_list_named
+  # mdat_org = D$mdat
+  # uregion_list_org = D$uregion_list
+  # uregion_list_named_org = D$uregion_list_named
 
+  # wenn Areale nicht in die neue Analyse integrirert werden sollen dann muessen sie zuerst
+  # aus der Ursprungsstruktur gerloescht werden
+  # jedes areal das eine 0 als Netzwerknummer hat soll geloescht werden
+  D$mdat_org = D$mdat
+
+  D<- delete_regions(D, new_uregion_list_named)
+  new_uregion_list_named<- D$new_network_region_list
 
   # entferne ausgelassene Columns
   new_uregion_list_named <- remove_empty_cols(new_uregion_list_named)
 
-  D$mdat_org = D$mdat
+  gnew_uregion_list_named <<- new_uregion_list_named
+  gD <<- D
 
   if (is_use_fast_algorithm){
     D$mdat <- reestimate_mdat_fast(D, new_uregion_list_named)
@@ -45,6 +53,20 @@ change_network_in_data_struct<-function(D = NULL, new_uregion_list_named = NULL,
 
   return(D)
 
+}
+
+
+delete_regions<-function(D, region_list_named){
+  new_region_list_named <- region_list_named
+  for (i in 1:length(region_list_named)){
+    if (region_list_named[i]==0){
+      D <-delete_region_from_data_struct(D, region_name_to_delete = names(region_list_named)[i])
+      new_region_list_named<-new_region_list_named[names(new_region_list_named) %in% names(region_list_named)[i] == FALSE]
+    }
+
+  }
+  D$new_network_region_list <- new_region_list_named
+  return(D)
 }
 
 
@@ -88,11 +110,19 @@ reestimate_mdat<- function(D, new_uregion_list_named){
 
   regions_to_mean = get_regions_to_mean(num_regions_new, D$uregion_list_named, new_uregion_list_named)
 
+  #cat(file = stderr(), paste0("num_regions_new=",num_regions_new,"\n"))
+  #cat(file = stderr(), paste0("num_regions_old=",num_regions_old,"\n"))
+  #cat(file = stderr(), paste0("D$uregion_list_named=",D$uregion_list_named,"\n"))
+  #gn_new_adapt <<- n_new_adapt
+  #gm_new <<- m_new
+  #gregions_to_mean<<- regions_to_mean
 
   # nun die Schleife um die Mittlungen an der Datenmatrix durchzufuehren
   #withProgress(message = 'Making plot', value = 0, {
+  #cat(file = stderr(), paste0("dim(D$mdat) = ",dim(D$mdat),"\n"))
+
   for (s in 1:dim(D$mdat)[1]){
-    cat(file = stderr(), paste0("estimate subject ",s,"\n"))
+    #cat(file = stderr(), paste0("estimate subject ",s,"\n"))
     for (t in 1:dim(D$mdat)[4]){
       for (f in 1:dim(D$mdat)[5]){
         # nun uber die Regionen als 2 schleifen
@@ -112,6 +142,7 @@ get_myareamean <- function(mdat_old, mdat_new, s,t,f, num_regions_new, regions_t
 
   for (r1 in 1:num_regions_new){
     for (r2 in 1:num_regions_new){
+      cat(file = stderr(), paste0("r1=",r1," r2=",r2,"\n"))
       mdat_new[s,r1,r2,t,f]= get_mymean(mdat_old, s,r1,r2,t,f,regions_to_mean)
     }
   }
@@ -188,6 +219,7 @@ reestimate_mdat_fast<- function(D, new_uregion_list_named){
   # nun die Schleife um die Mittlungen an der Datenmatrix durchzufuehren
   #withProgress(message = 'Making plot', value = 0, {
   for (s in 1:dim(D$mdat)[1]){
+
     cat(file = stderr(), paste0("estimate subject ",s,"\n"))
     for (t in 1:dim(D$mdat)[4]){
       for (f in 1:dim(D$mdat)[5]){
@@ -273,7 +305,15 @@ get_regions_to_mean <- function (num_regions_new, uregion_list_named, new_uregio
   # [[3]]
   # [1] 4 5
   # .... Die erste Region wird uebernommen 1=1
+
   # .... die zweite Region des neuen Netzwerks besteht aus der Mittlung der Regionen 2 und 3 des alten Netzwerks ...
+
+
+  cat(file = stderr(), paste0("get_regions_to_mean \n"))
+  cat(file = stderr(), paste0("num_regions_new = ", num_regions_new, "\n"))
+  cat(file = stderr(), paste0("uregion_list_named = ", uregion_list_named, "\n"))
+  cat(file = stderr(), paste0("new_uregion_list_named = ", new_uregion_list_named, "\n"))
+
   regions_to_mean = list()
   for (i in 1:num_regions_new){
     regions_to_mean[[i]] = unlist(uregion_list_named[new_uregion_list_named==i], use.names = F)

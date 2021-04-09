@@ -236,6 +236,8 @@ generate_plot_Corrplot<-function(mat_p, mat_t,
                              order = clustering_method,
                              addrect = num_hclust,
                              col=colorRampPalette(c("blue","red","green"))(200),
+                             title = paste0("Corrplot with method ",g_act_method()),
+                             mar=c(0,0,1,0),
                              cl.pos = "r")
   colnames(mat_t) = vector(mode="character", length=length(regions))
   myplot_corr <- corrplot(mat_t,
@@ -250,6 +252,8 @@ generate_plot_Corrplot<-function(mat_p, mat_t,
                           tl.srt = 45,
                           order = clustering_method,
                           addrect = num_hclust,
+                          title = paste0("Corrplot with method ",g_act_method()),
+                          mar=c(0,0,1,0),
                           col = colorRampPalette(c("green", "yellow","black"))(200),
                           cl.pos = "b")
 
@@ -261,6 +265,8 @@ generate_plot_Corrplot<-function(mat_p, mat_t,
                     insig = insig, pch.cex = 0.4, pch.col = "white",
                     order = clustering_method,
                     addrect = num_hclust,
+                    title = paste0("Corrplot with method ",g_act_method()),
+                    mar=c(0,0,1,0),
                     col=colorRampPalette(c("blue","red","green"))(200))
     colnames(mat_p) = vector(mode="character", length=length(regions))
 
@@ -298,6 +304,8 @@ generate_plot_Corrplot<-function(mat_p, mat_t,
                     hclust.method = "average",
                     addrect = num_hclust,
                     pch.col = "white",
+                    title = paste0("Corrplot with method ",g_act_method()),
+                    mar=c(0,0,1,0),
                     col=colorRampPalette(c("blue","red","green"))(200))
     colnames(mat_t) = vector(mode="character", length=length(regions))
 
@@ -313,9 +321,12 @@ generate_plot_Corrplot<-function(mat_p, mat_t,
                              order = clustering_method,
                              addrect = num_hclust,
                              insig = insig,
+                             title = paste0("Corrplot with method ",g_act_method()),
+                             mar=c(0,0,1,0),
                              tl.srt = 45)
   }
   cat(file = stderr(), paste0("generate_plot_Corrplot duration = ", Sys.time()-start_time,"\n" ))
+
   return(myplot_corr)
 
 }

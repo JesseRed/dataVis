@@ -74,7 +74,7 @@ get_currently_selected_data_long3<-function(D, g1, g2, t1, t2, freq,
                                             estimate_time_first = TRUE,
                                             filter_g1 = "",
                                             filter_g2 = "",
-                                            iscausal = FALSE,
+                                            #iscausal = FALSE,
                                             subjects_to_exclude = NULL,
                                             network = NULL){
 
@@ -90,11 +90,11 @@ get_currently_selected_data_long3<-function(D, g1, g2, t1, t2, freq,
   cat(file = stderr(),paste0("gcsdl3 estimate time first = ", estimate_time_first,"\n"))
 
   # Es gibt nun nur noch gerichtet und ungerichtet
-  if (iscausal){
-    method = "Transferentropy"
-  }else{
-    method = "Connectivity"
-  }
+  # if (iscausal){
+  #   method = "Transferentropy"
+  # }else{
+  #   method = "Connectivity"
+  # }
 
   #cat(file = stderr() , paste0(tbl_beh))
   # if (is.null(network)){
@@ -926,7 +926,7 @@ if (identical(d$data1, d$data2)){
 #cat(file = stderr(),paste0("get_currently_selected_data_long only filter the data duration =",Sys.time()-start_time,"\n"))
 
 
-for (i in 1:(dim(d$data1)[2])-1){
+for (i in 1:(dim(d$data1)[2])){
 #  start_idx = i+1
   start_idx = i # changed 26.03.2021 for diagonal elements
   if (method =="Granger" | method == "Transferentropy"){
@@ -935,8 +935,16 @@ for (i in 1:(dim(d$data1)[2])-1){
   for (j in start_idx:(dim(d$data1)[3])){
 
     #if (!(i==j)){
+
       x <- na.omit(d$data1[,i,j])
       y <- na.omit(d$data2[,i,j])
+
+      # fishers Z-transformation
+      if ((method == "Coherence") | (method == "Connectivity") | (method == "RS")){
+        x <- atanh(x)
+        y <- atanh(y)
+      }
+
       out<- tryCatch(
         {
           z = t.test(x,y, paired = d$my_paired)

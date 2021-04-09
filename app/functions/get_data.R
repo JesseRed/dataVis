@@ -651,6 +651,38 @@ exclude_data_from_not_reoccuring_subjects<-function(D1,D2){
   return(list(D1=D1, D2=D2))
 }
 
+
+# Entfernt eine Region aus der Datenstruktur
+delete_region_from_data_struct<- function(D, region_name_to_delete = NULL ){
+  # loesche eine REgion von der DAtenstruktur die mit dem Namen spezifiziert wird
+  if (is.null(D)){
+    cat(file = stderr(), paste0("Function delete_region_from_data_struct\n"))
+    cat(file = stderr(), paste0("The function delete_region_from_data_struct needs\n",
+                                "a Data Object that is not NULL\n",
+                                "returning D unchanged\n"))
+    return(D)
+  }
+
+
+  if (! (region_name_to_delete %in% names(D$uregion_list_named))){
+    cat(file = stderr(), paste0("Function delete_region_from_data_struct\n"))
+    cat(file = stderr(), paste0("the region name -",region_name_to_delete,"- is not in D\n",
+                                "returning D unchanged\n"))
+    return(D)
+  }
+
+  idx <- which(D$uregion_list == region_name_to_delete)
+  D$uregion_list<- D$uregion_list[D$uregion_list %in% region_name_to_delete == FALSE]
+  D$uregion_list_named<-D$uregion_list_named[names(D$uregion_list_named) %in% region_name_to_delete ==FALSE]
+  # setze die Nummern auf increment
+
+  D$uregion_list_named[1:length(D$uregion_list_named)]<-seq(1:length(D$uregion_list_named))
+  D$mdat <- D$mdat[,-idx,-idx,,,drop = F]
+
+  return(D)
+}
+
+
 # has tests
 # entfernt subjects aus der Datenstruktur
 delete_subject_from_data_struct<-function(D = NULL, ids_to_keep = NULL, ids_to_delete = NULL){
