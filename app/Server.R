@@ -169,6 +169,7 @@ server <- function(input, output, session) {
   g_saveImage_dpi           <<- reactive({input$saveimagedpi})
   g_saveImage_fontsize      <<- reactive({input$saveimagefontsize})
   g_visprop_onlysig         <<- reactive({input$visprop_onlysig})
+  g_visprop_color           <<- reactive({input$visprop_color})
   g_visprop_inlinenumbers   <<- reactive({input$visprop_inlinenumbers})
 
 
@@ -222,6 +223,9 @@ server <- function(input, output, session) {
 
   output$visprop_onlysig <- renderUI({
     checkboxInput("visprop_onlysig", "show only sig.", value = FALSE)
+  })
+  output$visprop_color <- renderUI({
+    checkboxInput("visprop_color", "show color", value = TRUE)
   })
   output$p_cor_method<-renderUI({
     selectInput("p_cor_method", "P-Value Cor Method",

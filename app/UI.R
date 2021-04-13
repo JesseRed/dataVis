@@ -87,6 +87,7 @@ ui <- dashboardPage(
       ),
       menuItem("visulizing properties", tabName = "xxx", icon = icon("image"), startExpanded = TRUE,
                menuSubItem(icon = NULL, uiOutput("visprop_onlysig")),
+               menuSubItem(icon = NULL, uiOutput("visprop_color")),
                menuSubItem(icon = NULL, uiOutput("visprop_inlinenumbers"))
       ),
       menuItem("Image Save", tabName = "xxx", icon = icon("save"), startExpanded = FALSE,
