@@ -163,11 +163,19 @@ longitudinalPlotServer <- function(id, dir_listRS) {
           )
         ),
         fluidRow(
+          column(12,
+                 box(title = "myplot", width = 12,
            # plotOutput(ns("plot"), width = "auto", height = "800px", click = ns("plot_click"))
           plotOutput(ns("plot"), width = "auto", height = "auto", click = ns("plot_click")),
-          br(),
-          br(),
-          br(),
+          tags$head(
+            tags$style(
+              HTML("#plot{margin-bottom:250px;}")
+            )
+          )
+                 ))
+            # br(),
+            # br(),
+            # br()
         ),
         fluidRow(
           column(9,
