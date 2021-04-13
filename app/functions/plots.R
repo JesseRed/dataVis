@@ -367,25 +367,47 @@ generate_plot_Corrplot<-function(mat_p, mat_t,
 
   }else if (g_act_method()=="Transferentropy") {
     rownames(mat_p) = vector(mode="character", length=length(regions))
-    x1 <<- corrplot(mat_p, method=method, tl.cex = cex, type = "upper", is.corr = FALSE,
-                    p.mat = mat_p, sig.level = multi_sig_level, tl.srt = 45,
-                    insig = insig, pch.cex = 0.4, pch.col = "white",
-                    order = clustering_method,
+
+    myplot_corr <<- corrplot(mat_p,
+                    is.corr = FALSE,
+                    method=method,
+                    tl.cex = cex,
+                    p.mat = mat_p,
+                    tl.srt = 45,
+                    addCoef.col = number_color,
+                    sig.level = multi_sig_level,
+                    insig = insig,
+                    pch.col = "black",
+                    pch.cex = 0.5,
+                    addgrid.col = "grey",
+                    order = clustering_method, #"hclust", #clustering_method,
+                    hclust.method = "average",
                     addrect = num_hclust,
                     title = paste0("Corrplot with method ",g_act_method()),
-                    mar=c(0,0,1,0),
-                    col=colorRampPalette(c("blue","red","green"))(200))
+                    col = col(500),
+                    #col=colorRampPalette(c("blue","red","green"))(200),
+                    mar=c(0,0,1,1)
+    )
+
+    # x1 <<- corrplot(mat_p, method=method, tl.cex = cex, type = "upper", is.corr = FALSE,
+    #                 p.mat = mat_p, sig.level = multi_sig_level, tl.srt = 45,
+    #                 insig = insig, pch.cex = 0.4, pch.col = "white",
+    #                 order = clustering_method,
+    #                 addrect = num_hclust,
+    #                 title = paste0("Corrplot with method ",g_act_method()),
+    #                 mar=c(0,0,1,0),
+    #                 col=colorRampPalette(c("blue","red","green"))(200))
     colnames(mat_p) = vector(mode="character", length=length(regions))
 
-     myplot_corr <<- corrplot(mat_p, add = TRUE, method=method, tl.cex = cex, type = "lower", is.corr = FALSE,
-                              p.mat = mat_p, sig.level = g_sig(), insig = insig, tl.srt = 45)
+      # myplot_corr <<- corrplot(mat_p, add = TRUE, method=method, tl.cex = cex, type = "lower", is.corr = FALSE,
+      #                          p.mat = mat_p, sig.level = g_sig(), insig = insig, tl.srt = 45)
+      #
 
-
-
- #    myplot_corr <<- corrplot(d$mat_p, method=method, tl.cex = cex, is.corr = FALSE,
- #                             p.mat = d$mat_p, sig.level = g_sig(),tl.srt = 45,
- #                             insig = insig,
- #                             col=colorRampPalette(c("blue","red","green"))(200))
+#
+#      myplot_corr <<- corrplot(d$mat_p, method=method, tl.cex = cex, is.corr = FALSE,
+#                               p.mat = d$mat_p, sig.level = g_sig(),tl.srt = 45,
+#                               insig = insig,
+#                               col=colorRampPalette(c("blue","red","green"))(200))
    }else if (g_act_method()=="Granger") {
      cat(file = stderr(), "Corrrplot Granger not implemented")
      myplot_corr = NULL
