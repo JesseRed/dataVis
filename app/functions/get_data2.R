@@ -53,12 +53,44 @@ filter_datastruct <- function(D, group = NULL, myfilter = NULL){
           return(D)
         }
       )
-
-
     }
   }
 
   return(D)
+}
+
+get_region_difference<-function(d, x, y){
+  # takes the data delivered by get_currently_selected_data_long3
+  #  and estimates from there the difference between the last clicked region and every other region
+  target_region_data_g1 = d$data1[,x,y,drop = FALSE]
+  target_region_data_g2 = d$data2[,x,y,drop = FALSE]
+  # hier steht nun wie gross der Effekt der Intervention fuer jede Gruppe war
+  # hiervon bilden wir die differenz zu den anderen Regionen
+  data1_r_vs_r = subtract_A1_from_A3(d$data1, target_region_data_g1)
+  data2_r_vs_r = subtract_A1_from_A3(d$data2, target_region_data_g2)
+
+  # da estimate_mat_t_p direkt auf d arbeitet machen wir hier eine kopie und fuegen dann wieder zusammen
+  d_copy <- d
+  d_copy$data1 <- data1_r_vs_r
+  d_copy$data2 <- data2_r_vs_r
+
+  d_copy <- estimate_mat_t_p(d_copy)
+  d$mat_p_r_vs_r <- d_copy$mat_p
+  d$mat_t_r_vs_r <- d_copy$mat_t
+  return(d)
+}
+
+subtract_A1_from_A3<-function(A,b){
+  # subtrahiert ein eindimensionales Array von einem 3 dimensionalem
+  # A 3dim Array
+  # b 1 dim Array
+  C <- A
+  for (i in 1:dim(A)[2]){
+    for (j in 1:dim(A)[3]){
+      C[,i,j] <- A[,i,j]-b
+    }
+  }
+  return(C)
 }
 
 
@@ -924,6 +956,7 @@ if (identical(d$data1, d$data2)){
   return(d)
 }
 #cat(file = stderr(),paste0("get_currently_selected_data_long only filter the data duration =",Sys.time()-start_time,"\n"))
+
 
 
 for (i in 1:(dim(d$data1)[2])){

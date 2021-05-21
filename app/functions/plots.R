@@ -169,8 +169,10 @@ generate_plot_Corrplot<-function(mat_p, mat_t,
                                  regions = g_regions(),
                                  clustering_method = "original",
                                  num_hclust = 0,
-                                 sig_level = g_sig()){
+                                 sig_level = g_sig(),
+                                 title = NULL){
   start_time <- Sys.time()
+
   # colnames(d$mat_p) = g_regions()
   # rownames(d$mat_p) = vector(mode="character", length=length(g_regions()))
   # colnames(d$mat_t) = vector(mode="character", length=length(g_regions()))
@@ -182,6 +184,12 @@ generate_plot_Corrplot<-function(mat_p, mat_t,
   cat(file = stderr(), paste0("inline_numbers = ", inline_numbers, "\n"))
   cat(file = stderr(), paste0("only_sig = ", only_sig, "\n"))
   cat(file = stderr(), paste0("show_color = ", show_color, "\n"))
+
+
+  if (is.null(title)){title = paste0("Corrplot with method ",g_act_method())}
+  else{
+    title = paste0(title, "method = ", g_act_method())
+  }
 
 
   if (is.null(myfontsize)){myfontsize=14}
@@ -337,7 +345,7 @@ generate_plot_Corrplot<-function(mat_p, mat_t,
                   order = clustering_method, #"hclust", #clustering_method,
                   hclust.method = "average",
                   addrect = num_hclust,
-                  title = paste0("Corrplot with method ",g_act_method()),
+                  title = title, #paste0("Corrplot with method ",g_act_method()),
                   col = col(500),
                   #col=colorRampPalette(c("blue","red","green"))(200),
                   mar=c(0,0,1,1)
@@ -360,7 +368,7 @@ generate_plot_Corrplot<-function(mat_p, mat_t,
                            order = clustering_method,
                            hclust.method = "average",
                            addrect = num_hclust,
-                           title = paste0("Corrplot with method ",g_act_method()),
+                           title = title, #paste0("Corrplot with method ",g_act_method()),
                            col = col_t(500),
                            mar=c(0,0,1,1),
                            tl.srt = 45)
@@ -383,7 +391,7 @@ generate_plot_Corrplot<-function(mat_p, mat_t,
                     order = clustering_method, #"hclust", #clustering_method,
                     hclust.method = "average",
                     addrect = num_hclust,
-                    title = paste0("Corrplot with method ",g_act_method()),
+                    title = title, #paste0("Corrplot with method ",g_act_method()),
                     col = col(500),
                     #col=colorRampPalette(c("blue","red","green"))(200),
                     mar=c(0,0,1,1)

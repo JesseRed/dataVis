@@ -204,6 +204,22 @@ longitudinalPlotServer <- function(id, dir_listRS) {
         ),
         fluidRow(
           column(12,
+                 box(title = "Was wird hier gezeigt?...", width = 12, collapsible = TRUE, collapsed = TRUE, verbatimTextOutput(ns("text_explanation_plot2"))),
+          )
+        ),
+        fluidRow(
+          column(12,
+                 box(title = "myplot_Region_diff", width = 12,
+                     plotOutput(ns("plot_region_diff"), width = "auto", height = "auto", click = ns("plot_click2")),
+                     tags$head(
+                       tags$style(
+                         HTML("#plot{margin-bottom:250px;}")
+                       )
+                     )
+                 ))
+        ),
+        fluidRow(
+          column(12,
                  box(title = "Included subjects", width = 12, collapsible = TRUE, collapsed = TRUE,
                      #uiOutput(ns("includedSubjects"))
                      actionButton(ns("testexclude"), "update"),
@@ -511,6 +527,22 @@ longitudinalPlotServer <- function(id, dir_listRS) {
         cat(out)
       })
 
+      output$text_explanation_plot2<- renderPrint({
+        explanation <- paste0("This plot tests whether the investigated effect is different between the last selected region in the upper plot and other regions\n",
+                              "It shows the p values (and t-values depending from the method) between regions effect \n",
+                              "Estimation: The effect of a task/trial is given for one group ... the upper plot often compares this to the other group \n",
+                              "this plot however, thaks the task/trial effect of one subject for on Region (e.g. Region 1 vs. Region 2) and estimates  \n",
+                              "the difference of each other Region vs. Region to value. This is performed for each subject of each group \n ",
+                              "then the group difference is simply tested by a t-test\n",
+                              "in other words it tests the hypothesis:\n",
+                              "The Group difference of the effect of the Intervention on the Connectivity of REgion A vs. B is different from the \n",
+                              "    Group difference of the effect of the Intervention on the Connectivity of REgion C vs. D\n"
+                              )
+        out <- explanation
+        cat(out)
+      })
+
+
       ###########################################################
       ### RENDERPLOT
       output$myplotly<-renderPlotly({
@@ -526,6 +558,44 @@ longitudinalPlotServer <- function(id, dir_listRS) {
 
       })
 
+
+      output$plot_region_diff<-renderPlot(
+        width = function() plotwidth(),
+        height = function() plotheight(),
+        #res = input$plot_res,
+        {
+
+          req(input$trial1)
+          req(input$trial2)
+          req(input$group1)
+          req(input$group2)
+          req(input$method)
+          cur_dev <- dev.cur()
+          cat(file = stderr(), cur_dev)
+          cat(file=stderr(), "before curdata() in plot\n")
+          d <- curdata()
+          d <- get_region_difference(d, level_x_rval(), level_y_rval())
+          mat_t_r_vs_r <<- d$mat_t_r_vs_r
+          mat_p_r_vs_r <<- d$mat_p_r_vs_r
+          ###################
+          # CORRPLOT
+          # generate_histogram_plot_facet_long(input$group1,input$group2,
+          #                                    input$trial1, input$trial2,
+          #                                    g_sel_freqs(),
+          #                                    level_x_rval(), level_y_rval(),
+          #                                    data = curdata())
+          if (input$method=="Corrplot"){
+
+            generate_plot_Corrplot(d$mat_p_r_vs_r, d$mat_t_r_vs_r, regions = colnames(d$mat_p_r_vs_r),
+                                   clustering_method = input$clustering,
+                                   num_hclust = input$num_hclust,
+                                   title = "Corrplot of Region Differences to the last clicked region (please click in the upper plot)") #D$uregion_list)
+
+          }
+
+
+        }
+      )
 
       ###########################################################
       ### RENDERPLOT
