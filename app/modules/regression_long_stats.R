@@ -1,7 +1,7 @@
 library(shiny)
 
 
-regressionStatsUI <- function(id){
+regressionLongStatsUI <- function(id){
   ns <- NS(id)
   # Thanks to the namespacing, we only need to make sure that the IDs
   # are unique within this function, rather than unique across the entire app.
@@ -26,7 +26,7 @@ regressionStatsUI <- function(id){
 
 }
 
-regressionStatsServer <- function(id, input_glob_sig, freq) {
+regressionLongStatsServer <- function(id, input_glob_sig, freq) {
   moduleServer(
     id,
     function(input, output, session) {
@@ -36,52 +36,161 @@ regressionStatsServer <- function(id, input_glob_sig, freq) {
       output$uiANOVA <- renderUI({
 
         fluidPage(
+
+
           fluidRow(
-
-            column(5,
-
-                   style = "background-color: #fcfcfc;",
-                   #style = 'border-bottom: 2px solid gray',
-                   style = "border-right: 2px solid black",
-                   h4("group comparison", align = "center"),
+            column(4,
                    fluidRow(
                      column(6,
-                            selectInput(ns("group1"), h5("Select Group 1", align = "center"),
-                                        choices = g_groups(), selected = g_groups()[2])
+                            style = "background-color: #fcfcfc;",
+                            style = 'border-right: 2px solid gray',
+                            h4("trial comparison", align = "center"),
+                            fluidRow(
+                              column(6,
+                                     selectInput(ns("trial1"), h5("Select Trial 1", align = "center"),
+                                                 choices = g_trials_named(), selected =g_trials_named()[1])
+                              ),
+                              column(6,
+                                     selectInput(ns("trial2"), h5("Select Trial 2", align = "center"),
+                                                 choices = g_trials_named(), selected = g_trials_named()[2])
+                              )
+                            )
                      ),
                      column(6,
-                            selectInput(ns("group2"), h5("Select Group 2", align = "center"),
-                                        choices = g_groups(), selected = g_groups()[3])
-                     )
 
-                   )
-
+                            style = "background-color: #fcfcfc;",
+                            #style = 'border-bottom: 2px solid gray',
+                            style = "border-right: 2px solid black",
+                            h4("group comparison", align = "center"),
+                            fluidRow(
+                              column(6,
+                                     selectInput(ns("group1"), h5("Select Group 1", align = "center"),
+                                                 choices = g_groups(), selected = g_groups()[2])
+                              ),
+                              column(6,
+                                     selectInput(ns("group2"), h5("Select Group 2", align = "center"),
+                                                 choices = g_groups(), selected = g_groups()[2])
+                              )
+                            )
+                     ),
+                   ),
+                   # fluidRow(
+                   #   style = "background-color: #fcfcfc;",
+                   #   #style = "border-top: 2px solid black",
+                   #   h4("is the analysis directed?", align = "left"),
+                   #   column(12,
+                   #          prettyRadioButtons(
+                   #            inputId = ns("causal"),
+                   #            label = "",
+                   #            choices = c("non-directed", "directed"),
+                   #            shape = "round",
+                   #            status = "danger",
+                   #            fill = TRUE,
+                   #            inline = TRUE
+                   #          ),
+                   #          ),
+                   # ),
             ),
-            column(5,
+
+            column(2,
                    style = "background-color: #fcfcfc;",
                    style = 'border-right: 2px solid gray',
-                   h4("trial comparison", align = "center"),
+                   h4("longitudinal data", align = "center"),
                    fluidRow(
                      column(6,
-                            selectInput(ns("trial1"), h5("Select Trial 1", align = "center"),
-                                        choices = g_trials_named(), selected = g_trials_named()[1])
+                            textInput(ns("ld_1"), h5("long data 1", align = "center"), value = "1")
                      ),
                      column(6,
-                            selectInput(ns("trial2"), h5("Select Trial 2", align = "center"),
-                                        choices = g_trials_named(), selected = g_trials_named()[2])
+                            textInput(ns("ld_2"), h5("long data 2", align = "center"), value = "2, 3")
                      )
+                   ),
+                   checkboxInput(ns("longtimefirst"), "estimate time first", value = TRUE),
+                   checkboxInput(ns("averagelong"), "average same long subj(1 vs. av(2,3))", value = TRUE),
+                   checkboxInput(ns("cb_same_subjects"), "include only reoccuring subj", value = TRUE)
+            ),
 
-                   )
+            column(2,
+                   style = "background-color: #fcfcfc;",
+                   style = 'border-right: 2px solid gray',
+                   h4("Filter", align = "center"),
+                   textInput(ns("filterg1"), h5("filter G1", align = "center"), value = "Zeichen__1>0"),
+                   textInput(ns("filterg2"), h5("filter G2", align = "center"), value = "Zeichen__1>0"),
+
             ),
             column(2,
                    style = "background-color: #fcfcfc;",
+                   style = 'border-right: 2px solid gray',
                    h4("Visualize", align = "center"),
                    selectInput(ns("statsMethod"), h5("method"),
                                choices = c("Regression","ANOVA"), selected = 1)
 
+            ),
+            column(2,
+                   fluidRow(
+                     column(6,
+                            numericInput(ns("plot_height"),"plot height",800)
+                     ),
+                     column(6,
+                            numericInput(ns("plot_width"),"plot width",0)
+                     ),
+                   ),
+                   fluidRow(
+                     column(6,
+                            numericInput(ns("plot_res"),"res",96),
+                     ),
+                     column(6,
+                            actionButton(ns("ExportData"), "export Data"),
+                     ),
+                   ),
             )
           ),
+
+
+
+
+          #######################
+
+          # fluidRow(
+          #
+          #   column(5,
+          #
+          #          style = "background-color: #fcfcfc;",
+          #          #style = 'border-bottom: 2px solid gray',
+          #          style = "border-right: 2px solid black",
+          #          h4("group comparison", align = "center"),
+          #          fluidRow(
+          #            column(6,
+          #                   selectInput(ns("group1"), h5("Select Group 1 Long", align = "center"),
+          #                               choices = g_groups(), selected = g_groups()[2])
+          #            ),
+          #            column(6,
+          #                   selectInput(ns("group2"), h5("Select Group 2", align = "center"),
+          #                               choices = g_groups(), selected = g_groups()[3])
+          #            )
+          #
+          #          )
+          #
+          #   ),
+          #   column(5,
+          #          style = "background-color: #fcfcfc;",
+          #          style = 'border-right: 2px solid gray',
+          #          h4("trial comparison", align = "center"),
+          #          fluidRow(
+          #            column(6,
+          #                   selectInput(ns("trial1"), h5("Select Trial 1", align = "center"),
+          #                               choices = g_trials_named(), selected = g_trials_named()[1])
+          #            ),
+          #            column(6,
+          #                   selectInput(ns("trial2"), h5("Select Trial 2", align = "center"),
+          #                               choices = g_trials_named(), selected = g_trials_named()[2])
+          #            )
+          #
+          #          )
+          #   ),
+          #
+          # ),
         fluidRow(
+          style = 'border-top: 2px solid gray',
           column(9,
                  plotOutput(ns("plot"), width = "auto", height = "700px", click = ns("plot_click")),
           ),
@@ -174,6 +283,30 @@ regressionStatsServer <- function(id, input_glob_sig, freq) {
                      )),
                  )
         ),
+        fluidRow(
+          column(12,
+                 box(title = "Included subjects", width = 12, collapsible = TRUE, collapsed = TRUE,
+                     #uiOutput(ns("includedSubjects"))
+                     actionButton(ns("testexclude"), "update"),
+
+                     checkboxGroupInput(ns("Subjects"), label = h3("Subjects"), inline = T,
+                                        choices = g_D()$df_BD$ID,
+                                        selected =  g_D()$df_BD$ID),
+
+                     style = "background-color: #fcfcfc;",
+                     style = 'border-bottom: 2px solid gray',
+                     checkboxGroupInput(ns("Group1"), label = h3("Group 1"), inline = T,
+                                        choices = c()), #, #curdata()$df_data1$ID,
+                     #                     selected = c()), #curdata()$df_data1$ID[my_included_subjects_g1()]),
+
+                     style = "background-color: #fcfcfc;",
+                     style = 'border-bottom: 2px solid gray',
+                     checkboxGroupInput(ns("Group2"), label = h3("Group 2"), inline = T,
+                                        choices = c()) #, #curdata()$df_data2$ID,
+                 ),
+          )
+        ),
+
         # fluidRow(
         #   column(12,
         #          box(title = "partial correlation ", width = 12, collapsible = TRUE, collapsed = FALSE, verbatimTextOutput(ns("partial_correlation"))),          )
@@ -182,6 +315,75 @@ regressionStatsServer <- function(id, input_glob_sig, freq) {
 
         )
       })
+
+      subjects_to_exclude = reactive({
+        # list of subjects that are not marked
+        to_exclude = setdiff( g_D()$df_BD$ID, input$Subjects)
+        #cat(file = stderr(), paste0("XXX subjects_to_exclude reactive = ", to_exclude, "\n"))
+        return(to_exclude)
+      })
+      my_included_subjects = reactive({get_included_subjects( g_D()$df_BD$ID, subjects_to_exclude())})
+      my_included_subjects_g1 = reactive({ req(input$Subjects); get_included_subjects( curdata()$df_data1$ID, subjects_to_exclude())})
+      my_included_subjects_g2 = reactive({get_included_subjects( curdata()$df_data2$ID, subjects_to_exclude())})
+
+      observeEvent(input$testexclude, {
+        cat(file = stderr(), paste0("included Subjects = \n"))
+        #cat(file = stderr(), paste0("included Subjects = ", input$Subjects, "\n"))
+        #cat(file = stderr(), paste0("class(subjects_to_exclude = ", class(subjects_to_exclude()), "\n"))
+        #cat(file = stderr(), paste0("length(subjects_to_exclude = ", length(subjects_to_exclude()), "\n"))
+        #cat(file = stderr(), paste0("my_included_subjects() = ", my_included_subjects(), "\n"))
+
+        numbered_IDs_all <- get_included_subjects_with_numbers(g_D()$df_BD$ID, my_included_subjects())
+        numbered_IDs_g1 <- get_included_subjects_with_numbers(curdata()$df_data1$ID, my_included_subjects_g1())
+        numbered_IDs_g2 <- get_included_subjects_with_numbers(curdata()$df_data2$ID, my_included_subjects_g2())
+
+        # updateCheckboxGroupInput(session, "Subjects",
+        #                          choices = numbered_IDs_all, inline = T,
+        #                          selected =  numbered_IDs_all[my_included_subjects()])
+
+
+        updateCheckboxGroupInput(session, "Group1",
+                                 choices = numbered_IDs_g1, inline = T,
+                                 selected =  numbered_IDs_g1[my_included_subjects_g1()]
+
+        )
+
+        updateCheckboxGroupInput(session, "Group2",
+                                 choices = numbered_IDs_g2, inline = T,
+                                 selected =  numbered_IDs_g2[my_included_subjects_g2()]
+        )
+        updateCheckboxGroupInput(session, "Subjects",
+                                 choices = g_D()$df_BD$ID, inline = T,
+                                 selected =  g_D()$df_BD$ID[my_included_subjects()])
+
+
+        # updateCheckboxGroupInput(session, "Group1",
+        #                          choices = curdata()$df_data1$ID, inline = T,
+        #                          selected =  curdata()$df_data1$ID[my_included_subjects_g1()]
+        #
+        # )
+        #
+        # updateCheckboxGroupInput(session, "Group2",
+        #                          choices = curdata()$df_data2$ID, inline = T,
+        #                          selected =  curdata()$df_data2$ID[my_included_subjects_g2()]
+        # )
+      })
+
+      # Funktion um an die ausgewaehlten Subjects Numbern zu schreiben damit
+      # die Auswahl in der GUI einfacher wird
+      get_included_subjects_with_numbers <- function(IDs, is_included){
+        # nummern duerfen nur die Subjects erhalten die selectiert sind
+        idx = 1
+        for (i in 1:length(IDs)){
+          if (is_included[i]){
+            IDs[i] <- paste0(idx,". ",IDs[i])
+            idx <- idx +1
+          }
+        }
+        return(IDs)
+      }
+
+
 
       # filter data by group
       data_freqmean <- reactive({
@@ -211,9 +413,58 @@ regressionStatsServer <- function(id, input_glob_sig, freq) {
       level_x <- reactive({round(input$plot_click$x)})
       level_y <- reactive({abs(round(input$plot_click$y)-length(g_regions())-1)})
 
+      # curdata <- reactive({
+      #   get_currently_selected_data_long3(g_D(), input$group1, input$group2, as.numeric(input$trial1), as.numeric(input$trial2), g_sel_freqs())
+      # #  get_currently_selected_data(g_data(), input$group1, input$group2, as.numeric(input$trial1), as.numeric(input$trial2), freq())
+      # })
+
+
+
+      # get the data for the second time point
+      # die longitudinalen Daten sind kodiert als nummern hinter den IDs der Subjects XY001_1
+      # daher teilen wir hier die Subjects einfach entsprechend auf
+
       curdata <- reactive({
-        get_currently_selected_data_long3(g_D(), input$group1, input$group2, as.numeric(input$trial1), as.numeric(input$trial2), g_sel_freqs())
-      #  get_currently_selected_data(g_data(), input$group1, input$group2, as.numeric(input$trial1), as.numeric(input$trial2), freq())
+        cat(file = stderr(), paste0("curdata with dim(g_D()$mat)=", dim(g_D()$mat),"\n"))
+        req(input$group1)
+        req(input$group2)
+        req(input$trial1)
+        req(input$trial2)
+        req(input$ld_1)
+        req(input$ld_2)
+        # req(input$cb_same_subjects)
+        # req(input$averagelong)
+        # req(input$longtimefirst)
+        #gD1 <<- D1()
+        #gD2 <<- D2()
+        cat(file = stderr(), paste0("curdata with dim(g_D()$mat)=", dim(g_D()$mat),"\n"))
+        cat(file = stderr(), paste0("curdata with length(g_D())=", length(g_D()),"\n"))
+
+        M <- get_currently_selected_data_long3(g_D(),
+                                               input$group1,
+                                               input$group2,
+                                               as.numeric(input$trial1),
+                                               as.numeric(input$trial2),
+                                               g_sel_freqs(),
+                                               tbl_beh = g_D()$df_BD,
+                                               long_def1 = as.numeric(unlist(strsplit(input$ld_1, split=","))),
+                                               long_def2 = as.numeric(unlist(strsplit(input$ld_2, split=","))),
+                                               is_exclude_not_reoccuring_subj = input$cb_same_subjects,
+                                               averagelong = input$averagelong,
+                                               #                                              datalong = D2()$mdat,
+                                               #                                              tbl_beh_long = D2()$df_BD,
+                                               estimate_time_first = input$longtimefirst,
+                                               filter_g1 = input$filterg1,
+                                               filter_g2 = input$filterg2,
+                                               subjects_to_exclude = subjects_to_exclude()#,
+                                               #iscausal = iscausal(),
+#                                               network = network_new()
+
+
+        )
+        gM <<- M
+
+        return(M)
       })
 
       ###########################################################
@@ -641,14 +892,6 @@ regressionStatsServer <- function(id, input_glob_sig, freq) {
 
       })
 
-
-
-
-
-
-
-
-
       ####
       #################################################################
 
@@ -656,9 +899,10 @@ regressionStatsServer <- function(id, input_glob_sig, freq) {
       #################################################################
 
       create_partial_correlation_string <- function( group = 1, trial = 1){
+        cat(file = stderr(), paste0("levelx = ", level_x(), "levely = ", level_y(), "\n"))
         region_x = g_regions()[level_x()]
         region_y = g_regions()[level_y()]
-
+        cat(file = stderr(), paste0("region_x = ", region_x, "  region_y = ", region_y, "\n"))
 
 
         if (group==1){
@@ -678,11 +922,12 @@ regressionStatsServer <- function(id, input_glob_sig, freq) {
           b = get_beh_tbl_data_by_group(input$group2, input$mainregressor)
           if (trial == 1){
             tin = g_trials()[input$trial1]
-
+            x_in_g2t1<<-data_g2_t1()
             x_in = data_g2_t1()[,level_y(),level_x()]
           }
           if (trial == 2){
             tin = g_trials()[input$trial2]
+            x_in_g2t1<<-data_g2_t2()
             x_in = data_g2_t2()[,level_y(),level_x()]
           }
         }

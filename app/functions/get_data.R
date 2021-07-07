@@ -1332,19 +1332,19 @@ get_data_group_trial_freq <- function(data, group, trial, freq, tbl_beh = g_beh(
 
 # has tests
 get_data_group_trial_freqmean <- function(data, group, trial, freq, tbl_beh = g_beh(), method = g_act_method()){
-  #cat(file = stderr(), paste0("start get_data_group_trial_freqmean with dim(data)=",dim(data),"\n"))
+  cat(file = stderr(), paste0("start get_data_group_trial_freqmean with dim(data)=",dim(data),"\n"))
   start_time2 = Sys.time()
   data_group_trial = get_data_group_trial(data, group, trial, tbl_beh = tbl_beh, method = method)
-  #cat(file = stderr(), paste0("in get_data_group_trial_freqmean with dim(data_group_trial)=",dim(data_group_trial),"\n"))
-  #cat(file = stderr(),paste0("get_data_group_trial duration =",Sys.time()-start_time2,"\n"))
+  cat(file = stderr(), paste0("in get_data_group_trial_freqmean with dim(data_group_trial)=",dim(data_group_trial),"\n"))
+  cat(file = stderr(),paste0("get_data_group_trial duration =",Sys.time()-start_time2,"\n"))
   start_time2 = Sys.time()
   data_group_trial_freq = filter_by_selfreq(data_group_trial, freq, method = method)
-  #cat(file = stderr(), paste0("in get_data_group_trial_freqmean with dim(data_group_trial_freq)=",dim(data_group_trial_freq),"\n"))
-  #cat(file = stderr(),paste0("filter_by_selfreq duration =",Sys.time()-start_time2,"\n"))
+  cat(file = stderr(), paste0("in get_data_group_trial_freqmean with dim(data_group_trial_freq)=",dim(data_group_trial_freq),"\n"))
+  cat(file = stderr(),paste0("filter_by_selfreq duration =",Sys.time()-start_time2,"\n"))
   start_time2 = Sys.time()
   data_group_trial_freqmean = get_freqmean(data_group_trial_freq, method = method)
-  #cat(file = stderr(), paste0("in get_data_group_trial_freqmean with dim(data_group_trial_freqmean)=",dim(data_group_trial_freqmean),"\n"))
-  #cat(file = stderr(),paste0("get_freqmean duration =",Sys.time()-start_time2,"\n"))
+  cat(file = stderr(), paste0("in get_data_group_trial_freqmean with dim(data_group_trial_freqmean)=",dim(data_group_trial_freqmean),"\n"))
+  cat(file = stderr(),paste0("get_freqmean duration =",Sys.time()-start_time2,"\n"))
 
   return(data_group_trial_freqmean)
 }
