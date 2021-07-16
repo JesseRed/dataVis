@@ -1270,10 +1270,10 @@ filter_by_selfreq <- function(data, freq, method = g_act_method()){
   # freq ... ist in den meisten faellen g_sel_freq()
   # ein vector von TRUE und FALSe gleicher Dimensionen wie dim(data)[5]
   # das drop=F ist hier sehr wichtig weil andere funtionen ueber die letzte Dimension mitteln
-#  cat(file = stderr(), paste0("in filter_by_selfreq freq=",freq,"\n"))
-#  cat(file = stderr(), paste0("dim(data) = ",dim(data),"\n"))
-#  gffreq <<- freq
-#  gfdata <<- data
+  cat(file = stderr(), paste0("in filter_by_selfreq freq=",freq,"\n"))
+  cat(file = stderr(), paste0("dim(data) = ",dim(data),"\n"))
+  gffreq <<- freq
+  gfdata <<- data
   data_selfreq = asub(data, list(freq), length(dim(data)), drop=F)
   #
   # num_dims = length(dim(data))
@@ -1338,6 +1338,7 @@ get_data_group_trial_freqmean <- function(data, group, trial, freq, tbl_beh = g_
   cat(file = stderr(), paste0("in get_data_group_trial_freqmean with dim(data_group_trial)=",dim(data_group_trial),"\n"))
   cat(file = stderr(),paste0("get_data_group_trial duration =",Sys.time()-start_time2,"\n"))
   start_time2 = Sys.time()
+  cat(file = stderr(),paste0("before filter_by_selfreq with freq = ", freq, "\n"))
   data_group_trial_freq = filter_by_selfreq(data_group_trial, freq, method = method)
   cat(file = stderr(), paste0("in get_data_group_trial_freqmean with dim(data_group_trial_freq)=",dim(data_group_trial_freq),"\n"))
   cat(file = stderr(),paste0("filter_by_selfreq duration =",Sys.time()-start_time2,"\n"))
