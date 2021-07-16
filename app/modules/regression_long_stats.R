@@ -694,9 +694,11 @@ regressionLongStatsServer <- function(id, input_glob_sig, freq) {
         text = "in der obersten Tabelle stehen Werte unter einbeziehung der excludeten subjects\n"
         text = paste0(text, " in den unteren beiden Tabellen dann die Correlationen zu allen Subjects\n")
         text = paste0(text, " oberste Zeile zeigt die Zeitabhaengigkeit\n")
-        text = paste0(text, " oberste Zeile zeigt die Zeitabhaengigkeit\n")
-        cat(paste0("output$tab_simpple_time_correlation"))
-        cat(paste0("mainregressor = ", input$mainregressor,"\n"))
+        text = paste0(text, " unterschied zwischen den 2 Zeitpunkten (ggf. group, trial differenz)\n")
+        text = paste0(text, " in Correlation zu den Veraenderungen der behavioralen Daten\n")
+        text = paste0(text, " Expl: trial1 =1; trial2=1, group1=1, group2 =2, time1=1, time2=2\n")
+        text = paste0(text, " \n")
+        cat(text)
       })
 
       ###########################################
