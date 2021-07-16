@@ -147,48 +147,6 @@ regressionLongStatsServer <- function(id, input_glob_sig, freq) {
 
 
 
-
-          #######################
-
-          # fluidRow(
-          #
-          #   column(5,
-          #
-          #          style = "background-color: #fcfcfc;",
-          #          #style = 'border-bottom: 2px solid gray',
-          #          style = "border-right: 2px solid black",
-          #          h4("group comparison", align = "center"),
-          #          fluidRow(
-          #            column(6,
-          #                   selectInput(ns("group1"), h5("Select Group 1 Long", align = "center"),
-          #                               choices = g_groups(), selected = g_groups()[2])
-          #            ),
-          #            column(6,
-          #                   selectInput(ns("group2"), h5("Select Group 2", align = "center"),
-          #                               choices = g_groups(), selected = g_groups()[3])
-          #            )
-          #
-          #          )
-          #
-          #   ),
-          #   column(5,
-          #          style = "background-color: #fcfcfc;",
-          #          style = 'border-right: 2px solid gray',
-          #          h4("trial comparison", align = "center"),
-          #          fluidRow(
-          #            column(6,
-          #                   selectInput(ns("trial1"), h5("Select Trial 1", align = "center"),
-          #                               choices = g_trials_named(), selected = g_trials_named()[1])
-          #            ),
-          #            column(6,
-          #                   selectInput(ns("trial2"), h5("Select Trial 2", align = "center"),
-          #                               choices = g_trials_named(), selected = g_trials_named()[2])
-          #            )
-          #
-          #          )
-          #   ),
-          #
-          # ),
         fluidRow(
           style = 'border-top: 2px solid gray',
           column(9,
@@ -266,6 +224,11 @@ regressionLongStatsServer <- function(id, input_glob_sig, freq) {
         fluidRow(
           column(12,
                  tableOutput(ns("tab_simple_time_correlation")),
+          )
+        ),
+        fluidRow(
+          column(12,
+                 box(title = "simple non-time non-subject-exclusion correlation ..........expand for help", width = 12, collapsible = TRUE, collapsed = TRUE, verbatimTextOutput(ns("help_simple_correlation2"))),
           )
         ),
         fluidRow(
@@ -697,6 +660,43 @@ regressionLongStatsServer <- function(id, input_glob_sig, freq) {
         text = paste0(text, " unterschied zwischen den 2 Zeitpunkten (ggf. group, trial differenz)\n")
         text = paste0(text, " in Correlation zu den Veraenderungen der behavioralen Daten\n")
         text = paste0(text, " Expl: trial1 =1; trial2=1, group1=1, group2 =2, time1=1, time2=2\n")
+        text = paste0(text, " Gruppe ist verschieden ...beide Gruppen haben unterschiede zwischen den 2 Zeitpunkten .... Die Analyse testet auf signifikante Unterschiede zwischen diesen zeitbezogenen Unterschieden\n",
+                               "Algorithmus:\n",
+                               "1. entferne alle Subjects die nicht in den Daten beider Zeitpunkte zu finden sind\n",
+                               "2. falls unterschiedliche trial gewaehlt wurden wird der subjectspezifische Unterschied zwischen den Trials berechnet\n",
+                               "wenn estimate time first",
+                               "   Berechne X1 = Data_Zeitpunkt2_group1_trial1 - Data_Zeitpunkt1_group1_trial1 (Subjects x Regions x Regions)\n",
+                               "            X2 = Data_Zeitpunkt2_group2_trial1 - Data_Zeitpunkt1_group2_trial1 (Subjects x Regions x Regions)\n",
+                               "wenn nicht estimate time first",
+                               "   Berechne X1 = Data_Zeitpunkt1_group1_task1 - Data_Zeitpunkt1_group2_task2 (Subjects x Regions x Regions)\n",
+                               "            X2 = Data_Zeitpunkt2_group2_task1 - Data_Zeitpunkt2_group2_task2 (Subjects x Regions x Regions)\n",
+                               "   In diesen beiden 3d Matrizen steht somit der gruppenspezifische Unterschied eines Trials zwischen den Messungen\n",
+                               "   Ein positiver Wert in dieser Matrix zeigt einen positiven Effekt der Zeit/Intervention an (in der 2. Messung groesser)\n",
+                               "Die Behavioralen Daten B1 und B2 werden NICHT analog berechnet! Hier wird immer zuerst die Differenz \n",
+                               " ueber die Zeit berechnet d.h. estimate time first ist immer Aktiv\n",
+                               " soweit ich das sehe gibt es nicht wirklich eine sinnvolle Frage als das man estimat time first deaktiviert\n",
+                               "Es ist weiterhin wichtig zu beachten, dass die Behavioralen Daten nach der Zeit subtrahiert werden,\n",
+                               " in der Behavioralen Tabelle sollte ein sich nicht veraendernder Faktor wie z.B. das Alter nur zum ersten Zeitpunkt eingetragen sein\n",
+                               " der zweite Zeitpunkt sollte auf 0 gesetzt sein\n",
+                               "diese ueberlegung erfolgte in der Annahme, dass man zumeist nach sich durch eine Intervention veraendernde behaviorale Effekte sucht\n")
+        text = paste0(text, " Zeile : Corelation(B1,X1) , Correlation(B2,X2) \n")
+
+        text = paste0(text, " Bitte beachten, dass nicht jede Kombination einen Sinn ergibt... hier muss etwas nachgedacht werden!!!\n")
+
+        cat(text)
+      })
+
+      output$help_simple_correlation2 <- renderPrint({
+        text = "Berechnung der Korrelationen mit ALLEN Subjects und nur zum Zeitpunkt 1\n"
+        text = paste0(text, " in den unteren beiden Tabellen dann die Correlationen zu allen Subjects\n")
+        text = paste0(text, " \n")
+        cat(text)
+      })
+
+
+      output$help_simple_correlation3 <- renderPrint({
+        text = "Berechnung der Korrelationen mit ALLEN Subjects und nur zum Zeitpunkt 2\n"
+        text = paste0(text, " in den unteren beiden Tabellen dann die Correlationen zu allen Subjects\n")
         text = paste0(text, " \n")
         cat(text)
       })
@@ -705,75 +705,26 @@ regressionLongStatsServer <- function(id, input_glob_sig, freq) {
       # the newly created statistics section
       output$tab_simple_time_correlation <- renderTable({
         req(input$plot_click)
-        cat(file = stderr(), paste0("output$tab_simpple_time_correlation"))
-        cat(file = stderr(), paste0("mainregressor = ", input$mainregressor,"\n"))
         region_x = g_regions()[level_x()]
         region_y = g_regions()[level_y()]
 
         x_con = curdata()$data1[,level_y(),level_x()]
-        x_beh = curdata()$df_data1
         y_con = curdata()$data2[,level_y(),level_x()]
-        y_beh = curdata()$df_data2
 
+        # berechne die Behavioralen Werte fuer den main regessor
+        b1 = get( input$mainregressor, curdata()$df_data1)
+        b2 = get( input$mainregressor, curdata()$df_data2)
 
-        region_x = g_regions()[level_x()]
-        region_y = g_regions()[level_y()]
-
-
-        # berechne Werte fuer den main regessor
-        #reg_name = get_beh_tbl_data_by_group(input$group1, input$mainregressor)
-        b1 = get( input$mainregressor, x_beh)
-        b2 = get( input$mainregressor, y_beh)
-        g_b1tmp <<- b1
-        g_b2tmp <<- b2
-        g_x_con <<- x_con
-        g_y_con <<- y_con
-
-
-        #        b1 = get_beh_tbl_data_by_group(input$group1, input$mainregressor, tbl_beh = x_beh)
-#        b2 = get_beh_tbl_data_by_group(input$group2, input$mainregressor, tbl_beh = y_beh)
-#        cat(file = stderr(), paste0("b1 = ", b1,"\n"))
-#        cat(file = stderr(), paste0("b2 = ", b2,"\n"))
-        cat(file = stderr(), paste0("1-\n\n"))
-        df <- append_correlation_row(x1 = x_con-y_con, b1 = b1, x2 = y_con-x_con, b2 = b2,
+        df <- append_correlation_row(x1 = x_con, b1 = b1, x2 = y_con, b2 = b2,
                                      method = "pearson",
                                      t = g_trials()[as.numeric(input$trial1)],
                                      g1 = input$group1,
                                      g2 = input$group2,
                                      reg_name = input$mainregressor)
-        cat(file = stderr(), paste0("2-\n\n"))
-        df <- append_correlation_row(x1 = x_con, b1 = b1, x2 = y_con, b2 = b2,
-                                     method = "pearson",
-                                     t = g_trials()[as.numeric(input$trial1)],
-                                     g1 = input$group1,
-                                     g2 = input$group2,
-                                     reg_name = input$mainregressor,
-                                     df = df)
-        cat(file = stderr(), paste0("3-\n\n"))
 
-        df <- append_correlation_row(x1 = x_con, b1 = b1, x2 = y_con, b2 = b2,
-                                     method = "pearson",
-                                     t = g_trials()[as.numeric(input$trial1)],
-                                     g1 = input$group1,
-                                     g2 = input$group2,
-                                     reg_name = input$mainregressor,
-                                     df = df)
-
-        #cat(file = stderr(), "now for loop")
         for ( i in 1:length(input$regressors)){
-          #b1 = get_beh_tbl_data_by_group(input$group1, input$regressors[i], tbl_beh = x_beh)
-          #b2 = get_beh_tbl_data_by_group(input$group2, input$regressors[i], tbl_beh = y_beh)
-          b1 = get( input$regressors[i], x_beh)
-          b2 = get( input$regressors[i], y_beh)
-          df <- append_correlation_row(x1 = x_con, b1 = b1, x2 = y_con, b2 = b2,
-                                       method = "pearson",
-                                       t = g_trials()[as.numeric(input$trial1)],
-                                       g1 = input$group1,
-                                       g2 = input$group2,
-                                       reg_name = input$regressors[i], df=df)
-
-
-
+          b1 = get( input$regressors[i], curdata()$df_data1)
+          b2 = get( input$regressors[i], curdata()$df_data2)
           df <- append_correlation_row(x1 = x_con, b1 = b1, x2 = y_con, b2 = b2,
                                        method = "pearson",
                                        t = g_trials()[as.numeric(input$trial1)],
@@ -782,7 +733,6 @@ regressionLongStatsServer <- function(id, input_glob_sig, freq) {
                                        reg_name = input$regressors[i], df=df)
         }
         return(df)
-
       })
 
       ###########################################
@@ -1247,7 +1197,7 @@ append_correlation_row <- function(x1 = NULL, b1 = NULL, x2 = NULL, b2 = NULL,
 append_correlation_row_trials <- function(x1 = NULL, b1 = NULL, x2 = NULL,
                                      method = "pearson", g = "not known", reg_name = "no_reg_name",
                                      t1 = "not known", t2 = "not known",
-                                     df = NULL) {
+                                     df = NULL, description = "no desc.") {
   x = x1
   y = b1
   z = x2
@@ -1275,6 +1225,7 @@ append_correlation_row_trials <- function(x1 = NULL, b1 = NULL, x2 = NULL,
                       CI2_h  = mzy$conf.int[2],
                       t_dif  = r_dep[1],
                       p_dif  = r_dep[2],
+                      descri = description,
                       stringsAsFactors = FALSE
 
     )
