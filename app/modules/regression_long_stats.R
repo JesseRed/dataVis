@@ -260,6 +260,11 @@ regressionLongStatsServer <- function(id, input_glob_sig, freq) {
         ),
         fluidRow(
           column(12,
+                 box(title = "simple correlation ..........expand for help", width = 12, collapsible = TRUE, collapsed = TRUE, verbatimTextOutput(ns("help_simple_correlation"))),
+          )
+        ),
+        fluidRow(
+          column(12,
                  tableOutput(ns("tab_simple_time_correlation")),
           )
         ),
@@ -683,6 +688,17 @@ regressionLongStatsServer <- function(id, input_glob_sig, freq) {
         includeMarkdown("./documentation/partial_correlation_markdown.md")
         # }
       })
+
+
+      output$help_simple_correlation <- renderPrint({
+        text = "in der obersten Tabelle stehen Werte unter einbeziehung der excludeten subjects\n"
+        text = paste0(text, " in den unteren beiden Tabellen dann die Correlationen zu allen Subjects\n")
+        text = paste0(text, " oberste Zeile zeigt die Zeitabhaengigkeit\n")
+        text = paste0(text, " oberste Zeile zeigt die Zeitabhaengigkeit\n")
+        cat(paste0("output$tab_simpple_time_correlation"))
+        cat(paste0("mainregressor = ", input$mainregressor,"\n"))
+      })
+
       ###########################################
       # the newly created statistics section
       output$tab_simple_time_correlation <- renderTable({
@@ -716,28 +732,30 @@ regressionLongStatsServer <- function(id, input_glob_sig, freq) {
 #        b2 = get_beh_tbl_data_by_group(input$group2, input$mainregressor, tbl_beh = y_beh)
 #        cat(file = stderr(), paste0("b1 = ", b1,"\n"))
 #        cat(file = stderr(), paste0("b2 = ", b2,"\n"))
-        cat(file = stderr(), paste0("1\n\n"))
+        cat(file = stderr(), paste0("1-\n\n"))
         df <- append_correlation_row(x1 = x_con-y_con, b1 = b1, x2 = y_con-x_con, b2 = b2,
                                      method = "pearson",
                                      t = g_trials()[as.numeric(input$trial1)],
                                      g1 = input$group1,
                                      g2 = input$group2,
                                      reg_name = input$mainregressor)
-        cat(file = stderr(), paste0("2\n\n"))
+        cat(file = stderr(), paste0("2-\n\n"))
         df <- append_correlation_row(x1 = x_con, b1 = b1, x2 = y_con, b2 = b2,
                                      method = "pearson",
                                      t = g_trials()[as.numeric(input$trial1)],
                                      g1 = input$group1,
                                      g2 = input$group2,
-                                     reg_name = input$mainregressor)
-        cat(file = stderr(), paste0("3\n\n"))
+                                     reg_name = input$mainregressor,
+                                     df = df)
+        cat(file = stderr(), paste0("3-\n\n"))
 
         df <- append_correlation_row(x1 = x_con, b1 = b1, x2 = y_con, b2 = b2,
                                      method = "pearson",
                                      t = g_trials()[as.numeric(input$trial1)],
                                      g1 = input$group1,
                                      g2 = input$group2,
-                                     reg_name = input$mainregressor)
+                                     reg_name = input$mainregressor,
+                                     df = df)
 
         #cat(file = stderr(), "now for loop")
         for ( i in 1:length(input$regressors)){
@@ -794,7 +812,8 @@ regressionLongStatsServer <- function(id, input_glob_sig, freq) {
                                      t = g_trials()[input$trial2],
                                      g1 = input$group1,
                                      g2 = input$group2,
-                                     reg_name = input$mainregressor)
+                                     reg_name = input$mainregressor,
+                                     df = df)
 
         #cat(file = stderr(), "now for loop")
         for ( i in 1:length(input$regressors)){
@@ -1184,7 +1203,7 @@ append_correlation_row <- function(x1 = NULL, b1 = NULL, x2 = NULL, b2 = NULL,
                                    t = "not known",
                                    method = "pearson", reg_name = "no_reg_name",
                                    g1 = "not known", g2 = "not known",
-                                   df = NULL) {
+                                   df = NULL, description = "no desc.") {
   m1 = cor.test(x1,b1, method = method)
   m2 = cor.test(x2,b2, method = method)
   #cat(file = stderr(), m1$estimate)
@@ -1210,6 +1229,7 @@ append_correlation_row <- function(x1 = NULL, b1 = NULL, x2 = NULL, b2 = NULL,
                     CI2_h  = m2$conf.int[2],
                     z_dif  = r_ind[1],
                     p_dif  = r_ind[2],
+                    descri = description,
                     stringsAsFactors = FALSE
 
   )
