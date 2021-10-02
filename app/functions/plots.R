@@ -290,6 +290,8 @@ generate_plot_Corrplot<-function(mat_p, mat_t,
     cat(file = stderr(), paste0("insig =", insig ,"\n"))
     gcorplot_matp <<- mat_p
     gcorplot_matt <<- mat_t
+    cat(file = stderr(), paste0("mat_p =", mat_p ,"\n"))
+
   # Erstellt einen Histogram plot von mehreren Gruppen mit gleichen Achsenskalen
   #d = get_currently_selected_data(g_data(), group1, group2, trial1, trial2, freq())
 #     rownames(mat_p) = vector(mode="character", length=length(regions))
@@ -328,50 +330,98 @@ generate_plot_Corrplot<-function(mat_p, mat_t,
 #                           col = col(500),
 #                           #col = colorRampPalette(c("green", "yellow","black"))(200),
 #                           cl.pos = "b")
-  rownames(mat_p) = vector(mode="character", length=length(regions))
-  x1 <<- corrplot(mat_p,
-                  type = "upper",
-                  is.corr = FALSE,
-                  method=method,
-                  tl.cex = cex,
-                  p.mat = mat_p,
-                  tl.srt = 45,
-                  addCoef.col = number_color,
-                  sig.level = multi_sig_level,
-                  insig = insig,
-                  pch.col = "black",
-                  pch.cex = 0.5,
-                  addgrid.col = "grey",
-                  order = clustering_method, #"hclust", #clustering_method,
-                  hclust.method = "average",
-                  addrect = num_hclust,
-                  title = title, #paste0("Corrplot with method ",g_act_method()),
-                  col = col(500),
-                  #col=colorRampPalette(c("blue","red","green"))(200),
-                  mar=c(0,0,1,1)
-  )
-  colnames(mat_t) = vector(mode="character", length=length(regions))
 
-  myplot_corr <<- corrplot(mat_t,
-                           add = TRUE,
-                           type = "lower",
-                           is.corr = FALSE,
-                           method=method,
-                           tl.cex = cex,
-                           addCoef.col = number_color,
-                           p.mat = mat_p,
-                           sig.level = multi_sig_level,
-                           insig = insig,
-                           pch.col = "black",
-                           pch.cex = 0.5,
-                           addgrid.col = "grey",
-                           order = clustering_method,
-                           hclust.method = "average",
-                           addrect = num_hclust,
-                           title = title, #paste0("Corrplot with method ",g_act_method()),
-                           col = col_t(500),
-                           mar=c(0,0,1,1),
-                           tl.srt = 45)
+    rownames(mat_p) = vector(mode="character", length=length(regions))
+
+    colnames(mat_t) = vector(mode="character", length=length(regions))
+
+    x1 <<- corrplot(mat_t,
+                             add = FALSE,
+                             type = "lower",
+                             is.corr = FALSE,
+                             method=method,
+                             tl.cex = cex,
+                             addCoef.col = number_color,
+                             p.mat = mat_p,
+                             sig.level = multi_sig_level,
+                             insig = insig,
+                             pch.col = "black",
+                             pch.cex = 0.5,
+                             addgrid.col = "grey",
+                             order = clustering_method,
+                             hclust.method = "average",
+                             addrect = num_hclust,
+                             title = title, #paste0("Corrplot with method ",g_act_method()),
+                             col = col_t(500),
+                             mar=c(0,0,1,1),
+                             tl.srt = 45)
+
+    myplot_corr <<- corrplot(mat_p,
+                             type = "upper",
+                             add = TRUE,
+                             is.corr = FALSE,
+                             method=method,
+                             tl.cex = cex,
+                             p.mat = mat_p,
+                             tl.srt = 45,
+                             addCoef.col = number_color,
+                             sig.level = multi_sig_level,
+                             insig = insig,
+                             pch.col = "black",
+                             pch.cex = 0.5,
+                             addgrid.col = "grey",
+                             order = clustering_method, #"hclust", #clustering_method,
+                             hclust.method = "average",
+                             addrect = num_hclust,
+                             title = title, #paste0("Corrplot with method ",g_act_method()),
+                             col = col(500),
+                             #col=colorRampPalette(c("blue","red","green"))(200),
+                             mar=c(0,0,1,1)
+                            )
+    # rownames(mat_p) = vector(mode="character", length=length(regions))
+    # x1 <<- corrplot(mat_p,
+    #                 type = "upper",
+    #                 is.corr = FALSE,
+    #                 method=method,
+    #                 tl.cex = cex,
+    #                 p.mat = mat_p,
+    #                 tl.srt = 45,
+    #                 addCoef.col = number_color,
+    #                 sig.level = multi_sig_level,
+    #                 insig = insig,
+    #                 pch.col = "black",
+    #                 pch.cex = 0.5,
+    #                 addgrid.col = "grey",
+    #                 order = clustering_method, #"hclust", #clustering_method,
+    #                 hclust.method = "average",
+    #                 addrect = num_hclust,
+    #                 title = title, #paste0("Corrplot with method ",g_act_method()),
+    #                 col = col(500),
+    #                 #col=colorRampPalette(c("blue","red","green"))(200),
+    #                 mar=c(0,0,1,1)
+    # )
+    # colnames(mat_t) = vector(mode="character", length=length(regions))
+    #
+    # myplot_corr <<- corrplot(mat_t,
+    #                          add = TRUE,
+    #                          type = "lower",
+    #                          is.corr = FALSE,
+    #                          method=method,
+    #                          tl.cex = cex,
+    #                          addCoef.col = number_color,
+    #                          p.mat = mat_p,
+    #                          sig.level = multi_sig_level,
+    #                          insig = insig,
+    #                          pch.col = "black",
+    #                          pch.cex = 0.5,
+    #                          addgrid.col = "grey",
+    #                          order = clustering_method,
+    #                          hclust.method = "average",
+    #                          addrect = num_hclust,
+    #                          title = title, #paste0("Corrplot with method ",g_act_method()),
+    #                          col = col_t(500),
+    #                          mar=c(0,0,1,1),
+    #                          tl.srt = 45)
 
   }else if (g_act_method()=="Transferentropy") {
     rownames(mat_p) = vector(mode="character", length=length(regions))

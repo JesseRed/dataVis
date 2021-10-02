@@ -1007,9 +1007,18 @@ if(!(method=="Granger") && !(method=="Transferentropy")){
 }
 
 # das kann ich machen weil bei nicht directen Methoden die Elemente auf NA stehen
+# cat(file = stderr(), paste0("-------------------\n"))
+# cat(file = stderr(), paste0("pvalue correction\n"))
+# cat(file = stderr(), paste0("-------------------\n"))
+# cat(file = stderr(), paste0("before = \n"))
+# cat(file = stderr(), paste0(d$mat_p, "\n"))
+# cat(file = stderr(), paste0("-------------------\n"))
+# cat(file = stderr(), paste0("-------------------\n"))
+
 d$mat_p <- matrix(p.adjust(d$mat_p, method = p_cor_method),nrow=dim(d$data1)[2])
 # setze nun die Diagonalelemente auf 1
-diag(d$mat_p)<-1
+# 02.10.2021 ... das macht aber dann die p Werte der Intranetzwerkanalyse unsichtbar
+#diag(d$mat_p)<-1
 colnames(d$mat_p) = regions
 rownames(d$mat_p) = regions
 # ergaenze noch eine Matrix fuer die Schrittweise Berechnung der Significanzkorrektur
