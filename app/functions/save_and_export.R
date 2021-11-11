@@ -6,6 +6,10 @@ export_selected_tab_data <- function(data = NULL){
     saveRDS(data$mat_t, file = file.path(g_act_data_dir(), "ExportData2D_mat_t.Rds"))
     saveRDS(data$data1, file = file.path(g_act_data_dir(), "ExportData3D_data1_subj_reg1_reg2.Rds"))
     saveRDS(data$data2, file = file.path(g_act_data_dir(), "ExportData3D_data2_subj_reg1_reg2.Rds"))
+    writeMat(file.path(g_act_data_dir(), "ExportData3D_data1_subj_reg1_reg2.mat"), Data1 = data$data1)
+    writeMat(file.path(g_act_data_dir(), "ExportData3D_data2_subj_reg1_reg2.mat"), Data2 = data$data2)
+    #writeMat(file.path(g_act_data_dir(), "ExportMoreData.mat"), Data = data)
+
     cat(file = stderr(), paste("data saved into folder",g_act_data_dir(),"\n"))
   }
 

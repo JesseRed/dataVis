@@ -34,6 +34,7 @@ library(shinyBS)
 library(DT)
 library(cowplot)
 library(patchwork)
+library(R.matlab)
 #library(compare)
 #library(shinyWidgets)
 
@@ -169,6 +170,7 @@ server <- function(input, output, session) {
   g_saveImage_dpi           <<- reactive({input$saveimagedpi})
   g_saveImage_fontsize      <<- reactive({input$saveimagefontsize})
   g_visprop_onlysig         <<- reactive({input$visprop_onlysig})
+  g_visprop_color           <<- reactive({input$visprop_color})
   g_visprop_inlinenumbers   <<- reactive({input$visprop_inlinenumbers})
 
 
@@ -222,6 +224,9 @@ server <- function(input, output, session) {
 
   output$visprop_onlysig <- renderUI({
     checkboxInput("visprop_onlysig", "show only sig.", value = FALSE)
+  })
+  output$visprop_color <- renderUI({
+    checkboxInput("visprop_color", "show color", value = TRUE)
   })
   output$p_cor_method<-renderUI({
     selectInput("p_cor_method", "P-Value Cor Method",
@@ -290,9 +295,9 @@ server <- function(input, output, session) {
       tabBox(
         title = NULL, width = 12,
         # The id lets us use input$tabset1 on the server to find the current tab
-        id = "tabset1", height = "250px",
+        id = "tabsetCon", height = "250px",
         tabPanel("Plot", overviewPlotUI("ConOverviewPlot")),
-        tabPanel("Comp Plot",  compareTrialsPlotUI("ConnPlot2")),
+        #tabPanel("Comp Plot",  compareTrialsPlotUI("ConnPlot2")),
         tabPanel("Long Plot",  longitudinalPlotUI("Conn")),
 #        tabPanel("Comp Plot", compareTrialsPlotUI("ConPlot")),
         tabPanel("Trials Stat", compareTrialsStatsLongUI("ConTrialsStat")),
@@ -301,9 +306,7 @@ server <- function(input, output, session) {
         tabPanel("Regression", regressionStatsUI("ConRegStats")),
         tabPanel("ANCOVA", ancovaStatsUI("ConAncovaStats")),
         tabPanel("Options Regions", optionsUI("Options"))
-        #tabPanel("Regions order", options_mod_orderUI("Options_order")),
-        #tabPanel("Regions name", options_mod_nameUI("Options_name"))
-        #tabPanel("Plot", RSPlotUI("ConnPlot")),
+
 
       )
     )
@@ -318,19 +321,19 @@ server <- function(input, output, session) {
       tabBox(
         title = NULL, width = 12,
         # The id lets us use input$tabset1 on the server to find the current tab
-        id = "tabset1", height = "250px",
+        id = "tabsetCoh", height = "250px",
 
         tabPanel("Plot", overviewPlotUI("CohOverviewPlot")),
-        tabPanel("Comp Plot", compareTrialsPlotUI("CohPlot")),
-        tabPanel("Trials Stat", compareTrialsStatsUI("CohTrialsStat")),
+       # tabPanel("Comp Plot",  compareTrialsPlotUI("CohPlot")),
+        tabPanel("Long Plot",  longitudinalPlotUI("Coh")),
+        #        tabPanel("Comp Plot", compareTrialsPlotUI("ConPlot")),
+        tabPanel("Trials Stat", compareTrialsStatsLongUI("CohTrialsStat")),
         tabPanel("Groups Stat", compareGroupsStatsUI("CohGroupsStats")),
         tabPanel("Diff Stat", compareDiffOfDiffStatsUI("CohDiffOfDiffStats")),
         tabPanel("Regression", regressionStatsUI("CohRegStats")),
+        tabPanel("LongRegression", regressionStatsUI("RSLongRegStats")),
         tabPanel("ANCOVA", ancovaStatsUI("CohAncovaStats")),
-        tabPanel("Options Regions", optionsUI("Options")),
-        tabPanel("Regions order", options_mod_orderUI("Options_order")),
-        tabPanel("Regions name", options_mod_nameUI("Options_name"))
-
+        tabPanel("Options Regions", optionsUI("CohOptions"))
       )
     )
   })
@@ -346,33 +349,20 @@ server <- function(input, output, session) {
       tabBox(
         title = NULL, width = 12,
         # The id lets us use input$tabset1 on the server to find the current tab
-        id = "tabset2", height = "250px",
+        id = "tabsetTra", height = "250px",
         tabPanel("Plot", overviewPlotUI("TraOverviewPlot")),
-        tabPanel("Comp Plot", compareTrialsPlotUI("TraPlot")),
-        tabPanel("Trials Stat", compareTrialsStatsUI("TraTrialsStat")),
+        #tabPanel("Comp Plot",  compareTrialsPlotUI("TraPlot")),
+        tabPanel("Long Plot",  longitudinalPlotUI("Tra")),
+        tabPanel("Trials Stat", compareTrialsStatsLongUI("TraTrialsStat")),
         tabPanel("Groups Stat", compareGroupsStatsUI("TraGroupsStats")),
         tabPanel("Diff Stat", compareDiffOfDiffStatsUI("TraDiffOfDiffStats")),
         tabPanel("Regression", regressionStatsUI("TraRegStats")),
         tabPanel("ANCOVA", ancovaStatsUI("TraAncovaStats")),
-        tabPanel("Options Regions", optionsUI("Options"))
+        tabPanel("Options Regions", optionsUI("TraOptions"))
       )
     )
   })
 
-
-  ##################
-  #### Tabs Fre ###
-  ##################
-  output$tabsFre <- renderUI({
-    fluidRow(
-      tabBox(
-        title = NULL, width = 12,
-        # The id lets us use input$tabset1 on the server to find the current tab
-        id = "tabset1", height = "250px",
-
-      )
-    )
-  })
 
 
   ##################
@@ -383,13 +373,46 @@ server <- function(input, output, session) {
       tabBox(
         title = NULL, width = 12,
         # The id lets us use input$tabset1 on the server to find the current tab
-        id = "tabset1", height = "250px",
-        tabPanel("Victimwww", "Victim tab"),
-        tabPanel("Trafficker", "Trafficker tab")
+        id = "tabsetGra", height = "250px",
+        tabPanel("Plot", overviewPlotUI("GraOverviewPlot")),
+        #tabPanel("Comp Plot",  compareTrialsPlotUI("GraPlot")),
+        tabPanel("Long Plot",  longitudinalPlotUI("Gra")),
+        tabPanel("Trials Stat", compareTrialsStatsLongUI("GraTrialsStat")),
+        tabPanel("Groups Stat", compareGroupsStatsUI("GraGroupsStats")),
+        tabPanel("Diff Stat", compareDiffOfDiffStatsUI("GraDiffOfDiffStats")),
+        tabPanel("Regression", regressionStatsUI("GraRegStats")),
+        tabPanel("ANCOVA", ancovaStatsUI("GraAncovaStats")),
+        tabPanel("Options Regions", optionsUI("GraOptions"))
       )
     )
   })
 
+
+  ##################
+  #### Tabs RS ###
+  ##################
+  output$tabsRS <- renderUI({
+    cat(file = stderr(), "into output$tabsRS \n")
+    updateSliderInput(session,"freq", value = c(0,5))
+    fluidRow(
+      tabBox(
+        title = NULL, width = 12,
+        # The id lets us use input$tabset1 on the server to find the current tab
+        id = "tabset1", height = "250px",
+        tabPanel("Plot", overviewPlotUI("RSOverviewPlot")),
+        #tabPanel("Comp Plot",  compareTrialsPlotUI("RSPlot")),
+        tabPanel("Long Plot",  longitudinalPlotUI("RS")),
+        tabPanel("Trials Stat", compareTrialsStatsLongUI("RSTrialsStat")),
+        tabPanel("Groups Stat", compareGroupsStatsUI("RSGroupsStats")),
+        tabPanel("Diff Stat", compareDiffOfDiffStatsUI("RSDiffOfDiffStats")),
+        tabPanel("Regression", regressionStatsUI("RSRegStats")),
+        tabPanel("LongRegression", regressionStatsUI("RSLongRegStats")),
+        tabPanel("ANCOVA", ancovaStatsUI("RSAncovaStats")),
+        tabPanel("Options Regions", optionsUI("RSOptions"))
+
+      )
+    )
+  })
 
   ##################
   #### Tabs ERP ###
@@ -412,26 +435,15 @@ server <- function(input, output, session) {
 
 
   ##################
-  #### Tabs RS ###
+  #### Tabs Fre ###
   ##################
-  output$tabsRS <- renderUI({
-    cat(file = stderr(), "into output$tabsRS \n")
-    updateSliderInput(session,"freq", value = c(0,5))
+  output$tabsFre <- renderUI({
     fluidRow(
       tabBox(
         title = NULL, width = 12,
         # The id lets us use input$tabset1 on the server to find the current tab
         id = "tabset1", height = "250px",
 
-        tabPanel("Plot", RSPlotUI("RSPlot")),
-        tabPanel("Comp Plot",  compareTrialsPlotUI("RSPlot2")),
-        tabPanel("Long Plot",  longitudinalPlotUI("RS"))
-        # tabPanel("Comp Plot", compareTrialsPlotUI("CohPlot")),
-        # tabPanel("Trials Stat", compareTrialsStatsUI("CohTrialsStat")),
-        # tabPanel("Groups Stat", compareGroupsStatsUI("CohGroupsStats")),
-        # tabPanel("Diff Stat", compareDiffOfDiffStatsUI("CohDiffOfDiffStats")),
-        # tabPanel("Regression", regressionStatsUI("CohRegStats")),
-        # tabPanel("ANCOVA", ancovaStatsUI("CohAncovaStats"))
       )
     )
   })
@@ -476,33 +488,103 @@ server <- function(input, output, session) {
   overviewPlotServer("ConOverviewPlot", "Coherence", reactive(input$glob_sig), reactive(input$freq))
   ##############################################
 
-  #RSPlotUI("ERPPlot")
-  #RSPlotServer("RSPlot")
-  compareTrialsPlotServer("RSPlot2")
-  longitudinalPlotServer("RS", dir_listRS())
 
-  optionsServer("Options")
-  options_mod_orderServer("Options_order")
-  options_mod_nameServer("Options_name")
-
-#  compareTrialsStatsServer("CohTrialsStat", g_data(), reactive(glob_sig), reactive(freq), utrial_list(), uregion_list(), group_names())
-  overviewPlotServer("CohOverviewPlot", "Coherence", reactive(input$glob_sig), reactive(input$freq))
-  compareTrialsStatsServer("CohTrialsStat", reactive(input$glob_sig), reactive(input$freq))
+  ##############################################
+  ### The new Coherence Entity ##############
+  #overviewPlotServer("ConOverviewPlot", "Connectivity", reactive(input$glob_sig), reactive(input$freq))
+  compareTrialsStatsLongServer("CohTrialsStat", reactive(input$glob_sig), reactive(input$freq))
   compareTrialsPlotServer("CohPlot")
   compareGroupsStatsServer("CohGroupsStats",  reactive(input$glob_sig), reactive(input$freq))
   compareDiffOfDiffStatsServer("CohDiffOfDiffStats", reactive(input$glob_sig), reactive(input$freq))
   behavioralDataStatsServer("CohBehDataStats", reactive(input$glob_sig), reactive(input$freq))
   regressionStatsServer("CohRegStats", reactive(input$glob_sig), reactive(input$freq))
+  regressionLongStatsServer("RSLongRegStats", reactive(input$glob_sig), reactive(input$freq))
   ancovaStatsServer("CohAncovaStats", reactive(input$glob_sig), reactive(input$freq))
+  longitudinalPlotServer("Coh", dir_listCon())
+  overviewPlotServer("CohOverviewPlot", "Coherence", reactive(input$glob_sig), reactive(input$freq))
+  ##############################################
 
-  overviewPlotServer("TraOverviewPlot", "Transferentropy", reactive(input$glob_sig), reactive(input$freq))
-  compareTrialsStatsServer("TraTrialsStat", reactive(input$glob_sig), reactive(input$freq))
+
+  ##############################################
+  ### The new Transferentropy Entity ##############
+  #overviewPlotServer("ConOverviewPlot", "Connectivity", reactive(input$glob_sig), reactive(input$freq))
+  compareTrialsStatsLongServer("TraTrialsStat", reactive(input$glob_sig), reactive(input$freq))
   compareTrialsPlotServer("TraPlot")
-  compareGroupsStatsServer("TraGroupsStats", reactive(input$glob_sig), reactive(input$freq))
+  compareGroupsStatsServer("TraGroupsStats",  reactive(input$glob_sig), reactive(input$freq))
   compareDiffOfDiffStatsServer("TraDiffOfDiffStats", reactive(input$glob_sig), reactive(input$freq))
   behavioralDataStatsServer("TraBehDataStats", reactive(input$glob_sig), reactive(input$freq))
   regressionStatsServer("TraRegStats", reactive(input$glob_sig), reactive(input$freq))
-  ancovaStatsServer("CohAncovaStats", reactive(input$glob_sig), reactive(input$freq))
+  ancovaStatsServer("TraAncovaStats", reactive(input$glob_sig), reactive(input$freq))
+  longitudinalPlotServer("Tra", dir_listCon())
+  overviewPlotServer("TraOverviewPlot", "Transferentropy", reactive(input$glob_sig), reactive(input$freq))
+  ##############################################
+
+
+  ##############################################
+  ### The new Granger Entity ##############
+  #overviewPlotServer("ConOverviewPlot", "Connectivity", reactive(input$glob_sig), reactive(input$freq))
+  compareTrialsStatsLongServer("GraTrialsStat", reactive(input$glob_sig), reactive(input$freq))
+  compareTrialsPlotServer("GraPlot")
+  compareGroupsStatsServer("GraGroupsStats",  reactive(input$glob_sig), reactive(input$freq))
+  compareDiffOfDiffStatsServer("GraDiffOfDiffStats", reactive(input$glob_sig), reactive(input$freq))
+  behavioralDataStatsServer("GraBehDataStats", reactive(input$glob_sig), reactive(input$freq))
+  regressionStatsServer("GraRegStats", reactive(input$glob_sig), reactive(input$freq))
+  ancovaStatsServer("GraAncovaStats", reactive(input$glob_sig), reactive(input$freq))
+  longitudinalPlotServer("Gra", dir_listCon())
+  overviewPlotServer("GraOverviewPlot", "Granger", reactive(input$glob_sig), reactive(input$freq))
+  ##############################################
+
+
+
+  ##############################################
+  ### The new RS Entity ##############
+  #overviewPlotServer("ConOverviewPlot", "Connectivity", reactive(input$glob_sig), reactive(input$freq))
+  compareTrialsStatsLongServer("RSTrialsStat", reactive(input$glob_sig), reactive(input$freq))
+  compareTrialsPlotServer("RSPlot")
+  compareGroupsStatsServer("RSGroupsStats",  reactive(input$glob_sig), reactive(input$freq))
+  compareDiffOfDiffStatsServer("RSDiffOfDiffStats", reactive(input$glob_sig), reactive(input$freq))
+  behavioralDataStatsServer("RSBehDataStats", reactive(input$glob_sig), reactive(input$freq))
+  regressionStatsServer("RSRegStats", reactive(input$glob_sig), reactive(input$freq))
+  regressionLongStatsServer("RSLongRegStats", reactive(input$glob_sig), reactive(input$freq))
+  ancovaStatsServer("RSAncovaStats", reactive(input$glob_sig), reactive(input$freq))
+  longitudinalPlotServer("RS", dir_listCon())
+  overviewPlotServer("RSOverviewPlot", "RS", reactive(input$glob_sig), reactive(input$freq))
+  ##############################################
+
+
+
+
+  #RSPlotUI("ERPPlot")
+  #RSPlotServer("RSPlot")
+  compareTrialsPlotServer("RSPlot2")
+  longitudinalPlotServer("RS", dir_listRS())
+
+  optionsServer("ConOptions")
+  optionsServer("CohOptions")
+  optionsServer("TraOptions")
+  optionsServer("GraOptions")
+  optionsServer("RSOptions")
+ # options_mod_orderServer("Options_order")
+#  options_mod_nameServer("Options_name")
+#
+# #  compareTrialsStatsServer("CohTrialsStat", g_data(), reactive(glob_sig), reactive(freq), utrial_list(), uregion_list(), group_names())
+#   overviewPlotServer("CohOverviewPlot", "Coherence", reactive(input$glob_sig), reactive(input$freq))
+#   compareTrialsStatsServer("CohTrialsStat", reactive(input$glob_sig), reactive(input$freq))
+#   compareTrialsPlotServer("CohPlot")
+#   compareGroupsStatsServer("CohGroupsStats",  reactive(input$glob_sig), reactive(input$freq))
+#   compareDiffOfDiffStatsServer("CohDiffOfDiffStats", reactive(input$glob_sig), reactive(input$freq))
+#   behavioralDataStatsServer("CohBehDataStats", reactive(input$glob_sig), reactive(input$freq))
+#   regressionStatsServer("CohRegStats", reactive(input$glob_sig), reactive(input$freq))
+#   ancovaStatsServer("CohAncovaStats", reactive(input$glob_sig), reactive(input$freq))
+#
+#   overviewPlotServer("TraOverviewPlot", "Transferentropy", reactive(input$glob_sig), reactive(input$freq))
+#   compareTrialsStatsServer("TraTrialsStat", reactive(input$glob_sig), reactive(input$freq))
+#   compareTrialsPlotServer("TraPlot")
+#   compareGroupsStatsServer("TraGroupsStats", reactive(input$glob_sig), reactive(input$freq))
+#   compareDiffOfDiffStatsServer("TraDiffOfDiffStats", reactive(input$glob_sig), reactive(input$freq))
+#   behavioralDataStatsServer("TraBehDataStats", reactive(input$glob_sig), reactive(input$freq))
+#   regressionStatsServer("TraRegStats", reactive(input$glob_sig), reactive(input$freq))
+#   ancovaStatsServer("CohAncovaStats", reactive(input$glob_sig), reactive(input$freq))
 
   preprocessingServer("preprocessing")
   mergedataServer("mergedata")

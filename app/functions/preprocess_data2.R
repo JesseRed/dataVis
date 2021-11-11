@@ -29,8 +29,8 @@ perform_preprocessing2 <-function(outdir, df_BD=NULL, datafilename = NULL,
   #data2$subjects= data$subjects[1:3]
   if (is.null(df_BD)){ df_BD = read.csv(file = "./app/tests/testthat/data/MEG/bd.csv", header = TRUE, sep = ';', check.names = FALSE)}
   #if (is.null(df_BD)){ df_BD = read.csv(file = "../dataVisdata/prepro/MEG/bd.csv", header = TRUE, sep = ';', check.names = FALSE)}
-  cat(file = stderr(), "get_methodname\n")
-  cat(file = stderr(), paste0("class(data)=",class(data), "\n"))
+#  cat(file = stderr(), "get_methodname\n")
+#  cat(file = stderr(), paste0("class(data)=",class(data), "\n"))
 
   method <- get_methodname(data)
 
@@ -38,7 +38,8 @@ perform_preprocessing2 <-function(outdir, df_BD=NULL, datafilename = NULL,
 
   # check for consistency and eleminate empty trials and frequencies
   data<-check_data_structure(data, df_BD, method)
-
+  prepro_data <<- data
+  prepro_df_BD <<- df_BD
   cat(file = stderr(), "extract_data_array\n")
   mdat <- extract_data_array(data, df_BD, method)
 
@@ -136,13 +137,28 @@ create_new_data_structure <- function(data, df_BD, mdat, method){
   id_list = df_BD[['ID']]
 
   if (!identical(id_list,data$subjects_id)){
-    cat(file = stderr(), "filtered id_list from the behavioral data and data$subjects_id are not identical\n")
-    cat(file = stderr(), "most probably: IDs in the data file are not in the behavioral table\n")
-    cat(file = stderr(), "... here commes the id_list from the behavioral file\n")
-    cat(file = stderr(), paste0(id_list,"\n"))
-    cat(file = stderr(), "\n\n... here commes the id_list from stefans file\n")
-    cat(file = stderr(), paste0(data$subjects_id,"\n"))
-    stop("end now\n")
+
+    cat(file = stderr(), "----------------------------------------------------------------------------------------\n")
+    cat(file = stderr(), "|---------------------------------ERROR-Description-------------------------------------|\n")
+
+    cat(file = stderr(), "| filtered id_list from the behavioral data and data$subjects_id are not identical     |\n")
+
+    if (length(id_list)<length(data$subjects_id)){
+      cat(file = stderr(), "| Behavioral file has less Subjects than the json file ... this is not allowed         |\n")
+    }
+    cat(file = stderr(), "setdiff(data$subjects_id, df_BD$ID) ... \n")
+    cat(file = stderr(), paste0(setdiff(data$subjects_id, df_BD$ID)," is not in both datasets \n"))
+
+    cat(file = stderr(), "for every subject in the json file there MUST be an row in the csv file with the same ID \n")
+    cat(file = stderr(), "however, not every ID in the csv file needs an entry in the json data file\n")
+    #cat(file = stderr(), "most probably: IDs in the data file are not in the behavioral table\n")
+    #cat(file = stderr(), "... here commes the id_list from the behavioral file\n")
+    #cat(file = stderr(), paste0(id_list,"\n"))
+    #cat(file = stderr(), "\n\n... here commes the id_list from stefans file\n")
+    #cat(file = stderr(), paste0(data$subjects_id,"\n"))
+    cat(file = stderr(), "please review the BD file according to the setdiff information\n")
+
+    stop("\n end now\n")
   }
 
 

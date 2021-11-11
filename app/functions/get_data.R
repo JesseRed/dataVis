@@ -553,7 +553,14 @@ get_currently_selected_data_long<-function(data, g1, g2, t1, t2, freq,
 get_selected_data_considering_group_trial<-function(data, g1,g2,t1,t2, freq, trials=g_trials(), tbl_beh = g_beh(), method = g_act_method() ){
   d <- list()
   d$my_paired = FALSE
-
+  d$t1 = t1
+  d$t2 = t2
+  d$g1 = g1
+  d$g2 = g2
+  d$freq = freq
+  d$trials = trials
+  d$tbl_beh = tbl_beh
+  d$method = method
   #cat(file = stderr(), paste0("get_selected_data_considering_group_trial \n"))
   #cat(file = stderr(), paste0("g1 = ", g1, "  g2 = ",g2, "  t1 = ", t1, "  t2 = ", t2, "\n"))
   d$explanation = "not filled"
@@ -643,6 +650,38 @@ exclude_data_from_not_reoccuring_subjects<-function(D1,D2){
 #   HD2$mdat = D2$mdat[D2$df_BD$ID %in% HD2$id_list,,,,,drop = FALSE]
   return(list(D1=D1, D2=D2))
 }
+
+
+# Entfernt eine Region aus der Datenstruktur
+delete_region_from_data_struct<- function(D, region_name_to_delete = NULL ){
+  # loesche eine REgion von der DAtenstruktur die mit dem Namen spezifiziert wird
+  if (is.null(D)){
+    cat(file = stderr(), paste0("Function delete_region_from_data_struct\n"))
+    cat(file = stderr(), paste0("The function delete_region_from_data_struct needs\n",
+                                "a Data Object that is not NULL\n",
+                                "returning D unchanged\n"))
+    return(D)
+  }
+
+
+  if (! (region_name_to_delete %in% names(D$uregion_list_named))){
+    cat(file = stderr(), paste0("Function delete_region_from_data_struct\n"))
+    cat(file = stderr(), paste0("the region name -",region_name_to_delete,"- is not in D\n",
+                                "returning D unchanged\n"))
+    return(D)
+  }
+
+  idx <- which(D$uregion_list == region_name_to_delete)
+  D$uregion_list<- D$uregion_list[D$uregion_list %in% region_name_to_delete == FALSE]
+  D$uregion_list_named<-D$uregion_list_named[names(D$uregion_list_named) %in% region_name_to_delete ==FALSE]
+  # setze die Nummern auf increment
+
+  D$uregion_list_named[1:length(D$uregion_list_named)]<-seq(1:length(D$uregion_list_named))
+  D$mdat <- D$mdat[,-idx,-idx,,,drop = F]
+
+  return(D)
+}
+
 
 # has tests
 # entfernt subjects aus der Datenstruktur
@@ -1231,10 +1270,10 @@ filter_by_selfreq <- function(data, freq, method = g_act_method()){
   # freq ... ist in den meisten faellen g_sel_freq()
   # ein vector von TRUE und FALSe gleicher Dimensionen wie dim(data)[5]
   # das drop=F ist hier sehr wichtig weil andere funtionen ueber die letzte Dimension mitteln
-#  cat(file = stderr(), paste0("in filter_by_selfreq freq=",freq,"\n"))
-#  cat(file = stderr(), paste0("dim(data) = ",dim(data),"\n"))
-#  gffreq <<- freq
-#  gfdata <<- data
+  #cat(file = stderr(), paste0("in filter_by_selfreq freq=",freq,"\n"))
+  #cat(file = stderr(), paste0("dim(data) = ",dim(data),"\n"))
+  gffreq <<- freq
+  gfdata <<- data
   data_selfreq = asub(data, list(freq), length(dim(data)), drop=F)
   #
   # num_dims = length(dim(data))
@@ -1299,6 +1338,7 @@ get_data_group_trial_freqmean <- function(data, group, trial, freq, tbl_beh = g_
   #cat(file = stderr(), paste0("in get_data_group_trial_freqmean with dim(data_group_trial)=",dim(data_group_trial),"\n"))
   #cat(file = stderr(),paste0("get_data_group_trial duration =",Sys.time()-start_time2,"\n"))
   start_time2 = Sys.time()
+  #cat(file = stderr(),paste0("before filter_by_selfreq with freq = ", freq, "\n"))
   data_group_trial_freq = filter_by_selfreq(data_group_trial, freq, method = method)
   #cat(file = stderr(), paste0("in get_data_group_trial_freqmean with dim(data_group_trial_freq)=",dim(data_group_trial_freq),"\n"))
   #cat(file = stderr(),paste0("filter_by_selfreq duration =",Sys.time()-start_time2,"\n"))

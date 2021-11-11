@@ -1,7 +1,7 @@
 library(shiny)
 
 
-regressionStatsUI <- function(id){
+regressionLongStatsUI <- function(id){
   ns <- NS(id)
   # Thanks to the namespacing, we only need to make sure that the IDs
   # are unique within this function, rather than unique across the entire app.
@@ -26,7 +26,7 @@ regressionStatsUI <- function(id){
 
 }
 
-regressionStatsServer <- function(id, input_glob_sig, freq) {
+regressionLongStatsServer <- function(id, input_glob_sig, freq) {
   moduleServer(
     id,
     function(input, output, session) {
@@ -36,52 +36,119 @@ regressionStatsServer <- function(id, input_glob_sig, freq) {
       output$uiANOVA <- renderUI({
 
         fluidPage(
+
+
           fluidRow(
-
-            column(5,
-
-                   style = "background-color: #fcfcfc;",
-                   #style = 'border-bottom: 2px solid gray',
-                   style = "border-right: 2px solid black",
-                   h4("group comparison", align = "center"),
+            column(4,
                    fluidRow(
                      column(6,
-                            selectInput(ns("group1"), h5("Select Group 1", align = "center"),
-                                        choices = g_groups(), selected = g_groups()[2])
+                            style = "background-color: #fcfcfc;",
+                            style = 'border-right: 2px solid gray',
+                            h4("trial comparison", align = "center"),
+                            fluidRow(
+                              column(6,
+                                     selectInput(ns("trial1"), h5("Select Trial 1", align = "center"),
+                                                 choices = g_trials_named(), selected =g_trials_named()[1])
+                              ),
+                              column(6,
+                                     selectInput(ns("trial2"), h5("Select Trial 2", align = "center"),
+                                                 choices = g_trials_named(), selected = g_trials_named()[2])
+                              )
+                            )
                      ),
                      column(6,
-                            selectInput(ns("group2"), h5("Select Group 2", align = "center"),
-                                        choices = g_groups(), selected = g_groups()[3])
-                     )
 
-                   )
-
+                            style = "background-color: #fcfcfc;",
+                            #style = 'border-bottom: 2px solid gray',
+                            style = "border-right: 2px solid black",
+                            h4("group comparison", align = "center"),
+                            fluidRow(
+                              column(6,
+                                     selectInput(ns("group1"), h5("Select Group 1", align = "center"),
+                                                 choices = g_groups(), selected = g_groups()[2])
+                              ),
+                              column(6,
+                                     selectInput(ns("group2"), h5("Select Group 2", align = "center"),
+                                                 choices = g_groups(), selected = g_groups()[2])
+                              )
+                            )
+                     ),
+                   ),
+                   # fluidRow(
+                   #   style = "background-color: #fcfcfc;",
+                   #   #style = "border-top: 2px solid black",
+                   #   h4("is the analysis directed?", align = "left"),
+                   #   column(12,
+                   #          prettyRadioButtons(
+                   #            inputId = ns("causal"),
+                   #            label = "",
+                   #            choices = c("non-directed", "directed"),
+                   #            shape = "round",
+                   #            status = "danger",
+                   #            fill = TRUE,
+                   #            inline = TRUE
+                   #          ),
+                   #          ),
+                   # ),
             ),
-            column(5,
+
+            column(2,
                    style = "background-color: #fcfcfc;",
                    style = 'border-right: 2px solid gray',
-                   h4("trial comparison", align = "center"),
+                   h4("longitudinal data", align = "center"),
                    fluidRow(
                      column(6,
-                            selectInput(ns("trial1"), h5("Select Trial 1", align = "center"),
-                                        choices = g_trials_named(), selected = g_trials_named()[1])
+                            textInput(ns("ld_1"), h5("long data 1", align = "center"), value = "1")
                      ),
                      column(6,
-                            selectInput(ns("trial2"), h5("Select Trial 2", align = "center"),
-                                        choices = g_trials_named(), selected = g_trials_named()[2])
+                            textInput(ns("ld_2"), h5("long data 2", align = "center"), value = "2, 3")
                      )
+                   ),
+                   checkboxInput(ns("longtimefirst"), "estimate time first", value = TRUE),
+                   checkboxInput(ns("averagelong"), "average same long subj(1 vs. av(2,3))", value = TRUE),
+                   checkboxInput(ns("cb_same_subjects"), "include only reoccuring subj", value = TRUE)
+            ),
 
-                   )
+            column(2,
+                   style = "background-color: #fcfcfc;",
+                   style = 'border-right: 2px solid gray',
+                   h4("Filter", align = "center"),
+                   textInput(ns("filterg1"), h5("filter G1", align = "center"), value = "Zeichen__1>0"),
+                   textInput(ns("filterg2"), h5("filter G2", align = "center"), value = "Zeichen__1>0"),
+
             ),
             column(2,
                    style = "background-color: #fcfcfc;",
+                   style = 'border-right: 2px solid gray',
                    h4("Visualize", align = "center"),
                    selectInput(ns("statsMethod"), h5("method"),
                                choices = c("Regression","ANOVA"), selected = 1)
 
+            ),
+            column(2,
+                   fluidRow(
+                     column(6,
+                            numericInput(ns("plot_height"),"plot height",800)
+                     ),
+                     column(6,
+                            numericInput(ns("plot_width"),"plot width",0)
+                     ),
+                   ),
+                   fluidRow(
+                     column(6,
+                            numericInput(ns("plot_res"),"res",96),
+                     ),
+                     column(6,
+                            actionButton(ns("ExportData"), "export Data"),
+                     ),
+                   ),
             )
           ),
+
+
+
         fluidRow(
+          style = 'border-top: 2px solid gray',
           column(9,
                  plotOutput(ns("plot"), width = "auto", height = "700px", click = ns("plot_click")),
           ),
@@ -96,13 +163,22 @@ regressionStatsServer <- function(id, input_glob_sig, freq) {
                  )
         ),
 
+
+        fluidRow(align = "center", h4("comparison of Time 1 vs. Time 2"),
+                 column(9,
+                        plotOutput(ns("hist_compare_diffTime"), width = "auto", height = "300px", click = ns("plot_click_hist")),
+                 ),
+                 column(3, align = "left",
+                        verbatimTextOutput(ns("text_stats_compare_diffTime")),
+                 )),
+
         fluidRow(align = "center", h4("comparison of Trial1 vs. Trial 2 of selected group 1"),
-          column(9,
-                 plotOutput(ns("hist_compare_diffTrial_sameGroup1"), width = "auto", height = "300px", click = ns("plot_click_hist")),
-          ),
-          column(3, align = "left",
-                 verbatimTextOutput(ns("text_stats_compare_diffTrial_sameGroup1")),
-          )),
+                 column(9,
+                        plotOutput(ns("hist_compare_diffTrial_sameGroup1"), width = "auto", height = "300px", click = ns("plot_click_hist")),
+                 ),
+                 column(3, align = "left",
+                        verbatimTextOutput(ns("text_stats_compare_diffTrial_sameGroup1")),
+                 )),
 
         fluidRow(align = "center", h4("comparison of Trial1 vs. Trial 2 of selected group 2"),
           column(9,
@@ -142,6 +218,21 @@ regressionStatsServer <- function(id, input_glob_sig, freq) {
         ),
         fluidRow(
           column(12,
+                 box(title = "simple correlation ..........expand for help", width = 12, collapsible = TRUE, collapsed = TRUE, verbatimTextOutput(ns("help_simple_correlation"))),
+          )
+        ),
+        fluidRow(
+          column(12,
+                 tableOutput(ns("tab_simple_time_correlation")),
+          )
+        ),
+        fluidRow(
+          column(12,
+                 box(title = "simple non-time non-subject-exclusion correlation ..........expand for help", width = 12, collapsible = TRUE, collapsed = TRUE, verbatimTextOutput(ns("help_simple_correlation2"))),
+          )
+        ),
+        fluidRow(
+          column(12,
                  tableOutput(ns("tab_simple_group_correlation")),
           )
         ),
@@ -174,6 +265,30 @@ regressionStatsServer <- function(id, input_glob_sig, freq) {
                      )),
                  )
         ),
+        fluidRow(
+          column(12,
+                 box(title = "Included subjects", width = 12, collapsible = TRUE, collapsed = TRUE,
+                     #uiOutput(ns("includedSubjects"))
+                     actionButton(ns("testexclude"), "update"),
+
+                     checkboxGroupInput(ns("Subjects"), label = h3("Subjects"), inline = T,
+                                        choices = g_D()$df_BD$ID,
+                                        selected =  g_D()$df_BD$ID),
+
+                     style = "background-color: #fcfcfc;",
+                     style = 'border-bottom: 2px solid gray',
+                     checkboxGroupInput(ns("Group1"), label = h3("Group 1"), inline = T,
+                                        choices = c()), #, #curdata()$df_data1$ID,
+                     #                     selected = c()), #curdata()$df_data1$ID[my_included_subjects_g1()]),
+
+                     style = "background-color: #fcfcfc;",
+                     style = 'border-bottom: 2px solid gray',
+                     checkboxGroupInput(ns("Group2"), label = h3("Group 2"), inline = T,
+                                        choices = c()) #, #curdata()$df_data2$ID,
+                 ),
+          )
+        ),
+
         # fluidRow(
         #   column(12,
         #          box(title = "partial correlation ", width = 12, collapsible = TRUE, collapsed = FALSE, verbatimTextOutput(ns("partial_correlation"))),          )
@@ -183,37 +298,175 @@ regressionStatsServer <- function(id, input_glob_sig, freq) {
         )
       })
 
+      subjects_to_exclude = reactive({
+        # list of subjects that are not marked
+        to_exclude = setdiff( g_D()$df_BD$ID, input$Subjects)
+        #cat(file = stderr(), paste0("XXX subjects_to_exclude reactive = ", to_exclude, "\n"))
+        return(to_exclude)
+      })
+      my_included_subjects = reactive({get_included_subjects( g_D()$df_BD$ID, subjects_to_exclude())})
+      my_included_subjects_g1 = reactive({ req(input$Subjects); get_included_subjects( curdata()$df_data1$ID, subjects_to_exclude())})
+      my_included_subjects_g2 = reactive({get_included_subjects( curdata()$df_data2$ID, subjects_to_exclude())})
+
+      observeEvent(input$testexclude, {
+        cat(file = stderr(), paste0("included Subjects = \n"))
+        #cat(file = stderr(), paste0("included Subjects = ", input$Subjects, "\n"))
+        #cat(file = stderr(), paste0("class(subjects_to_exclude = ", class(subjects_to_exclude()), "\n"))
+        #cat(file = stderr(), paste0("length(subjects_to_exclude = ", length(subjects_to_exclude()), "\n"))
+        #cat(file = stderr(), paste0("my_included_subjects() = ", my_included_subjects(), "\n"))
+
+        numbered_IDs_all <- get_included_subjects_with_numbers(g_D()$df_BD$ID, my_included_subjects())
+        numbered_IDs_g1 <- get_included_subjects_with_numbers(curdata()$df_data1$ID, my_included_subjects_g1())
+        numbered_IDs_g2 <- get_included_subjects_with_numbers(curdata()$df_data2$ID, my_included_subjects_g2())
+
+        # updateCheckboxGroupInput(session, "Subjects",
+        #                          choices = numbered_IDs_all, inline = T,
+        #                          selected =  numbered_IDs_all[my_included_subjects()])
+
+
+        updateCheckboxGroupInput(session, "Group1",
+                                 choices = numbered_IDs_g1, inline = T,
+                                 selected =  numbered_IDs_g1[my_included_subjects_g1()]
+
+        )
+
+        updateCheckboxGroupInput(session, "Group2",
+                                 choices = numbered_IDs_g2, inline = T,
+                                 selected =  numbered_IDs_g2[my_included_subjects_g2()]
+        )
+        updateCheckboxGroupInput(session, "Subjects",
+                                 choices = g_D()$df_BD$ID, inline = T,
+                                 selected =  g_D()$df_BD$ID[my_included_subjects()])
+
+
+        # updateCheckboxGroupInput(session, "Group1",
+        #                          choices = curdata()$df_data1$ID, inline = T,
+        #                          selected =  curdata()$df_data1$ID[my_included_subjects_g1()]
+        #
+        # )
+        #
+        # updateCheckboxGroupInput(session, "Group2",
+        #                          choices = curdata()$df_data2$ID, inline = T,
+        #                          selected =  curdata()$df_data2$ID[my_included_subjects_g2()]
+        # )
+      })
+
+      # Funktion um an die ausgewaehlten Subjects Numbern zu schreiben damit
+      # die Auswahl in der GUI einfacher wird
+      get_included_subjects_with_numbers <- function(IDs, is_included){
+        # nummern duerfen nur die Subjects erhalten die selectiert sind
+        idx = 1
+        for (i in 1:length(IDs)){
+          if (is_included[i]){
+            IDs[i] <- paste0(idx,". ",IDs[i])
+            idx <- idx +1
+          }
+        }
+        return(IDs)
+      }
+
+
+
       # filter data by group
       data_freqmean <- reactive({
         get_data_freqmean(g_data(), freq())
       })
 
 
+      # data_1 <- reactive({
+      #   get_data_group_trial_freqmean(g_data(),input$group1, as.numeric(input$trial1), freq())
+      # })
+      # data_2 <- reactive({
+      #   get_data_group_trial_freqmean(g_data(),input$group2, as.numeric(input$trial2), freq())
+      # })
+      # data_g1_t1 <- reactive({
+      #   get_data_group_trial_freqmean(g_data(),input$group1, as.numeric(input$trial1), freq())
+      # })
+      # data_g1_t2 <- reactive({
+      #   get_data_group_trial_freqmean(g_data(),input$group1, as.numeric(input$trial2), freq())
+      # })
+      # data_g2_t1 <- reactive({
+      #   get_data_group_trial_freqmean(g_data(),input$group2, as.numeric(input$trial1), freq())
+      # })
+      # data_g2_t2 <- reactive({
+      #   get_data_group_trial_freqmean(g_data(),input$group2, as.numeric(input$trial2), freq())
+      # })
+      #
+
       data_1 <- reactive({
-        get_data_group_trial_freqmean(g_data(),input$group1, as.numeric(input$trial1), freq())
+        get_data_group_trial_freqmean(g_data(),input$group1, as.numeric(input$trial1), g_sel_freqs())
       })
       data_2 <- reactive({
-        get_data_group_trial_freqmean(g_data(),input$group2, as.numeric(input$trial2), freq())
+        get_data_group_trial_freqmean(g_data(),input$group2, as.numeric(input$trial2), g_sel_freqs())
       })
       data_g1_t1 <- reactive({
-        get_data_group_trial_freqmean(g_data(),input$group1, as.numeric(input$trial1), freq())
+        get_data_group_trial_freqmean(g_data(),input$group1, as.numeric(input$trial1), g_sel_freqs())
       })
       data_g1_t2 <- reactive({
-        get_data_group_trial_freqmean(g_data(),input$group1, as.numeric(input$trial2), freq())
+        get_data_group_trial_freqmean(g_data(),input$group1, as.numeric(input$trial2), g_sel_freqs())
       })
       data_g2_t1 <- reactive({
-        get_data_group_trial_freqmean(g_data(),input$group2, as.numeric(input$trial1), freq())
+        get_data_group_trial_freqmean(g_data(),input$group2, as.numeric(input$trial1), g_sel_freqs())
       })
       data_g2_t2 <- reactive({
-        get_data_group_trial_freqmean(g_data(),input$group2, as.numeric(input$trial2), freq())
+        get_data_group_trial_freqmean(g_data(),input$group2, as.numeric(input$trial2), g_sel_freqs())
       })
 
       level_x <- reactive({round(input$plot_click$x)})
       level_y <- reactive({abs(round(input$plot_click$y)-length(g_regions())-1)})
 
+      # curdata <- reactive({
+      #   get_currently_selected_data_long3(g_D(), input$group1, input$group2, as.numeric(input$trial1), as.numeric(input$trial2), g_sel_freqs())
+      # #  get_currently_selected_data(g_data(), input$group1, input$group2, as.numeric(input$trial1), as.numeric(input$trial2), freq())
+      # })
+
+
+
+      # get the data for the second time point
+      # die longitudinalen Daten sind kodiert als nummern hinter den IDs der Subjects XY001_1
+      # daher teilen wir hier die Subjects einfach entsprechend auf
+
       curdata <- reactive({
-        get_currently_selected_data_long3(g_D(), input$group1, input$group2, as.numeric(input$trial1), as.numeric(input$trial2), g_sel_freqs())
-      #  get_currently_selected_data(g_data(), input$group1, input$group2, as.numeric(input$trial1), as.numeric(input$trial2), freq())
+        cat(file = stderr(), paste0("curdata with dim(g_D()$mat)=", dim(g_D()$mat),"\n"))
+        req(input$group1)
+        req(input$group2)
+        req(input$trial1)
+        req(input$trial2)
+        req(input$ld_1)
+        req(input$ld_2)
+        # req(input$cb_same_subjects)
+        # req(input$averagelong)
+        # req(input$longtimefirst)
+        #gD1 <<- D1()
+        #gD2 <<- D2()
+        cat(file = stderr(), paste0("curdata with dim(g_D()$mat)=", dim(g_D()$mat),"\n"))
+        cat(file = stderr(), paste0("curdata with length(g_D())=", length(g_D()),"\n"))
+
+        M <- get_currently_selected_data_long3(g_D(),
+                                               input$group1,
+                                               input$group2,
+                                               as.numeric(input$trial1),
+                                               as.numeric(input$trial2),
+                                               g_sel_freqs(),
+                                               tbl_beh = g_D()$df_BD,
+                                               long_def1 = as.numeric(unlist(strsplit(input$ld_1, split=","))),
+                                               long_def2 = as.numeric(unlist(strsplit(input$ld_2, split=","))),
+                                               is_exclude_not_reoccuring_subj = input$cb_same_subjects,
+                                               averagelong = input$averagelong,
+                                               #                                              datalong = D2()$mdat,
+                                               #                                              tbl_beh_long = D2()$df_BD,
+                                               estimate_time_first = input$longtimefirst,
+                                               filter_g1 = input$filterg1,
+                                               filter_g2 = input$filterg2,
+                                               subjects_to_exclude = subjects_to_exclude()#,
+                                               #iscausal = iscausal(),
+#                                               network = network_new()
+
+
+        )
+        gM <<- M
+
+        return(M)
       })
 
       ###########################################################
@@ -317,6 +570,11 @@ regressionStatsServer <- function(id, input_glob_sig, freq) {
       # THE histogram plots of individual subjects
       ###########################################
 
+      output$hist_compare_diffTime <- renderPlot({
+        req(input$plot_click$x)
+        create_df_for_histplot2(compare = "time", group=1, trial = 1)
+      })
+
       output$hist_compare_diffTrial_sameGroup1 <- renderPlot({
         req(input$plot_click$x)
         create_df_for_histplot(compare = "trials", group=1, trial = 1)
@@ -346,6 +604,12 @@ regressionStatsServer <- function(id, input_glob_sig, freq) {
       ################################################################
       # THE text about t-statistics
       ###########################################
+      output$text_stats_compare_diffTime <- renderPrint({
+        req(input$plot_click)
+        z = ttest_estimation2(compare = "time")
+        cat(z$mydescription)
+      })
+
       output$text_stats_compare_diffGroup_sameTrial1 <- renderPrint({
         req(input$plot_click)
         z = ttest_estimation(compare = "groups", group = 1, trial = 1)
@@ -375,108 +639,6 @@ regressionStatsServer <- function(id, input_glob_sig, freq) {
 
 
 
-      # ###########################################
-      # # the newly created statistics section
-      # output$simple_correlation <- renderPrint({
-      #   req(input$plot_click)
-      #   req(input$trial1)
-      #   req(input$trial2)
-      #   req(input$group1)
-      #   req(input$group2)
-      #   req(input$statsMethod)
-      #   my_paired = FALSE
-      #   if (input$trial1 == input$trial2) {
-      #     string1 = paste0(input$group1," vs ", input$group2, " in trial ", names(g_trials_named())[input$trial1], "\n", #utrial_list[input$trial1], "\n",
-      #                      "independent t-test\n")
-      #     my_paired = FALSE
-      #
-      #   }
-      #   if (input$group1 == input$group2){
-      #     string1 = paste0(input$trial1," vs ", input$trial2, "in group ", input$group1, "\n",
-      #                      "paired t-test\n")
-      #     my_paired = TRUE
-      #   }
-      #
-      #   #lvls <- levels(g_regions())
-      #   data1 = data_1()
-      #   data2 = data_2()
-      #   #level_x = round(input$plot_click$x)
-      #   #level_y = abs(round(input$plot_click$y)-length(g_regions())-1)
-      #   region_x = g_regions()[level_x()]
-      #   region_y = g_regions()[level_y()]
-      #
-      #
-      #   x = data1[,level_y(),level_x()]
-      #   y = data2[,level_y(),level_x()]
-      #   z = t.test(x,y, paired = my_paired)
-      #   cat("\ninput_regressors = ")
-      #   cat(input$regressors)
-      #   cat("\n")
-      #   cat(file = stderr(), input$regressors[1])
-      #   cat(file = stderr(), "\n")
-      #   cat(file = stderr(), get_beh_tbl_data_by_group(input$group2, input$regressors[1]))
-      #   cat(file = stderr(), "\n")
-      #   cat(file = stderr(), get_beh_tbl_data_by_group(input$group1, input$regressors[1]))
-      #   cat(file = stderr(), "\n")
-      #   cat(file = stderr(), "length(input$regressors=")
-      #   cat(file = stderr(), length(input$regressors))
-      #   b1xxx <- get_beh_tbl_data_by_group(input$group1, input$regessors[1])
-      #   mycor = cor(b1xxx, x)
-      #   cat(file = stderr(), "\nb1 = ")
-      #   cat(file = stderr(), b1xxx)
-      #   cat(file = stderr(), "\n")
-      #
-      #   c1 = 0
-      #   c2 = 0
-      #   name = "Template"
-      #   for ( i in 1:length(input$regressors)){
-      #     b1 = get_beh_tbl_data_by_group(input$group1, input$regressors[i])
-      #     b2 = get_beh_tbl_data_by_group(input$group2, input$regressors[i])
-      #
-      #     c1 = c(c1, cor(x,b1))
-      #     c2 = c(c2,cor(y,b2))
-      #     name = c(name, input$regressors[i])
-      #   }
-      #   c1 = c1[-c(1)]
-      #   c2 = c2[-c(1)]
-      #   name = name[-c(1)]
-      #
-      #   cat("\n\nc1 =")
-      #   cat(c1)
-      #   cat("\n\nc2=")
-      #   cat(c2)
-      #   cat("\n\n")
-      #   df <- data.frame("regressor"= name, "cor2G1"= c1, "cor2G2" = c2)
-      #   print(file = stderr(), df)
-      #
-      #   cat("input_regressors = ")
-      #   cat(input$regessors)
-      #   out <- paste0(z$method,"\n\n",
-      #                 region_x, "\n        vs. \n", region_y, " \n\n",
-      #                 "meanX2= ", round(z$estimate[2],3), " vs. ", round(z$estimate[1],3)," \n",
-      #                 "t=", round(z$statistic,2), " \n",
-      #                 "p=", z$p.value, "  \n",
-      #                 "df=", round(z$parameter,1),"  \n",
-      #                 "CI(",attributes(z$conf.int),")= ",round(z$conf.int[1],3)," ; ",round(z$conf.int[2],3)," \n"
-      #   )
-      #   cat(out)
-      #   out <- paste0(z$method,"\n\n",
-      #                 region_x, "\n        vs. \n", region_y, " \n\n",
-      #                 "meanX3= ", round(z$estimate[2],3), " vs. ", round(z$estimate[1],3)," \n",
-      #                 "t=", round(z$statistic,2), " \n",
-      #                 "p=", z$p.value, "  \n",
-      #                 "df=", round(z$parameter,1),"  \n",
-      #                 "CI(",attributes(z$conf.int),")= ",round(z$conf.int[1],3)," ; ",round(z$conf.int[2],3)," \n"
-      #   )
-      #
-      #
-      #   #        keeprows <- round(input$plot_click$x) == as.numeric(g_regions())
-      #
-      # })
-      # ####
-      #################################################################
-
-
 
       output$htmlhelp_simple_correlation <- renderUI({
         # if (showhtml()){
@@ -489,11 +651,95 @@ regressionStatsServer <- function(id, input_glob_sig, freq) {
         includeMarkdown("./documentation/partial_correlation_markdown.md")
         # }
       })
+
+
+      output$help_simple_correlation <- renderPrint({
+        text = "in der obersten Tabelle stehen Werte unter einbeziehung der excludeten subjects\n"
+        text = paste0(text, " in den unteren beiden Tabellen dann die Correlationen zu allen Subjects\n")
+        text = paste0(text, " oberste Zeile zeigt die Zeitabhaengigkeit\n")
+        text = paste0(text, " unterschied zwischen den 2 Zeitpunkten (ggf. group, trial differenz)\n")
+        text = paste0(text, " in Correlation zu den Veraenderungen der behavioralen Daten\n")
+        text = paste0(text, " Expl: trial1 =1; trial2=1, group1=1, group2 =2, time1=1, time2=2\n")
+        text = paste0(text, " Gruppe ist verschieden ...beide Gruppen haben unterschiede zwischen den 2 Zeitpunkten .... Die Analyse testet auf signifikante Unterschiede zwischen diesen zeitbezogenen Unterschieden\n",
+                               "Algorithmus:\n",
+                               "1. entferne alle Subjects die nicht in den Daten beider Zeitpunkte zu finden sind\n",
+                               "2. falls unterschiedliche trial gewaehlt wurden wird der subjectspezifische Unterschied zwischen den Trials berechnet\n",
+                               "wenn estimate time first",
+                               "   Berechne X1 = Data_Zeitpunkt2_group1_trial1 - Data_Zeitpunkt1_group1_trial1 (Subjects x Regions x Regions)\n",
+                               "            X2 = Data_Zeitpunkt2_group2_trial1 - Data_Zeitpunkt1_group2_trial1 (Subjects x Regions x Regions)\n",
+                               "wenn nicht estimate time first",
+                               "   Berechne X1 = Data_Zeitpunkt1_group1_task1 - Data_Zeitpunkt1_group2_task2 (Subjects x Regions x Regions)\n",
+                               "            X2 = Data_Zeitpunkt2_group2_task1 - Data_Zeitpunkt2_group2_task2 (Subjects x Regions x Regions)\n",
+                               "   In diesen beiden 3d Matrizen steht somit der gruppenspezifische Unterschied eines Trials zwischen den Messungen\n",
+                               "   Ein positiver Wert in dieser Matrix zeigt einen positiven Effekt der Zeit/Intervention an (in der 2. Messung groesser)\n",
+                               "Die Behavioralen Daten B1 und B2 werden NICHT analog berechnet! Hier wird immer zuerst die Differenz \n",
+                               " ueber die Zeit berechnet d.h. estimate time first ist immer Aktiv\n",
+                               " soweit ich das sehe gibt es nicht wirklich eine sinnvolle Frage als das man estimat time first deaktiviert\n",
+                               "Es ist weiterhin wichtig zu beachten, dass die Behavioralen Daten nach der Zeit subtrahiert werden,\n",
+                               " in der Behavioralen Tabelle sollte ein sich nicht veraendernder Faktor wie z.B. das Alter nur zum ersten Zeitpunkt eingetragen sein\n",
+                               " der zweite Zeitpunkt sollte auf 0 gesetzt sein\n",
+                               "diese ueberlegung erfolgte in der Annahme, dass man zumeist nach sich durch eine Intervention veraendernde behaviorale Effekte sucht\n")
+        text = paste0(text, " Zeile : Corelation(B1,X1) , Correlation(B2,X2) \n")
+
+        text = paste0(text, " Bitte beachten, dass nicht jede Kombination einen Sinn ergibt... hier muss etwas nachgedacht werden!!!\n")
+
+        cat(text)
+      })
+
+      output$help_simple_correlation2 <- renderPrint({
+        text = "Berechnung der Korrelationen mit ALLEN Subjects und nur zum Zeitpunkt 1\n"
+        text = paste0(text, " in den unteren beiden Tabellen dann die Correlationen zu allen Subjects\n")
+        text = paste0(text, " \n")
+        cat(text)
+      })
+
+
+      output$help_simple_correlation3 <- renderPrint({
+        text = "Berechnung der Korrelationen mit ALLEN Subjects und nur zum Zeitpunkt 2\n"
+        text = paste0(text, " in den unteren beiden Tabellen dann die Correlationen zu allen Subjects\n")
+        text = paste0(text, " \n")
+        cat(text)
+      })
+
+      ###########################################
+      # the newly created statistics section
+      output$tab_simple_time_correlation <- renderTable({
+        req(input$plot_click)
+        region_x = g_regions()[level_x()]
+        region_y = g_regions()[level_y()]
+
+        x_con = curdata()$data1[,level_y(),level_x()]
+        y_con = curdata()$data2[,level_y(),level_x()]
+
+        # berechne die Behavioralen Werte fuer den main regessor
+        b1 = get( input$mainregressor, curdata()$df_data1)
+        b2 = get( input$mainregressor, curdata()$df_data2)
+
+        df <- append_correlation_row(x1 = x_con, b1 = b1, x2 = y_con, b2 = b2,
+                                     method = "pearson",
+                                     t = g_trials()[as.numeric(input$trial1)],
+                                     g1 = input$group1,
+                                     g2 = input$group2,
+                                     reg_name = input$mainregressor)
+
+        for ( i in 1:length(input$regressors)){
+          b1 = get( input$regressors[i], curdata()$df_data1)
+          b2 = get( input$regressors[i], curdata()$df_data2)
+          df <- append_correlation_row(x1 = x_con, b1 = b1, x2 = y_con, b2 = b2,
+                                       method = "pearson",
+                                       t = g_trials()[as.numeric(input$trial1)],
+                                       g1 = input$group1,
+                                       g2 = input$group2,
+                                       reg_name = input$regressors[i], df=df)
+        }
+        return(df)
+      })
+
       ###########################################
       # the newly created statistics section
       output$tab_simple_group_correlation <- renderTable({
         req(input$plot_click)
-
+        cat(file = stderr(), paste0("output$tab_simpple_group_correlation"))
         region_x = g_regions()[level_x()]
         region_y = g_regions()[level_y()]
 
@@ -518,7 +764,8 @@ regressionStatsServer <- function(id, input_glob_sig, freq) {
                                      t = g_trials()[input$trial2],
                                      g1 = input$group1,
                                      g2 = input$group2,
-                                     reg_name = input$mainregressor)
+                                     reg_name = input$mainregressor,
+                                     df = df)
 
         #cat(file = stderr(), "now for loop")
         for ( i in 1:length(input$regressors)){
@@ -545,6 +792,7 @@ regressionStatsServer <- function(id, input_glob_sig, freq) {
         return(df)
 
       })
+      ####
       ####
       #################################################################
 
@@ -641,14 +889,6 @@ regressionStatsServer <- function(id, input_glob_sig, freq) {
 
       })
 
-
-
-
-
-
-
-
-
       ####
       #################################################################
 
@@ -656,9 +896,10 @@ regressionStatsServer <- function(id, input_glob_sig, freq) {
       #################################################################
 
       create_partial_correlation_string <- function( group = 1, trial = 1){
+        cat(file = stderr(), paste0("levelx = ", level_x(), "levely = ", level_y(), "\n"))
         region_x = g_regions()[level_x()]
         region_y = g_regions()[level_y()]
-
+        cat(file = stderr(), paste0("region_x = ", region_x, "  region_y = ", region_y, "\n"))
 
 
         if (group==1){
@@ -678,11 +919,12 @@ regressionStatsServer <- function(id, input_glob_sig, freq) {
           b = get_beh_tbl_data_by_group(input$group2, input$mainregressor)
           if (trial == 1){
             tin = g_trials()[input$trial1]
-
+            x_in_g2t1<<-data_g2_t1()
             x_in = data_g2_t1()[,level_y(),level_x()]
           }
           if (trial == 2){
             tin = g_trials()[input$trial2]
+            x_in_g2t1<<-data_g2_t2()
             x_in = data_g2_t2()[,level_y(),level_x()]
           }
         }
@@ -776,6 +1018,39 @@ regressionStatsServer <- function(id, input_glob_sig, freq) {
       }
 
 
+
+    ttest_estimation2 <- function(compare = "groups"){
+      x_con = curdata()$data1[,level_y(),level_x()]
+      #x_beh = curdata()$df_data1[,level_y(),level_x()]
+      y_con = curdata()$data2[,level_y(),level_x()]
+      #y_beh = curdata()$df_data2[,level_y(),level_x()]
+
+        region_x = g_regions()[level_x()]
+        region_y = g_regions()[level_y()]
+
+        mystring = ""
+        ispaired = FALSE
+        m1 = 0
+        m2 = 0
+
+        # vergleiche 2 Gruppen mit einem Trial
+          mystring = paste0(mystring, "time ", input$ld_1, " vs. ", input$ld_2)
+          ispaired = TRUE
+          if (input$ld_1 == input$ld_2){
+            cat("no output in case of same time")
+            return()
+          }
+
+            z = t.test(x_con,y_con, paired = ispaired)
+            m1 = mean(x_con)
+            m2 = mean(y_con)
+
+        z$mydescription <- paste0(mystring, create_my_ttest_string(z, paired = ispaired, mean1 = m1, mean2 = m2))
+        return(z)
+
+      }
+
+
       create_df_for_histplot <- function(compare = "groups",
                                          group = 1, trial = 1){
         xg1t1 = data_g1_t1()[,level_y(),level_x()]
@@ -839,6 +1114,37 @@ regressionStatsServer <- function(id, input_glob_sig, freq) {
 
       }
 
+      create_df_for_histplot2 <- function(compare = "groups",
+                                         group = 1, trial = 1){
+        x = curdata()$data1[,level_y(),level_x()]
+        y = curdata()$data2[,level_y(),level_x()]
+
+        region_x = g_regions()[level_x()]
+        region_y = g_regions()[level_y()]
+        #string1 = paste0(input$trial1," vs ", input$trial2, "in group ", input$group1, "\n")
+            cat(file = stderr(), paste0("\n create_df_for_histplot2 with time \n"))
+            cat(file = stderr(), paste0("curdata%data1 with dim(x)=", dim(x),"\n"))
+            cat(file = stderr(), paste0("curdata%data2 with dim(y)=", dim(y),"\n"))
+
+
+
+          df <- data.frame(Gruppe=c(rep(input$group1, times=length(x)),
+                                    rep(input$group2, times=length(y))),
+                           val=c(x, y))
+          df$num <- ave(df$val, df$Gruppe, FUN = seq_along)
+          # means for geomline
+          df_hline = data.frame(Gruppe = c(input$group1,input$group2), Means=c(mean(x), mean(y)))
+
+
+
+        ggplot(df, aes(num, val, fill=Gruppe)) +
+          geom_bar(stat="identity") +
+          facet_wrap(~Gruppe) +
+          geom_hline(data = df_hline, aes(yintercept = Means))
+
+
+      }
+
 
     }
   )
@@ -849,13 +1155,12 @@ append_correlation_row <- function(x1 = NULL, b1 = NULL, x2 = NULL, b2 = NULL,
                                    t = "not known",
                                    method = "pearson", reg_name = "no_reg_name",
                                    g1 = "not known", g2 = "not known",
-                                   df = NULL) {
+                                   df = NULL, description = "no desc.") {
   m1 = cor.test(x1,b1, method = method)
   m2 = cor.test(x2,b2, method = method)
   #cat(file = stderr(), m1$estimate)
   #cat(file = stderr(), m2$estimate)
-  #cat(file = stderr(), length(x1))
-  #cat(file = stderr(), length(x2))
+
   r_ind = comparing_independent_rs(m1$estimate, m2$estimate, length(x1),length(x2))
   df2 <- data.frame(regname = reg_name,
                     cor_method = method,
@@ -876,6 +1181,7 @@ append_correlation_row <- function(x1 = NULL, b1 = NULL, x2 = NULL, b2 = NULL,
                     CI2_h  = m2$conf.int[2],
                     z_dif  = r_ind[1],
                     p_dif  = r_ind[2],
+                    descri = description,
                     stringsAsFactors = FALSE
 
   )
@@ -891,7 +1197,7 @@ append_correlation_row <- function(x1 = NULL, b1 = NULL, x2 = NULL, b2 = NULL,
 append_correlation_row_trials <- function(x1 = NULL, b1 = NULL, x2 = NULL,
                                      method = "pearson", g = "not known", reg_name = "no_reg_name",
                                      t1 = "not known", t2 = "not known",
-                                     df = NULL) {
+                                     df = NULL, description = "no desc.") {
   x = x1
   y = b1
   z = x2
@@ -919,6 +1225,7 @@ append_correlation_row_trials <- function(x1 = NULL, b1 = NULL, x2 = NULL,
                       CI2_h  = mzy$conf.int[2],
                       t_dif  = r_dep[1],
                       p_dif  = r_dep[2],
+                      descri = description,
                       stringsAsFactors = FALSE
 
     )
