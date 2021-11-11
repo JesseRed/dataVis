@@ -29,8 +29,8 @@ perform_preprocessing2 <-function(outdir, df_BD=NULL, datafilename = NULL,
   #data2$subjects= data$subjects[1:3]
   if (is.null(df_BD)){ df_BD = read.csv(file = "./app/tests/testthat/data/MEG/bd.csv", header = TRUE, sep = ';', check.names = FALSE)}
   #if (is.null(df_BD)){ df_BD = read.csv(file = "../dataVisdata/prepro/MEG/bd.csv", header = TRUE, sep = ';', check.names = FALSE)}
-  cat(file = stderr(), "get_methodname\n")
-  cat(file = stderr(), paste0("class(data)=",class(data), "\n"))
+#  cat(file = stderr(), "get_methodname\n")
+#  cat(file = stderr(), paste0("class(data)=",class(data), "\n"))
 
   method <- get_methodname(data)
 
@@ -38,7 +38,8 @@ perform_preprocessing2 <-function(outdir, df_BD=NULL, datafilename = NULL,
 
   # check for consistency and eleminate empty trials and frequencies
   data<-check_data_structure(data, df_BD, method)
-
+  prepro_data <<- data
+  prepro_df_BD <<- df_BD
   cat(file = stderr(), "extract_data_array\n")
   mdat <- extract_data_array(data, df_BD, method)
 

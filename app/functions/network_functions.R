@@ -142,7 +142,7 @@ get_myareamean <- function(mdat_old, mdat_new, s,t,f, num_regions_new, regions_t
 
   for (r1 in 1:num_regions_new){
     for (r2 in 1:num_regions_new){
-      cat(file = stderr(), paste0("r1=",r1," r2=",r2,"\n"))
+      #cat(file = stderr(), paste0("r1=",r1," r2=",r2,"\n"))
       mdat_new[s,r1,r2,t,f]= get_mymean(mdat_old, s,r1,r2,t,f,regions_to_mean)
     }
   }

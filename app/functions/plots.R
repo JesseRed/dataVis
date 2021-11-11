@@ -232,6 +232,7 @@ generate_plot_Corrplot<-function(mat_p, mat_t,
   if (show_color){
     method = "color"
     col <- colorRampPalette(c("#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF","#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#EE9988", "#BB4444", "#EE9988", "#FFFFFF","#FFFFFF", "#FFFFFF",  "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF","#FFFFFF", "#FFFFFF","#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF" ))
+    col <- colorRampPalette(c( "#BB4444", "#EE9988", "#FFFFFF","#FFFFFF", "#FFFFFF","#FFFFFF", "#FFFFFF","#FFFFFF", "#FFFFFF","#FFFFFF", "#77AADD", "#4477AA"))
     col_t <- colorRampPalette(c( "#BB4444", "#EE9988", "#FFFFFF","#FFFFFF", "#FFFFFF","#FFFFFF", "#FFFFFF","#FFFFFF", "#FFFFFF","#FFFFFF", "#77AADD", "#4477AA"))
   }else{
     method = "color"
@@ -283,14 +284,21 @@ generate_plot_Corrplot<-function(mat_p, mat_t,
   #          # hide correlation coefficient on the principal diagonal
   #          diag=FALSE
   # )
+  e_method <<- method
+  e_insig <<- insig
+  e_clustering_method <<- clustering_method
+  e_num_hclust <<- num_hclust
+
+  e_col <<- col
+  e_col_t<<-col_t
 
 
   if ((g_act_method()=="Coherence") | (g_act_method()=="Connectivity") | (g_act_method() == "RS")){
-    cat(file = stderr(), paste0("g_act_method is =", g_act_method() ,"\n"))
-    cat(file = stderr(), paste0("insig =", insig ,"\n"))
+    #cat(file = stderr(), paste0("g_act_method is =", g_act_method() ,"\n"))
+    #cat(file = stderr(), paste0("insig =", insig ,"\n"))
     gcorplot_matp <<- mat_p
     gcorplot_matt <<- mat_t
-    cat(file = stderr(), paste0("mat_p =", mat_p ,"\n"))
+    #cat(file = stderr(), paste0("mat_p =", mat_p ,"\n"))
 
   # Erstellt einen Histogram plot von mehreren Gruppen mit gleichen Achsenskalen
   #d = get_currently_selected_data(g_data(), group1, group2, trial1, trial2, freq())
@@ -335,6 +343,16 @@ generate_plot_Corrplot<-function(mat_p, mat_t,
 
     colnames(mat_t) = vector(mode="character", length=length(regions))
 
+#    cat(file = stderr(), paste0("before corrpolot with mat_t"))
+
+
+    # NAs in den Diagnonalelementen werden von der neuen Version von
+    # corrplot nicht mehr akzeptiert
+    # Error in data.frame(..., check.names = FALSE) : arguments imply differing number of rows: 55, 45
+    mat_p <- replace_na(mat_p,1)
+    mat_t <- replace_na(mat_t,0)
+    mat_p1023 <<- mat_p
+    mat_t1023 <<- mat_t
     x1 <<- corrplot(mat_t,
                              add = FALSE,
                              type = "lower",
