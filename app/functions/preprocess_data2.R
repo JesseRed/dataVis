@@ -20,6 +20,7 @@ perform_preprocessing2 <-function(outdir, df_BD=NULL, datafilename = NULL,
   start_time <- Sys.time()
   cat(file = stderr(), paste0("outdir = ", outdir,"\n"))
 
+
   if (is.null(datafilename)){datafilename =  "./app/tests/testthat/data/MEG/export_conn_coh.json"}
   data <- fromJSON(file = datafilename)
 

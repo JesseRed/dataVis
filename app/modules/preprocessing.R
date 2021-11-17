@@ -84,6 +84,8 @@ preprocessingServer <- function(id) {
         # changed 20211111 because of a problem of Johanna
 
         #fread(input$file_beha$datapath, header = TRUE, sep = input$delimiter_beha, check.names = FALSE)
+
+        #cat(file = stderr(), paste0("reading by read_csv2(",input$file_beha$datapath,")"))
         read_csv2(input$file_beha$datapath)
         #ext <- tools::file_ext(input$file$name)
         # switch(ext,

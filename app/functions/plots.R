@@ -229,10 +229,12 @@ generate_plot_Corrplot<-function(mat_p, mat_t,
   }
 
 
+
   if (show_color){
     method = "color"
     col <- colorRampPalette(c("#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF","#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#EE9988", "#BB4444", "#EE9988", "#FFFFFF","#FFFFFF", "#FFFFFF",  "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF","#FFFFFF", "#FFFFFF","#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF" ))
     col <- colorRampPalette(c( "#BB4444", "#EE9988", "#FFFFFF","#FFFFFF", "#FFFFFF","#FFFFFF", "#FFFFFF","#FFFFFF", "#FFFFFF","#FFFFFF", "#77AADD", "#4477AA"))
+    col <- colorRampPalette(c( "#BB4444", "#FFFFFF","#FFFFFF", "#FFFFFF","#FFFFFF", "#FFFFFF","#FFFFFF", "#FFFFFF","#FFFFFF", "#4477AA"))
     col_t <- colorRampPalette(c( "#BB4444", "#EE9988", "#FFFFFF","#FFFFFF", "#FFFFFF","#FFFFFF", "#FFFFFF","#FFFFFF", "#FFFFFF","#FFFFFF", "#77AADD", "#4477AA"))
   }else{
     method = "color"
@@ -266,6 +268,7 @@ generate_plot_Corrplot<-function(mat_p, mat_t,
 
   glob_mat_p <<- mat_p
   glob_mat_t <<- mat_t
+
   #cat(file = stderr(), paste0("Corr regions = ", regions,"\n"))
   cat(file = stderr(), paste0("method = ", g_act_method(),"\n"))
   #cat(file = stderr(), paste0("Corr colnames = ", colnames(mat_p),"\n"))
@@ -351,6 +354,7 @@ generate_plot_Corrplot<-function(mat_p, mat_t,
     # Error in data.frame(..., check.names = FALSE) : arguments imply differing number of rows: 55, 45
     mat_p <- replace_na(mat_p,1)
     mat_t <- replace_na(mat_t,0)
+    max_abs_mat_t <- max(abs(max(mat_t)), abs(min(mat_t)))
     mat_p1023 <<- mat_p
     mat_t1023 <<- mat_t
     x1 <<- corrplot(mat_t,
@@ -371,6 +375,7 @@ generate_plot_Corrplot<-function(mat_p, mat_t,
                              addrect = num_hclust,
                              title = title, #paste0("Corrplot with method ",g_act_method()),
                              col = col_t(500),
+                             col.lim = c(-1*max_abs_mat_t, max_abs_mat_t),
                              mar=c(0,0,1,1),
                              tl.srt = 45)
 
@@ -392,7 +397,8 @@ generate_plot_Corrplot<-function(mat_p, mat_t,
                              hclust.method = "average",
                              addrect = num_hclust,
                              title = title, #paste0("Corrplot with method ",g_act_method()),
-                             col = col(500),
+                             col = create_sig_colorramp(),
+                             col.lim = c(0,1),
                              #col=colorRampPalette(c("blue","red","green"))(200),
                              mar=c(0,0,1,1)
                             )
@@ -619,6 +625,26 @@ open_device_for_save <- function(filename){
 
   }
 
+}
+
+
+create_sig_colorramp <- function(){
+
+  # color ramp
+  # idee ist es 1000 Werte von 0-1 fuer die p Werte zu haben
+  # <0.001 rot  - 1
+  # <0.01  rosa 2-10
+  # <0.05  gruen 11-50
+  # <0.1   blau  51-100
+
+  col <- colorRampPalette(c( "#BB4444", "#FFFFFF","#FFFFFF", "#FFFFFF","#FFFFFF", "#FFFFFF","#FFFFFF", "#FFFFFF","#FFFFFF", "#4477AA"))
+  sig_col <- col(1000)
+  sig_col[2:10] <- sig_col[10]
+  sig_col[11:50] <- sig_col[50]
+  sig_col[51:100] <- sig_col[100]
+
+
+  return(sig_col)
 }
 
 generate_plot_ggplot_corrplot_handmade<- function(mat_p, mat_t,
