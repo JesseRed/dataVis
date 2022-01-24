@@ -18,6 +18,8 @@ perform_preprocessing2 <-function(outdir, df_BD=NULL, datafilename = NULL,
   #
   # Die Funktion legt am Ende in das Verzeichnis
   start_time <- Sys.time()
+  cat(file = stderr(), paste0("Start perform_preprocessing"))
+  cat(file = stderr(), paste0("df_BD = ", head(df_BD)))
   cat(file = stderr(), paste0("outdir = ", outdir,"\n"))
 
 

@@ -79,14 +79,17 @@ preprocessingServer <- function(id) {
         req(input$file_beha)
 
         #read.csv("G:/Programming/R_VIS/preprocessing/behavioral_data_20201120.csv", header = TRUE, sep = ";")
-        #read.csv(input$file_beha$datapath, header = TRUE, sep = input$delimiter_beha, check.names = FALSE)
+        read.csv(input$file_beha$datapath, header = TRUE, sep = input$delimiter_beha, check.names = FALSE)
 
         # changed 20211111 because of a problem of Johanna
 
         #fread(input$file_beha$datapath, header = TRUE, sep = input$delimiter_beha, check.names = FALSE)
 
         #cat(file = stderr(), paste0("reading by read_csv2(",input$file_beha$datapath,")"))
-        read_csv2(input$file_beha$datapath)
+
+        # das funktionierte nicht bei kurzen Tabellen
+        # read_csv2(input$file_beha$datapath)
+
         #ext <- tools::file_ext(input$file$name)
         # switch(ext,
         #        csv = vroom::vroom(input$file$datapath, delim = ";"),
