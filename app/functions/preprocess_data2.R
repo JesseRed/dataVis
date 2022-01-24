@@ -42,9 +42,11 @@ perform_preprocessing2 <-function(outdir, df_BD=NULL, datafilename = NULL,
   prepro_data <<- data
   prepro_df_BD <<- df_BD
   cat(file = stderr(), "extract_data_array\n")
+  print(head(df_BD))
   mdat <- extract_data_array(data, df_BD, method)
 
   cat(file = stderr(), "create_new_data_structure\n")
+  cat(file = stderr(), paste0("with nrow(df)=", nrow(df_BD)))
   D <- create_new_data_structure(data, df_BD, mdat, method)
 
   cat(file = stderr(), "save_data_structure\n")
@@ -58,6 +60,9 @@ return(D)
 }
 
 check_data_structure<-function(data, df_BD, method){
+
+  cat(file = stderr(), "check_data_structure")
+
   # create data$channelcmb$from_num und data$channelcmb$to_num
   # die Datachannels sind als Strings abgelegt ... wir brauchen sie aber als Nummern
 
