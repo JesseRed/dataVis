@@ -172,6 +172,11 @@ generate_plot_Corrplot<-function(mat_p, mat_t,
                                  sig_level = g_sig(),
                                  title = NULL){
   start_time <- Sys.time()
+  red_hex = "#FF0000"
+  ora_hex = "#ee7777" #FF9E00"
+  yel_hex = "#eeaf77" #FFEB00"
+  gre_hex = "#eed277" #D9FF00"
+  hex_cols = c(red_hex, ora_hex, yel_hex, gre_hex)
 
   # colnames(d$mat_p) = g_regions()
   # rownames(d$mat_p) = vector(mode="character", length=length(g_regions()))
@@ -229,10 +234,12 @@ generate_plot_Corrplot<-function(mat_p, mat_t,
   }
 
 
+
   if (show_color){
     method = "color"
     col <- colorRampPalette(c("#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF","#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#EE9988", "#BB4444", "#EE9988", "#FFFFFF","#FFFFFF", "#FFFFFF",  "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF","#FFFFFF", "#FFFFFF","#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF" ))
     col <- colorRampPalette(c( "#BB4444", "#EE9988", "#FFFFFF","#FFFFFF", "#FFFFFF","#FFFFFF", "#FFFFFF","#FFFFFF", "#FFFFFF","#FFFFFF", "#77AADD", "#4477AA"))
+    col <- colorRampPalette(c( "#BB4444", "#FFFFFF","#FFFFFF", "#FFFFFF","#FFFFFF", "#FFFFFF","#FFFFFF", "#FFFFFF","#FFFFFF", "#4477AA"))
     col_t <- colorRampPalette(c( "#BB4444", "#EE9988", "#FFFFFF","#FFFFFF", "#FFFFFF","#FFFFFF", "#FFFFFF","#FFFFFF", "#FFFFFF","#FFFFFF", "#77AADD", "#4477AA"))
   }else{
     method = "color"
@@ -266,6 +273,7 @@ generate_plot_Corrplot<-function(mat_p, mat_t,
 
   glob_mat_p <<- mat_p
   glob_mat_t <<- mat_t
+
   #cat(file = stderr(), paste0("Corr regions = ", regions,"\n"))
   cat(file = stderr(), paste0("method = ", g_act_method(),"\n"))
   #cat(file = stderr(), paste0("Corr colnames = ", colnames(mat_p),"\n"))
@@ -351,6 +359,7 @@ generate_plot_Corrplot<-function(mat_p, mat_t,
     # Error in data.frame(..., check.names = FALSE) : arguments imply differing number of rows: 55, 45
     mat_p <- replace_na(mat_p,1)
     mat_t <- replace_na(mat_t,0)
+    max_abs_mat_t <- max(abs(max(mat_t)), abs(min(mat_t)))
     mat_p1023 <<- mat_p
     mat_t1023 <<- mat_t
     x1 <<- corrplot(mat_t,
@@ -370,8 +379,9 @@ generate_plot_Corrplot<-function(mat_p, mat_t,
                              hclust.method = "average",
                              addrect = num_hclust,
                              title = title, #paste0("Corrplot with method ",g_act_method()),
-                             col = col_t(500),
-                             mar=c(0,0,1,1),
+                             col = col_t(1000),
+                             col.lim = c(-1*max_abs_mat_t, max_abs_mat_t),
+                             mar=c(0,0,2,2),
                              tl.srt = 45)
 
     myplot_corr <<- corrplot(mat_p,
@@ -392,54 +402,27 @@ generate_plot_Corrplot<-function(mat_p, mat_t,
                              hclust.method = "average",
                              addrect = num_hclust,
                              title = title, #paste0("Corrplot with method ",g_act_method()),
-                             col = col(500),
+                             col = create_sig_colorramp(hex_cols),
+                             col.lim = c(0,1),
                              #col=colorRampPalette(c("blue","red","green"))(200),
-                             mar=c(0,0,1,1)
+                             mar=c(0,0,2,2)
                             )
-    # rownames(mat_p) = vector(mode="character", length=length(regions))
-    # x1 <<- corrplot(mat_p,
-    #                 type = "upper",
-    #                 is.corr = FALSE,
-    #                 method=method,
-    #                 tl.cex = cex,
-    #                 p.mat = mat_p,
-    #                 tl.srt = 45,
-    #                 addCoef.col = number_color,
-    #                 sig.level = multi_sig_level,
-    #                 insig = insig,
-    #                 pch.col = "black",
-    #                 pch.cex = 0.5,
-    #                 addgrid.col = "grey",
-    #                 order = clustering_method, #"hclust", #clustering_method,
-    #                 hclust.method = "average",
-    #                 addrect = num_hclust,
-    #                 title = title, #paste0("Corrplot with method ",g_act_method()),
-    #                 col = col(500),
-    #                 #col=colorRampPalette(c("blue","red","green"))(200),
-    #                 mar=c(0,0,1,1)
-    # )
-    # colnames(mat_t) = vector(mode="character", length=length(regions))
-    #
-    # myplot_corr <<- corrplot(mat_t,
-    #                          add = TRUE,
-    #                          type = "lower",
-    #                          is.corr = FALSE,
-    #                          method=method,
-    #                          tl.cex = cex,
-    #                          addCoef.col = number_color,
-    #                          p.mat = mat_p,
-    #                          sig.level = multi_sig_level,
-    #                          insig = insig,
-    #                          pch.col = "black",
-    #                          pch.cex = 0.5,
-    #                          addgrid.col = "grey",
-    #                          order = clustering_method,
-    #                          hclust.method = "average",
-    #                          addrect = num_hclust,
-    #                          title = title, #paste0("Corrplot with method ",g_act_method()),
-    #                          col = col_t(500),
-    #                          mar=c(0,0,1,1),
-    #                          tl.srt = 45)
+
+    #text(paste("Correlation:", round(cor(x, y), 2)), x = 25, y = 95)
+    leg <-legend( x= "left", legend=c("<0.1", "<0.05", "<0.01", "<0.001"),
+                  col=hex_cols, #inset =c(-0.0,0.3),
+                  fill= hex_cols,
+                  cex = 1.5,
+                  pch=c(".",".", ".", ".","."))
+    legend( x = (leg$rect$left + leg$rect$w) * 1.05, y = leg$rect$top,
+            legend=c("<0.001", "<0.01", "<0.05", "<0.1"),
+            col=hex_cols, #inset =c(0.03,0.3),
+            fill= hex_cols,
+            cex = 1.5,
+            pch=c(".",".", ".", ".","."))
+
+
+
 
   }else if (g_act_method()=="Transferentropy") {
     rownames(mat_p) = vector(mode="character", length=length(regions))
@@ -465,25 +448,9 @@ generate_plot_Corrplot<-function(mat_p, mat_t,
                     mar=c(0,0,1,1)
     )
 
-    # x1 <<- corrplot(mat_p, method=method, tl.cex = cex, type = "upper", is.corr = FALSE,
-    #                 p.mat = mat_p, sig.level = multi_sig_level, tl.srt = 45,
-    #                 insig = insig, pch.cex = 0.4, pch.col = "white",
-    #                 order = clustering_method,
-    #                 addrect = num_hclust,
-    #                 title = paste0("Corrplot with method ",g_act_method()),
-    #                 mar=c(0,0,1,0),
-    #                 col=colorRampPalette(c("blue","red","green"))(200))
     colnames(mat_p) = vector(mode="character", length=length(regions))
 
-      # myplot_corr <<- corrplot(mat_p, add = TRUE, method=method, tl.cex = cex, type = "lower", is.corr = FALSE,
-      #                          p.mat = mat_p, sig.level = g_sig(), insig = insig, tl.srt = 45)
-      #
 
-#
-#      myplot_corr <<- corrplot(d$mat_p, method=method, tl.cex = cex, is.corr = FALSE,
-#                               p.mat = d$mat_p, sig.level = g_sig(),tl.srt = 45,
-#                               insig = insig,
-#                               col=colorRampPalette(c("blue","red","green"))(200))
    }else if (g_act_method()=="Granger") {
      cat(file = stderr(), "Corrrplot Granger not implemented")
      myplot_corr = NULL
@@ -564,7 +531,6 @@ generate_plot_Pheatmap<-function(mat_p,
     num.colors.in.palette = as.integer((pmax-pmin)*100)
     cutoff.fraction_low = cutoff.fraction-pmin
     cutoff.fraction_high = pmax-cutoff.fraction_low
-
     stopifnot(length(colors) == 4)
     ramp1 <- colorRampPalette(colors[1:2])(num.colors.in.palette * cutoff.fraction_low)
     ramp2 <- colorRampPalette(colors[3:4])(num.colors.in.palette * cutoff.fraction_high)
@@ -619,6 +585,32 @@ open_device_for_save <- function(filename){
 
   }
 
+}
+
+
+create_sig_colorramp <- function(hex_cols){
+
+  # color ramp
+  # idee ist es 1000 Werte von 0-1 fuer die p Werte zu haben
+  # <0.001 rot  - 1
+  # <0.01  rosa 2-10
+  # <0.05  gruen 11-50
+  # <0.1   blau  51-100
+
+  col <- colorRampPalette(c( "#BB4444", "#FFFFFF","#FFFFFF", "#FFFFFF","#FFFFFF", "#FFFFFF","#FFFFFF", "#FFFFFF","#FFFFFF", "#4477AA"))
+
+  sig_col <- col(1000)
+  sig_col[1]<- hex_cols[1]
+  sig_col[2:10]<-hex_cols[2]
+  sig_col[11:50]<-hex_cols[3]
+  sig_col[51:100]<-hex_cols[4]
+  #sig_col[101:1000]<-"#FFFFFF"
+#  sig_col[2:10] <- sig_col[10]
+#  sig_col[11:50] <- sig_col[50]
+#  sig_col[51:100] <- sig_col[100]
+
+
+  return(sig_col)
 }
 
 generate_plot_ggplot_corrplot_handmade<- function(mat_p, mat_t,
