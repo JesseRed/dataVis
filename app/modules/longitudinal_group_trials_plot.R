@@ -574,7 +574,11 @@ longitudinalPlotServer <- function(id, dir_listRS) {
           cat(file = stderr(), cur_dev)
           cat(file=stderr(), "before curdata() in plot\n")
           d <- curdata()
+          cat(file=stderr(), "before get_region_difference() in plot\n")
+
           d <- get_region_difference(d, level_x_rval(), level_y_rval())
+          cat(file=stderr(), "after get_region_difference in plot\n")
+
           mat_t_r_vs_r <<- d$mat_t_r_vs_r
           mat_p_r_vs_r <<- d$mat_p_r_vs_r
           ###################

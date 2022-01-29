@@ -60,6 +60,7 @@ filter_datastruct <- function(D, group = NULL, myfilter = NULL){
 }
 
 get_region_difference<-function(d, x, y){
+  cat(file = stderr(), paste0("start of function get_region_difference"))
   # takes the data delivered by get_currently_selected_data_long3
   #  and estimates from there the difference between the last clicked region and every other region
   target_region_data_g1 = d$data1[,x,y,drop = FALSE]
@@ -74,12 +75,30 @@ get_region_difference<-function(d, x, y){
   d_copy$data1 <- data1_r_vs_r
   d_copy$data2 <- data2_r_vs_r
 
-  d_copy <- estimate_mat_t_p(d_copy)
+  d_copy <- estimate_mat_t_p(d_copy, isZvalue = TRUE)
   d$mat_p_r_vs_r <- d_copy$mat_p
   d$mat_t_r_vs_r <- d_copy$mat_t
+  cat(file = stderr(), paste0("end of function get_region_difference"))
+
   return(d)
 }
 
+#subtract_A1_from_A3<-function(A,b){
+#  # subtrahiert ein eindimensionales Array von einem 3 dimensionalem
+#  # A 3dim Array
+#  # b 1 dim Array
+#  C <- A
+#  for (i in 1:dim(A)[2]){
+#    for (j in 1:dim(A)[3]){
+#      C[,i,j] <- A[,i,j]-b
+#    }
+#  }
+#  return(C)
+#}
+
+# change 20220128 ... R Wert differenz ergibt R WErte > 1 die
+# dann nicht mehr umgewandelt werden koennen in z-Werte
+# hier schon umWandlung in Z-Werte
 subtract_A1_from_A3<-function(A,b){
   # subtrahiert ein eindimensionales Array von einem 3 dimensionalem
   # A 3dim Array
@@ -87,7 +106,7 @@ subtract_A1_from_A3<-function(A,b){
   C <- A
   for (i in 1:dim(A)[2]){
     for (j in 1:dim(A)[3]){
-      C[,i,j] <- A[,i,j]-b
+      C[,i,j] <- atanh(A[,i,j])-atanh(b)
     }
   }
   return(C)
@@ -210,7 +229,7 @@ get_currently_selected_data_long3<-function(D, g1, g2, t1, t2, freq,
 
   cat(file = stderr(), paste0("dim(d$data1) = ", dim(d$data1),"\n"))
   cat(file = stderr(), paste0("dim(d$data2) = ", dim(d$data2),"\n"))
-
+  cat(file = stderr(), paste0("before estimate d$data1[1,2,4]=",d$data1[1,2,4],"\n"))
 
   d <- estimate_mat_t_p(d, method = method, regions = regions)
   gdx4 <<- d
@@ -931,11 +950,16 @@ estimate_df_difference<-function(df1, df2){
   return(df)
 }
 
+
 estimate_mat_t_p<- function(d, method = g_act_method(), regions = g_regions(),
                             p_cor_method = g_p_cor_method(),
-                            sig_alpha = g_sig()){
+                            sig_alpha = g_sig(),
+                            isZvalue = FALSE){
+  # isZvalue ... if TRUE then data1 and data2 are in fisher z values
+  estimate_mat_t_p__d1 <<- d
 
-  d$mat_p = matrix(data = NA, nrow = dim(d$data1)[2], ncol=dim(d$data1)[3])
+
+    d$mat_p = matrix(data = NA, nrow = dim(d$data1)[2], ncol=dim(d$data1)[3])
 
   #d$mat_p = ones(dim(d$data1)[2], dim(d$data1)[3])
 d$mat_t = zeros(dim(d$data1)[2], dim(d$data1)[3])
@@ -953,6 +977,7 @@ if (identical(d$data1, d$data2)){
   # hier zeigen wir dann nur die Coherence direct ohne tests
   d$mat_p = apply(d$data1, c(2,3), function(x) mean(na.omit(x)))
   d$mat_t = apply(d$data1, c(2,3), function(x) mean(na.omit(x)))
+
   return(d)
 }
 #cat(file = stderr(),paste0("get_currently_selected_data_long only filter the data duration =",Sys.time()-start_time,"\n"))
@@ -962,6 +987,8 @@ if (identical(d$data1, d$data2)){
 for (i in 1:(dim(d$data1)[2])){
 #  start_idx = i+1
   start_idx = i # changed 26.03.2021 for diagonal elements
+  #cat(file = stderr(), paste0("schleife i = ", i, "/", dim(d$data1)[2]))
+#  estimate_mat_t_p__data2 <<- d$data2
   if (method =="Granger" | method == "Transferentropy"){
     start_idx = 1
   }
@@ -974,8 +1001,13 @@ for (i in 1:(dim(d$data1)[2])){
 
       # fishers Z-transformation
       if ((method == "Coherence") | (method == "Connectivity") | (method == "RS")){
-        x <- atanh(x)
-        y <- atanh(y)
+        if (!isZvalue){
+          #defaultW <- getOption("warn")
+          #options(warn = -1)
+          x <- atanh(x)
+          y <- atanh(y)
+          #options(warn = defaultW)
+        }
       }
 
       out<- tryCatch(
