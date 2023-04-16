@@ -17,12 +17,12 @@ generate_histogram_plot_facet<-function(group1, group2, trial1, trial2, freq, le
   #cat(file = stderr(), paste0("is.reactive(trial1)=",is.reactive(trial1),"\n"))
   #cat(file = stderr(), paste0("is.reactive(level_x_rval)=",is.reactive(level_x_rval),"\n"))
   #cat(file = stderr(), "freq()=",freq(),"\n")
-  cat(file = stderr(), "into generate_histogram_plot_facet\n")
+  #cat(file = stderr(), "into generate_histogram_plot_facet\n")
   if (is.null(data)){
-    cat(file = stderr(), "create new data\n")
+    #cat(file = stderr(), "create new data\n")
     d <- get_currently_selected_data_long(g_data(), group1, group2, as.numeric(trial1), as.numeric(trial2), freq)
   }else{
-    cat(file = stderr(), "get the old data\n")
+    #cat(file = stderr(), "get the old data\n")
     d<-data
   }
   x = d$data1[,level_x_rval, level_y_rval]
@@ -40,6 +40,119 @@ generate_histogram_plot_facet<-function(group1, group2, trial1, trial2, freq, le
   return(myplot)
 
 }
+
+
+
+
+generate_scatter_plot_facet_long<-function(group1, group2, trial1, trial2, freq, level_x_rval, level_y_rval, data = NULL, regressor){
+  # Erstellt einen Scatter plot von zwei Gruppen mit gleichen Achsenskalen
+
+  # output$hist <- renderPlot({
+  #   glob_hist_d <<- curdata()
+  #   generate_histogram_plot_facet(input$group1, input$group2,
+  #                                 input$trial1, input$trial2,
+  #                                 g_sel_freqs(),
+  #                                 level_x_rval(), level_y_rval(),
+  #                                 data = curdata())
+
+  # gedacht fuer tabs in denen gruppen und trials ausgewaehlt werden
+  # d$mypaired ... bool handelt es sich um einen gepaarten oder ungeparrten test
+  # d$data1 ... 3D matrix ... der gruppe 1 bzw trial 1
+  # d$data2 ... 3D matrix ... der gruppe 2 bzw trial 2
+  # d$mat_p ... 2D matrix ... p Werte des t-tests ueber alle Regionen
+  # d$mat_t ... 2D matrix ... t Werte des t-tests ueber alle Regionen
+  # d$string1 ... string .... eine beschreibung des durchgefuehrten Vergleiches
+  # d$color1 ... col ........ die Color palette die zu den Werten passen
+
+  #cat(file = stderr(), "freq=",freq,"\n\n")
+  #cat(file = stderr(), paste0("is.reactive(freq)=",is.reactive(freq),"\n"))
+  #cat(file = stderr(), paste0("is.reactive(freq)=",is.reactive(freq),"\n"))
+  #cat(file = stderr(), paste0("is.reactive(trial1)=",is.reactive(trial1),"\n"))
+  #cat(file = stderr(), paste0("is.reactive(level_x_rval)=",is.reactive(level_x_rval),"\n"))
+  #cat(file = stderr(), "freq()=",freq(),"\n")
+  #cat(file = stderr(), "into generate_scatter_plot_facet_long\n")
+  if (is.null(data)){
+    #cat(file = stderr(), "data are needed error return create new data\n")
+    return(NULL)
+
+    #d <- get_currently_selected_data_long(g_data(), group1, group2, as.numeric(trial1), as.numeric(trial2), freq)
+  }else{
+    #cat(file = stderr(), "get the old datax\n")
+    d<-data
+  }
+  #bg1 = d$df_data1$BDI_II
+  #bg2 = d$df_data2$BDI_II
+
+  #cat(file = stderr(), "regressor = ", regressor, "\n")
+  b1 <- d$df_data1[,regressor]
+  b2 <- d$df_data2[,regressor]
+  x1 <- as.numeric(sub(",", ".", b1, fixed = TRUE))
+  x2 <- as.numeric(sub(",", ".", b2, fixed = TRUE))
+
+  y1 <- na.omit(d$data1[, level_y_rval, level_x_rval])
+  y2 <- na.omit(d$data2[, level_y_rval, level_x_rval])
+
+  ggx1<<-x1
+  ggx2<<-x2
+  ggy1<<-y1
+  ggy2<<-y2
+
+  #
+  # y1 <- d$data1[d$df_data1$ID,level_x_rval, level_y_rval]
+  # y2 <- d$data2[d$df_data2$ID,level_x_rval, level_y_rval]
+  # x1 <- d$df_data1[regressor]
+  # x2 <- d$df_data2[regressor]
+  # x1 <- as.numeric(sub(",", ".", x1, fixed = TRUE))
+  # x2 <- as.numeric(sub(",", ".", x2, fixed = TRUE))
+
+
+
+  df <- data.frame(Gruppe=c(rep("A", times=length(y1)),
+                            rep("B", times=length(y2))),
+                   corel=c(y1, y2),
+                   reg = c(x1, x2)
+  )
+  myplot<- ggplot(df, aes(x = reg, y = corel))+
+    geom_point(aes(color = factor(Gruppe))) +
+    facet_wrap(~Gruppe) +
+    stat_smooth(method = "lm",
+                col = "#C42126",
+                se = FALSE,
+                size = 1)+
+    labs(
+      x = regressor,
+      y = d$method,
+      #color = "Gear",
+      title = paste0("Relation between", regressor, " and ", d$method),
+      subtitle = "correlation ...",
+      caption = "computed byplots.generate_scatter_plot_facet_long"
+    )
+
+
+
+  #
+  # df <- data.frame(Gruppe=c(rep("A", times=length(yg1)),
+  #                           rep("B", times=length(yg2))),
+  #                  val=c(yg1, yg2))
+  #
+  # dftmp <<- df
+  # myplot <- ggplot(df, aes(x = , y = drat)) +
+  # geom_point(aes(color = factor(gear)))
+
+  # df <- data.frame(Gruppe=c(rep("A", times=length(x)),
+  #                           rep("B", times=length(y))),
+  #                  val=c(x, y))
+  # df$num <- ave(df$val, df$Gruppe, FUN = seq_along)
+  # # means for geomline
+  # df_hline = data.frame(Gruppe = c("A","B"), Means=c(mean(x), mean(y)))
+  # myplot<- ggplot(df, aes(num, val, fill=Gruppe)) +
+  #   geom_bar(stat="identity") +
+  #   facet_wrap(~Gruppe) +
+  #   geom_hline(data = df_hline, aes(yintercept = Means))
+  return(myplot)
+
+}
+
 
 
 
@@ -69,14 +182,14 @@ generate_histogram_plot_facet_long<-function(group1, group2, trial1, trial2, fre
   #cat(file = stderr(), paste0("is.reactive(trial1)=",is.reactive(trial1),"\n"))
   #cat(file = stderr(), paste0("is.reactive(level_x_rval)=",is.reactive(level_x_rval),"\n"))
   #cat(file = stderr(), "freq()=",freq(),"\n")
-  cat(file = stderr(), "into generate_histogram_plot_facet_long\n")
+  #cat(file = stderr(), "into generate_histogram_plot_facet_long\n")
   if (is.null(data)){
     cat(file = stderr(), "data are needed error return create new data\n")
     return(NULL)
 
     #d <- get_currently_selected_data_long(g_data(), group1, group2, as.numeric(trial1), as.numeric(trial2), freq)
   }else{
-    cat(file = stderr(), "get the old datax\n")
+    #cat(file = stderr(), "get the old datax\n")
     d<-data
   }
 
@@ -161,6 +274,9 @@ generate_plot_Circle<-function(mat_p, mat_t, data1, data2, regions = g_regions()
   return(myplot)
 }
 
+
+
+
 generate_plot_Corrplot<-function(mat_p, mat_t,
                                  myfontsize = g_saveImage_fontsize(),
                                  inline_numbers = g_visprop_inlinenumbers(),
@@ -186,9 +302,10 @@ generate_plot_Corrplot<-function(mat_p, mat_t,
   #if ((myfontsize >8) & (myfontsize<12)){
   #  cex = 0.4
   #}
-  cat(file = stderr(), paste0("inline_numbers = ", inline_numbers, "\n"))
-  cat(file = stderr(), paste0("only_sig = ", only_sig, "\n"))
-  cat(file = stderr(), paste0("show_color = ", show_color, "\n"))
+
+  #cat(file = stderr(), paste0("inline_numbers = ", inline_numbers, "\n"))
+  #cat(file = stderr(), paste0("only_sig = ", only_sig, "\n"))
+  #cat(file = stderr(), paste0("show_color = ", show_color, "\n"))
 
 
   if (is.null(title)){title = paste0("Corrplot with method ",g_act_method())}
@@ -200,7 +317,7 @@ generate_plot_Corrplot<-function(mat_p, mat_t,
   if (is.null(myfontsize)){myfontsize=14}
 
   cex = myfontsize /20
-  cat(file = stderr(), cex)
+  #cat(file = stderr(), cex)
   if (cex>1.0){
     cex = 1.0
   }
@@ -275,7 +392,7 @@ generate_plot_Corrplot<-function(mat_p, mat_t,
   glob_mat_t <<- mat_t
 
   #cat(file = stderr(), paste0("Corr regions = ", regions,"\n"))
-  cat(file = stderr(), paste0("method = ", g_act_method(),"\n"))
+  #cat(file = stderr(), paste0("method = ", g_act_method(),"\n"))
   #cat(file = stderr(), paste0("Corr colnames = ", colnames(mat_p),"\n"))
   #cat(file = stderr(), mat_t)
 
@@ -334,7 +451,6 @@ generate_plot_Corrplot<-function(mat_p, mat_t,
 #                           method=method,
 #                           tl.cex = cex,
 #                           type = "lower",
-#                           is.corr = FALSE,
 #                           p.mat = mat_p,
 #                           sig.level = g_sig(),
 #                           insig = insig,
@@ -362,6 +478,14 @@ generate_plot_Corrplot<-function(mat_p, mat_t,
     max_abs_mat_t <- max(abs(max(mat_t)), abs(min(mat_t)))
     mat_p1023 <<- mat_p
     mat_t1023 <<- mat_t
+    colmin = min(mat_t)
+    colmax =max(mat_t)
+    if (colmin==colmax){
+      colminmax = c(0,1)
+    }else{
+      colminmax = c(colmin, colmax)
+    }
+    par(xpd=TRUE)
     x1 <<- corrplot(mat_t,
                              add = FALSE,
                              type = "lower",
@@ -378,10 +502,12 @@ generate_plot_Corrplot<-function(mat_p, mat_t,
                              order = clustering_method,
                              hclust.method = "average",
                              addrect = num_hclust,
-                             title = title, #paste0("Corrplot with method ",g_act_method()),
-                             col = col_t(1000),
-                             col.lim = c(-1*max_abs_mat_t, max_abs_mat_t),
-                             mar=c(0,0,2,2),
+                             #title = title, #paste0("Corrplot with method ",g_act_method()),
+                             col = create_sig_colorramp(hex_cols),
+                             #col = col_t(1000),
+                             col.lim = colminmax, #c(min(mat_t),max(mat_t)),
+                             #col.lim = c(-1*max_abs_mat_t, max_abs_mat_t),
+                             mar=c(0,0,4,0),
                              tl.srt = 45)
 
     myplot_corr <<- corrplot(mat_p,
@@ -401,26 +527,28 @@ generate_plot_Corrplot<-function(mat_p, mat_t,
                              order = clustering_method, #"hclust", #clustering_method,
                              hclust.method = "average",
                              addrect = num_hclust,
-                             title = title, #paste0("Corrplot with method ",g_act_method()),
+                             #title = title, #paste0("Corrplot with method ",g_act_method()),
                              col = create_sig_colorramp(hex_cols),
                              col.lim = c(0,1),
                              #col=colorRampPalette(c("blue","red","green"))(200),
-                             mar=c(0,0,2,2)
+                             mar=c(0,0,4,0)
                             )
+    mtext(title, at=2.5, line=2.7, cex=2)
+    #par(mar=c(18,18,18,18)+.1)
 
     #text(paste("Correlation:", round(cor(x, y), 2)), x = 25, y = 95)
-    leg <-legend( x= "left", legend=c("<0.1", "<0.05", "<0.01", "<0.001"),
-                  col=hex_cols, #inset =c(-0.0,0.3),
-                  fill= hex_cols,
-                  cex = 1.5,
-                  pch=c(".",".", ".", ".","."))
-    legend( x = (leg$rect$left + leg$rect$w) * 1.05, y = leg$rect$top,
-            legend=c("<0.001", "<0.01", "<0.05", "<0.1"),
-            col=hex_cols, #inset =c(0.03,0.3),
-            fill= hex_cols,
-            cex = 1.5,
-            pch=c(".",".", ".", ".","."))
-
+    # leg <-legend( x= "left", legend=c("<0.1", "<0.05", "<0.01", "<0.001"),
+    #               col=hex_cols, #inset =c(-0.0,0.3),
+    #               fill= hex_cols,
+    #               cex = 1.5,
+    #               pch=c(".",".", ".", ".","."))
+    # legend( x = (leg$rect$left + leg$rect$w) * 1.05, y = leg$rect$top,
+    #         legend=c("<0.001", "<0.01", "<0.05", "<0.1"),
+    #         col=hex_cols, #inset =c(0.03,0.3),
+    #         fill= hex_cols,
+    #         cex = 1.5,
+    #         pch=c(".",".", ".", ".","."))
+    #
 
 
 
@@ -506,7 +634,7 @@ generate_plot_Corrplot<-function(mat_p, mat_t,
   #                             mar=c(0,0,1,1),
   #                             tl.srt = 45)
   #  }
-  cat(file = stderr(), paste0("generate_plot_Corrplot duration = ", Sys.time()-start_time,"\n" ))
+  #cat(file = stderr(), paste0("generate_plot_Corrplot duration = ", Sys.time()-start_time,"\n" ))
 
   return(myplot_corr)
 
@@ -518,7 +646,7 @@ generate_plot_Pheatmap<-function(mat_p,
                                  inline_numbers = g_visprop_inlinenumbers(),
                                  regions = g_regions(),
                                  sig_level = g_sig()){
-  cat(file=stderr(),paste0("show inline numbers = ",inline_numbers,"\n"))
+  #cat(file=stderr(),paste0("show inline numbers = ",inline_numbers,"\n"))
   colnames(mat_p) = regions
   rownames(mat_p) = regions
 

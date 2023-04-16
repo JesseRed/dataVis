@@ -163,7 +163,7 @@ longitudinalPlotServer <- function(id, dir_listRS) {
           )
         ),
         fluidRow(
-          column(12,
+          column(9,
                  box(title = "myplot", width = 12,
            # plotOutput(ns("plot"), width = "auto", height = "800px", click = ns("plot_click"))
           plotOutput(ns("plot"), width = "auto", height = "auto", click = ns("plot_click")),
@@ -172,11 +172,25 @@ longitudinalPlotServer <- function(id, dir_listRS) {
               HTML("#plot{margin-bottom:250px;}")
             )
           )
-                 ))
+          )),
+          column(3,
+                 selectInput(ns("mainregressor"), h4("main regressor"),
+                             choices = colnames(g_beh())),
+                 selectInput(ns("regressors"), h4("potential regressors"),
+                             multiple = TRUE, selectize = FALSE,
+                             size = 35,
+                             choices = colnames(g_beh()),
+                             selected = 3)
+          )
+        ),
             # br(),
             # br(),
             # br()
-        ),
+        # fluidRow(
+        #   column(12,
+        #          tableOutput(ns("tab_simple_group_correlation")),
+        #   )
+        # ),
         fluidRow(
           column(9,
 
@@ -201,6 +215,29 @@ longitudinalPlotServer <- function(id, dir_listRS) {
                    ),
                  ),
           )
+        ),
+        # The simple correlation tab
+        fluidRow(
+          column(9,
+
+                 plotOutput(ns("scatter_correlation"), width = "auto", height = "300px", click = ns("plot_click_scatter")),
+          ),
+          column(3,
+                 verbatimTextOutput(ns("text_correlation")),
+          )
+        ),
+        fluidRow(
+          column(12,
+                 box(title = "Was wird hier gezeigt?...", width = 12, collapsible = TRUE, collapsed = TRUE, verbatimTextOutput(ns("text_explanation_plot_mainreg_cor"))),
+          )
+        ),
+        fluidRow(
+           column(6,
+                  plotOutput(ns("plot_region_group_cor"), width = "auto", height = "auto", click = ns("plot_click3")),
+           ),
+           column(6,
+                  plotOutput(ns("plot_region_group_cor_diff"), width = "auto", height = "auto", click = ns("plot_click4")),
+           )
         ),
         fluidRow(
           column(12,
@@ -467,7 +504,7 @@ longitudinalPlotServer <- function(id, dir_listRS) {
       # daher teilen wir hier die Subjects einfach entsprechend auf
 
       curdata <- reactive({
-        cat(file = stderr(), paste0("curdata with dim(g_D()$mat)=", dim(g_D()$mat),"\n"))
+        #cat(file = stderr(), paste0("curdata with dim(g_D()$mat)=", dim(g_D()$mat),"\n"))
         req(input$group1)
         req(input$group2)
         req(input$trial1)
@@ -479,8 +516,8 @@ longitudinalPlotServer <- function(id, dir_listRS) {
         # req(input$longtimefirst)
         #gD1 <<- D1()
         #gD2 <<- D2()
-        cat(file = stderr(), paste0("curdata with dim(g_D()$mat)=", dim(g_D()$mat),"\n"))
-        cat(file = stderr(), paste0("curdata with length(g_D())=", length(g_D()),"\n"))
+        #cat(file = stderr(), paste0("curdata with dim(g_D()$mat)=", dim(g_D()$mat),"\n"))
+        #cat(file = stderr(), paste0("curdata with length(g_D())=", length(g_D()),"\n"))
 
         M <- get_currently_selected_data_long3(g_D(),
                                               input$group1,
@@ -509,6 +546,21 @@ longitudinalPlotServer <- function(id, dir_listRS) {
         return(M)
       })
 
+      my_cor <- reactive({
+        #req(input$plot_click)
+        req(input$mainregressor)
+        req(input$group1)
+        req(input$group2)
+        req(input$trial1)
+        req(input$trial2)
+        req(input$ld_1)
+        req(input$ld_2)
+        cat(file = stderr(), paste0("after reqs in reactiv my_cor\n"))
+        my_corx <- estimate_matrix_correlation(curdata(),input$mainregressor)
+        return(my_corx)
+      })
+
+
       plotwidth <- reactive({
         if (input$plot_width == 0){ return("auto")            }
         else{                       return(input$plot_width)  }
@@ -527,6 +579,22 @@ longitudinalPlotServer <- function(id, dir_listRS) {
         cat(out)
       })
 
+
+
+
+      output$text_explanation_plot_mainreg_cor<- renderPrint({
+        explanation <- paste0("Both plots investigate the correlation between the current measure (",
+                              g_act_method(), ") and the choosen main regressor \n",
+                              "The left plot displays the correlation for both groups as P-Values\n",
+                              "The lower left triangle shows the correlation for group 1 \n",
+                              "The upper right triangle shows the correlation for group 2 \n",
+                              "The correlation matrix on the right side shows the difference of the r values between groups \n",
+                              " as symmetric p value -group difference \n"
+        )
+        out <- explanation
+        cat(out)
+      })
+
       output$text_explanation_plot2<- renderPrint({
         explanation <- paste0("This plot tests whether the investigated effect is different between the last selected region in the upper plot and other regions\n",
                               "It shows the p values (and t-values depending from the method) between regions effect \n",
@@ -537,7 +605,7 @@ longitudinalPlotServer <- function(id, dir_listRS) {
                               "in other words it tests the hypothesis:\n",
                               "The Group difference of the effect of the Intervention on the Connectivity of REgion A vs. B is different from the \n",
                               "    Group difference of the effect of the Intervention on the Connectivity of REgion C vs. D\n"
-                              )
+        )
         out <- explanation
         cat(out)
       })
@@ -572,12 +640,12 @@ longitudinalPlotServer <- function(id, dir_listRS) {
           req(input$method)
           cur_dev <- dev.cur()
           cat(file = stderr(), cur_dev)
-          cat(file=stderr(), "before curdata() in plot\n")
+          #cat(file=stderr(), "before curdata() in plot\n")
           d <- curdata()
-          cat(file=stderr(), "before get_region_difference() in plot\n")
+          #cat(file=stderr(), "before get_region_difference() in plot\n")
 
           d <- get_region_difference(d, level_x_rval(), level_y_rval())
-          cat(file=stderr(), "after get_region_difference in plot\n")
+          #cat(file=stderr(), "after get_region_difference in plot\n")
 
           mat_t_r_vs_r <<- d$mat_t_r_vs_r
           mat_p_r_vs_r <<- d$mat_p_r_vs_r
@@ -601,6 +669,55 @@ longitudinalPlotServer <- function(id, dir_listRS) {
         }
       )
 
+
+      output$plot_region_group_cor<-renderPlot(
+        width = function() plotwidth(),
+        height = function() plotheight(),
+        {
+          req(input$trial1)
+          req(input$trial2)
+          req(input$group1)
+          req(input$group2)
+          req(input$method)
+
+          #req(input$plot_click)
+          req(input$mainregressor)
+          d <- curdata()
+          ###################
+          # CORRPLOT
+          my_cor <- estimate_matrix_correlation(d,input$mainregressor)
+          #gmy_cor <<-my_cor
+          generate_plot_Corrplot(my_cor$P2, my_cor$P1, regions = colnames(d$mat_p),
+                                 clustering_method = input$clustering,
+                                 num_hclust = input$num_hclust,
+                                 title = "P-Values of corr. between main_reg and conn_value") #D$uregion_list)
+        }
+      )
+
+      output$plot_region_group_cor_diff<-renderPlot(
+        width = function() plotwidth(),
+        height = function() plotheight(),
+        {
+          req(input$trial1)
+          req(input$trial2)
+          req(input$group1)
+          req(input$group2)
+          req(input$method)
+
+          #req(input$plot_click)
+          req(input$mainregressor)
+          d <- curdata()
+          ###################
+          # CORRPLOT
+          my_cor <- estimate_matrix_correlation(d,input$mainregressor)
+          generate_plot_Corrplot(my_cor$PDiff, my_cor$PDiff, regions = colnames(d$mat_p),
+                                 clustering_method = input$clustering,
+                                 num_hclust = input$num_hclust,
+                                 title = "P-Values of group diff. of corr. (reg vs. conn)") #D$uregion_list)
+        }
+      )
+
+
       ###########################################################
       ### RENDERPLOT
       output$plot<-renderPlot(
@@ -617,16 +734,17 @@ longitudinalPlotServer <- function(id, dir_listRS) {
         req(input$method)
 #        dev.off()
         cur_dev <- dev.cur()
-        cat(file = stderr(), cur_dev)
-        cat(file=stderr(), "before curdata() in plot\n")
+        #cat(file = stderr(), cur_dev)
+        #cat(file=stderr(), "before curdata() in plot\n")
         d <- curdata()
+
         mat_t <<- d$mat_t
         mat_p <<- d$mat_p
         ###################
         # CORRPLOT
         if (input$method=="Corrplot"){
 
-          generate_plot_Corrplot(d$mat_p, d$mat_t, regions = colnames(d$mat_p),
+          generate_plot_Corrplot(d$mat_p, my_cor()$PDiff, regions = colnames(d$mat_p),
                                  clustering_method = input$clustering,
                                  num_hclust = input$num_hclust) #D$uregion_list)
 
@@ -714,8 +832,8 @@ longitudinalPlotServer <- function(id, dir_listRS) {
       )
 
       output$text_bottom <- renderPrint({
-        cat(file = stderr(),paste0("level_y_rval()=",level_y_rval(),"\n"))
-        cat(file = stderr(),paste0("level_x_rval()=",level_x_rval(),"\n"))
+        #cat(file = stderr(),paste0("level_y_rval()=",level_y_rval(),"\n"))
+        #cat(file = stderr(),paste0("level_x_rval()=",level_x_rval(),"\n"))
         glob_text_d <<- curdata()
 
         #req(input$choosenetwork)
@@ -746,14 +864,102 @@ longitudinalPlotServer <- function(id, dir_listRS) {
         cat(out)
       })
 
+      # output of correlation plot text information
+      # 20220213
+      output$text_correlation <- renderPrint({
+
+        req(input$plot_click)
+        req(input$mainregressor)
+        text_correlationout <<-curdata()
+
+        #cat(file = stderr(),paste0("level_y_rval()=",level_y_rval(),"\n"))
+        #cat(file = stderr(),paste0("level_x_rval()=",level_x_rval(),"\n"))
+        #cat(file = stderr(),paste0("input$mainregressor=",input$mainregressor,"\n"))
+
+        b1 <- curdata()$df_data1[,input$mainregressor]
+        b2 <- curdata()$df_data2[,input$mainregressor]
+        b1 <- as.numeric(sub(",", ".", b1, fixed = TRUE))
+        b2 <- as.numeric(sub(",", ".", b2, fixed = TRUE))
+
+        y1 <- na.omit(curdata()$data1[, level_y_rval(), level_x_rval()])
+        y2 <- na.omit(curdata()$data2[, level_y_rval(), level_x_rval()])
+
+
+
+        c1 = cor.test(y1, b1, method = "pearson")
+        c2 = cor.test(y2, b2, method = "pearson")
+        out<- create_two_cor_string(c1,c2, "Group A", "Group B", length(b1), length(b2), curdata()$method, input$mainregressor)
+        #out1<- create_my_cor_string(c1, "Group A")
+        #out2<- create_my_cor_string(c2, "Group B")
+        #out<-paste0(out1, "\n", out2)
+
+
+        cat(out)
+      })
+
+
+
+
       output$hist <- renderPlot({
         glob_hist_d <<- curdata()
         generate_histogram_plot_facet_long(input$group1,input$group2,
-                                      input$trial1, input$trial2,
-                                      g_sel_freqs(),
-                                      level_x_rval(), level_y_rval(),
-                                      data = curdata())
+                                           input$trial1, input$trial2,
+                                           g_sel_freqs(),
+                                           level_x_rval(), level_y_rval(),
+                                           data = curdata())
       })
+
+      # output of correlation plot
+      # 20220213
+      output$scatter_correlation <- renderPlot({
+        req(input$plot_click)
+        req(input$mainregressor)
+        glob_hist_d <<- curdata()
+        generate_scatter_plot_facet_long(input$group1,input$group2,
+                                           input$trial1, input$trial2,
+                                           g_sel_freqs(),
+                                           level_x_rval(), level_y_rval(),
+                                           data = curdata(),
+                                          input$mainregressor)
+      })
+
+
+
+      # 20220213
+
+      # ###########################################
+      # # the newly created statistics section
+      # output$tab_simple_group_correlation <- renderTable({
+      #   req(input$plot_click)
+      #   cat(file = stderr(), paste0("output$tab_simpple_group_correlation"))
+      #
+      #   y1 = na.omit(curdata()$data1[, level_y_rval(), level_x_rval()])
+      #   y2 = na.omit(curdata()$data2[, level_y_rval(), level_x_rval()])
+      #   b1 = curdata()$df_data1[input$mainregressor]
+      #   b2 = curdata()$df_data2[input$mainregressor]
+      #
+      #
+      #   # berechne Werte fuer den main regessor
+      #   #reg_name = get_beh_tbl_data_by_group(input$group1, input$mainregressor)
+      #   #b1 = get_beh_tbl_data_by_group(input$group1, input$mainregressor)
+      #   #b2 = get_beh_tbl_data_by_group(input$group2, input$mainregressor)
+      #   #cat(file = stderr(), "now create")
+      #   df <- append_correlation_row(x1 = y1, b1 = b1, x2 = y2, b2 = b2,
+      #                                method = "pearson",
+      #                                t = g_trials()[input$trial1],
+      #                                g1 = input$group1,
+      #                                g2 = input$group2,
+      #                                reg_name = input$mainregressor)
+      #
+      #   return(df)
+      #
+      # })
+      #
+
+
+
+
+
 
       output$facet <- renderPlot({
         df = tbl_beh
@@ -773,7 +979,7 @@ longitudinalPlotServer <- function(id, dir_listRS) {
 
       output$networkRadioButtons<- renderUI({
         h4("networkRadioButtons")
-        cat(file=stderr(),"in networkRadioButtons\n")
+        #cat(file=stderr(),"in networkRadioButtons\n")
         lapply(1:length(g_regions()), function(i) {
           num_of_cols = 25
           # begrenze die radiobuttons auf die num_of_cols Anzahl
@@ -874,6 +1080,10 @@ longitudinalPlotServer <- function(id, dir_listRS) {
         ifelse(!dir.exists(outdir), dir.create(outdir), FALSE)
         save_data_structure(outdir, D)
       })
+
+
+
+
 
       output$outputnetworkRadioButtons <- renderPrint({
         print("original network = ")

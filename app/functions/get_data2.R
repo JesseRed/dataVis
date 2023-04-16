@@ -138,7 +138,7 @@ get_currently_selected_data_long3<-function(D, g1, g2, t1, t2, freq,
   # d$mat_t ... 2D matrix ... t Werte des t-tests ueber alle Regionen
   # d$string1 ... string .... eine beschreibung des durchgefuehrten Vergleiches
   # d$color1 ... col ........ die Color palette die zu den Werten passen
-  cat(file = stderr(),paste0("gcsdl3 estimate time first = ", estimate_time_first,"\n"))
+  #cat(file = stderr(),paste0("gcsdl3 estimate time first = ", estimate_time_first,"\n"))
 
   # Es gibt nun nur noch gerichtet und ungerichtet
   # if (iscausal){
@@ -161,7 +161,7 @@ get_currently_selected_data_long3<-function(D, g1, g2, t1, t2, freq,
   # 1. Entferne die Subjects aus der exclude liste
   if (!is.null(subjects_to_exclude)){
     if (length(subjects_to_exclude)>0){
-      cat(file = stderr(), "subjects to exclude in get_currently_selected_data_long3 = ", subjects_to_exclude, "\n")
+      #cat(file = stderr(), "subjects to exclude in get_currently_selected_data_long3 = ", subjects_to_exclude, "\n")
       D <- delete_subject_from_data_struct(D = D, ids_to_delete = subjects_to_exclude)
     }
   }
@@ -171,12 +171,12 @@ get_currently_selected_data_long3<-function(D, g1, g2, t1, t2, freq,
   #    entsprechend des uebergebenen NEtzwerkes (network)
   #
   start_time = Sys.time()
-  cat(file = stderr(),paste0("gcsdl3 bfore change_network_in_data_struct\n"))
+  #cat(file = stderr(),paste0("gcsdl3 bfore change_network_in_data_struct\n"))
   if (! is.null(network)){
     D <- change_network_in_data_struct(D = D, new_uregion_list_named = network)
     regions <- D$uregion_list
   }
-  cat(file = stderr(),paste0("change_network_in_data_struct duration =",Sys.time()-start_time,"\n"))
+  #cat(file = stderr(),paste0("change_network_in_data_struct duration =",Sys.time()-start_time,"\n"))
   gDS2<<-D
 
 
@@ -208,7 +208,7 @@ get_currently_selected_data_long3<-function(D, g1, g2, t1, t2, freq,
   cat(file = stderr(),paste0("g1 = ",g1, "   g2 = ", g2,"\n"))
   cat(file = stderr(),paste0("t1 = ",t1, "   t2 = ", t2,"\n"))
   #cat(file = stderr(),paste0("freq = ",freq,"\n"))
-  cat(file = stderr(),paste0("trials = ",trials,"\n"))
+  #cat(file = stderr(),paste0("trials = ",trials,"\n"))
   cat(file = stderr(),paste0("method = ",method,"\n"))
   d <- get_selected_data_considering_group_trial(data, g1, g2, t1, t2, freq,  trials = trials, tbl_beh = tbl_beh, method = method)
 
@@ -217,7 +217,7 @@ get_currently_selected_data_long3<-function(D, g1, g2, t1, t2, freq,
 
   gdx2<<-d
   if (!is.null(datalong)){
-    cat(file = stderr(), "update \n")
+    #cat(file = stderr(), "update \n")
     d<-update_data_structure_by_longitudinal_data(d, datalong, g1,g2,t1,t2, freq, trials = trials,
                                                tbl_beh_long = S$D2$df_BD, method = method, estimate_time_first = estimate_time_first)
   }
@@ -227,9 +227,9 @@ get_currently_selected_data_long3<-function(D, g1, g2, t1, t2, freq,
   # d$data1 und d$data2 sind erhoben
 
 
-  cat(file = stderr(), paste0("dim(d$data1) = ", dim(d$data1),"\n"))
-  cat(file = stderr(), paste0("dim(d$data2) = ", dim(d$data2),"\n"))
-  cat(file = stderr(), paste0("before estimate d$data1[1,2,4]=",d$data1[1,2,4],"\n"))
+  #cat(file = stderr(), paste0("dim(d$data1) = ", dim(d$data1),"\n"))
+  #cat(file = stderr(), paste0("dim(d$data2) = ", dim(d$data2),"\n"))
+  #cat(file = stderr(), paste0("before estimate d$data1[1,2,4]=",d$data1[1,2,4],"\n"))
 
   d <- estimate_mat_t_p(d, method = method, regions = regions)
   gdx4 <<- d
@@ -380,11 +380,12 @@ update_data_structure_by_longitudinal_data<-function(d1, datalong,  g1,g2,t1,t2,
   #############################
   # longitudinale Daten
   #    if (is_debug){
+  cat(file = stderr(), "i think is deprecated 20220213")
   cat(file = stderr(),"\nlongitudinal data analyse start \n")
   cat(file = stderr(),paste0("g1 = ",g1, "   g2 = ", g2,"\n"))
   cat(file = stderr(),paste0("t1 = ",t1, "   t2 = ", t2,"\n"))
-  cat(file = stderr(),paste0("freq = ",freq,"\n"))
-  cat(file = stderr(),paste0("trials = ",trials,"\n"))
+  #cat(file = stderr(),paste0("freq = ",freq,"\n"))
+  #cat(file = stderr(),paste0("trials = ",trials,"\n"))
   cat(file = stderr(),paste0("method = ",method,"\n"))
   cat(file = stderr(),paste0("update_data_structure_by_longitudinal_data length(dim(data))= ",length(dim(data)),"\n"))
   cat(file = stderr(),paste0("update_data_structure_by_longitudinal_data dim(data)= ",dim(data),"\n"))

@@ -34,6 +34,123 @@ create_my_ttest_string <- function(z, paired = FALSE, mean1 = 0, mean2 = 0,
 
   return(out)
 }
+
+estimate_matrix_correlation <- function(d, regressorname){
+
+  # select subject wit regressor not NAN
+  #cat(file = stderr(), paste0("regressorname = ", regressorname, "\n"))
+  d$df_data1 <- as.data.frame(d$df_data1)
+  d$df_data2 <- as.data.frame(d$df_data2)
+  ids1 <- d$df_data1[!is.na(d$df_data1[regressorname]), 'ID']
+  ids2 <- d$df_data2[!is.na(d$df_data2[regressorname]), 'ID']
+  b1 <- d$df_data1[!is.na(d$df_data1[regressorname]),regressorname]
+  b2 <- d$df_data2[!is.na(d$df_data2[regressorname]),regressorname]
+
+  #b1 <- d$df_data1[,regressorname]
+  #b2 <- d$df_data2[,regressorname]
+  b1 <- suppressWarnings(as.numeric(sub(",", ".", b1, fixed = TRUE)))
+  b2 <- suppressWarnings(as.numeric(sub(",", ".", b2, fixed = TRUE)))
+
+  nrows = dim(d$data1)[2]
+  ncols = dim(d$data1)[3]
+
+  my_cor<-list()
+  my_cor$P1 <- matrix(1L,nrow=nrows, ncol=ncols, dimnames = list(d$regions, d$regions))
+  my_cor$R1 <- matrix(0L,nrow=nrows, ncol=ncols, dimnames = list(d$regions, d$regions))#list(dimnames(d$data1)[2], d$data1)[3])
+  my_cor$P2 <- matrix(1L,nrow=nrows, ncol=ncols, dimnames = list(d$regions, d$regions))#list(dimnames(d$data1)[2], d$data1)[3])
+  my_cor$R2 <- matrix(0L,nrow=nrows, ncol=ncols, dimnames = list(d$regions, d$regions))#list(dimnames(d$data1)[2], d$data1)[3])
+  my_cor$PDiff <- matrix(1L,nrow=nrows, ncol=ncols, dimnames = list(d$regions, d$regions))#list(dimnames(d$data1)[2], d$data1)[3])
+
+  # durch as.numic koennen NAs eingefuehrt werden falls es ein string war und sich nicht
+  # umwandeln lies
+  # wenn dies der Fall dann stimmen die ids auch nicht mehr
+  # in dem fall stimmt etwas hier nicht und es sollte abgebrochen werden
+
+  if (sum(is.na(b1))>0 || sum(is.na(b2))>0){
+    cat(file = stderr(), paste0("return from estimate_matrix_correlation without estimation because of NAs in behavioral data"))
+    return(my_cor)
+  }
+
+  for (i in 1:(nrows)){
+    for (j in 1:ncols){
+      # eigentlich sollte es ja immer Daten zu den Subjects geben
+      # aber in Johannas daten ist z.B. ein ganz leerer...
+      y1 <- na.omit(d$data1[ids1, i, j])
+      y2 <- na.omit(d$data2[ids2, i, j])
+      #y1 <- d$data1[ids1, i, j]
+      #y2 <- d$data2[ids2, i, j]
+      #cat(file = stderr(), paste0("i=",i, " j=",j,"\n"))
+      #cat(file = stderr(), paste0("l(b1)=",length(b1),"\n"))
+      #cat(file = stderr(), paste0("l(y1)=",length(y1),"\n"))
+      if (length(y1)==length(b1) && length(y1)>2){
+        c1 = cor.test(y1, b1, method = "pearson")
+        my_cor$P1[i,j]=c1$p.value
+        my_cor$R1[i,j]=c1$estimate
+        }
+      if (length(y2)==length(b2) && length(y2)>2){
+        c2 = cor.test(y2, b2, method = "pearson")
+        my_cor$P2[i,j]=c2$p.value
+        my_cor$R2[i,j]=c2$estimate
+      }
+      if (length(y1)==length(b1) && length(y2)==length(b2) && length(y1)>2 && length(y2)>2){
+        my_cor$PDiff[i,j]= zdifference_p(R1[i,j],R2[i,j],dim(d$data1)[1], dim(d$data2)[1])
+      }
+    }
+  }
+
+  return(my_cor)
+}
+
+create_two_cor_string <- function(cor1, cor2, groupname1, groupname2, n1, n2, connmethod, regressorname){
+
+  out0 <- paste0(cor1$method, "\n", connmethod, " vs. ", regressorname, "\n")
+  out1 <- create_my_cor_string(cor1, groupname1)
+  out2 <- create_my_cor_string(cor2, groupname2)
+  out3 <- zdifference_string(cor1$estimate, cor2$estimate, n1, n2)
+  return(paste0(out0,out1,out2, out3))
+  }
+
+create_my_cor_string <- function(c1, groupname){
+  out <- paste0(groupname," \n",
+                "t=",  round(c1$statistic,4), " df=", c1$parameter, "\n",
+                "p-value=", round(c1$p.value,6), " r=", round(c1$estimate,4), "\n",
+                "95% CI = ", round(c1$conf.int[1],4), "-",round(c1$conf.int[2],4), "\n"
+                )
+  return(out)
+}
+
+#-------Differences between independent rs-----
+zdifference_p<-function(r1, r2, n1, n2)
+{zd<-(atanh(r1)-atanh(r2))/sqrt(1/(n1-3)+1/(n2-3))
+p <-1 - pnorm(abs(zd))
+return(p)
+}
+
+
+zdifference_string<-function(r1, r2, n1, n2)
+{zd<-(atanh(r1)-atanh(r2))/sqrt(1/(n1-3)+1/(n2-3))
+p <-1 - pnorm(abs(zd))
+out<-paste0("independent groups\n", "Z Difference:", zd, "\n",
+           "One-Tailed P-Value: ", p)
+return(out)
+}
+
+
+#-------Differences between dependent rs-----
+
+tdifference<-function(rxy, rxz, rzy, n)
+{	df<-n-3
+td<-(rxy-rzy)*sqrt((df*(1 + rxz))/(2*(1-rxy^2-rxz^2-rzy^2+(2*rxy*rxz*rzy))))
+p <-pt(td, df)
+out<-paste0("Dependent Groups\n",
+            "t Difference: ", td, "\n",
+            "One-Tailed P-Value: ", p)
+return(out)
+}
+
+
+
+
 #
 #
 # estimate_p_by_cor_method<-function(p_cor_method = "uncor.", p_cor_num=1, alpha= 0.05){
@@ -88,7 +205,7 @@ get_longitudinal_currently_selected_data<-function(D1, D2, g1, g2, t1, t2, freq,
   glob_HD1 <<-HD1
   glob_HD2 <<-HD2
 
-  cat(file = stderr(), "now get the datalong\n")
+  #cat(file = stderr(), "now get the datalong\n")
   d = get_currently_selected_data_long(HD1$mdat, g1, g2, t1, t2, freq,
                                        trials=HD1$utrial_list,
                                        regions=HD1$uregion_list,
@@ -179,7 +296,7 @@ get_currently_selected_data_long2<-function(D, g1, g2, t1, t2, freq,
      cat(file = stderr(),paste0("g1 = ",g1, "   g2 = ", g2,"\n"))
      cat(file = stderr(),paste0("t1 = ",t1, "   t2 = ", t2,"\n"))
      cat(file = stderr(),paste0("freq = ",freq,"\n"))
-     cat(file = stderr(),paste0("trials = ",trials,"\n"))
+     #cat(file = stderr(),paste0("trials = ",trials,"\n"))
      cat(file = stderr(),paste0("method = ",method,"\n"))
      cat(file = stderr(),paste0("get_currently_selected_data_long2 length(dim(data))= ",length(dim(data)),"\n"))
      cat(file = stderr(),paste0("get_currently_selected_data_long2 dim(data)= ",dim(data),"\n"))
@@ -280,8 +397,8 @@ get_currently_selected_data_long2<-function(D, g1, g2, t1, t2, freq,
   # d$data1 und d$data2 sind erhoben
 
 
-  cat(file = stderr(), paste0("dim(d$data1) = ", dim(d$data1),"\n"))
-  cat(file = stderr(), paste0("dim(d$data2) = ", dim(d$data2),"\n"))
+  #cat(file = stderr(), paste0("dim(d$data1) = ", dim(d$data1),"\n"))
+  #cat(file = stderr(), paste0("dim(d$data2) = ", dim(d$data2),"\n"))
   #d$mat_p = matrix(data=NA, nrow=dim(d$data1)[2], ncol=dim(d$data1)[3])
   #d$mat_t = matrix(data=NA, nrow=dim(d$data1)[2], ncol=dim(d$data1)[3])
   d$mat_p = ones(dim(d$data1)[2], dim(d$data1)[3])
@@ -837,7 +954,7 @@ get_currently_selected_data<-function(data, g1, g2, t1, t2, freq, trials=g_trial
 
   #x <<- d
 
-  cat(file = stderr(), "entering for loop ... now \n")
+  #cat(file = stderr(), "entering for loop ... now \n")
   for (i in 1:(dim(d$data1)[2])-1){
     #cat(file = stderr(),paste0("i=",i,"\n"))
     start_idx = i+1
@@ -963,10 +1080,10 @@ split_data_by_longitudinal_info <-function(D_org, long_marker1, long_marker2,
   # Trennen des Gesamtdatensatzes in Gruppen von Zeitlichen Subjects
   S = list()
 
-  cat(file = stderr(), paste0("long_marker1 = ", long_marker1, "\n"))
-  cat(file = stderr(), paste0("long_marker2 = ", long_marker2, "\n"))
-  cat(file = stderr(), paste0("is_exclude_not_reoccuring_subj = ", is_exclude_not_reoccuring_subj, "\n"))
-  cat(file = stderr(), paste0("averagelong = ", averagelong, "\n"))
+  #cat(file = stderr(), paste0("long_marker1 = ", long_marker1, "\n"))
+  #cat(file = stderr(), paste0("long_marker2 = ", long_marker2, "\n"))
+  #cat(file = stderr(), paste0("is_exclude_not_reoccuring_subj = ", is_exclude_not_reoccuring_subj, "\n"))
+  #cat(file = stderr(), paste0("averagelong = ", averagelong, "\n"))
   # Problem ist hier, dass es noch die alten Daten gibt ohne die Formatierung __1 __2 in der id_list
   # deshalb hier eine entsprechende Abfrage ... wenn es noch das alte Design ist
   # dann gibt es keine longitudinale Info und es wird der D_org als S$D1 zurueck gegeben
