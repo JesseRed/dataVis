@@ -614,8 +614,9 @@ longitudinalPlotServer <- function(id, dir_listRS) {
 #        dev.off()
         cur_dev <- dev.cur()
         cat(file = stderr(), cur_dev)
-        cat(file=stderr(), "before curdata() in plot\n")
+        cat(file=stderr(), "before curdata() in plotX\n")
         d <- curdata()
+        longitudinal_group_trials_plot_d <<- d
         mat_t <<- d$mat_t
         mat_p <<- d$mat_p
         ###################

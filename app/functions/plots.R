@@ -360,8 +360,26 @@ generate_plot_Corrplot<-function(mat_p, mat_t,
     mat_p <- replace_na(mat_p,1)
     mat_t <- replace_na(mat_t,0)
     max_abs_mat_t <- max(abs(max(mat_t)), abs(min(mat_t)))
+    if (max_abs_mat_t == 0){
+      max_abs_mat_t = 1
+      cat(file = stderr(), paste0("!!! WARNING ... mat_t matrix is identical \n"))
+    }
     mat_p1023 <<- mat_p
     mat_t1023 <<- mat_t
+    plots_method <<- method
+    plots_cex <<- cex
+    plots_number_color <<- number_color
+    plots_mat_p <<- mat_p
+    plots_mat_t <<- mat_t
+    plots_multi_sig_level <<- multi_sig_level
+    plots_insig <<- insig
+    plots_clustering_method <<- clustering_method
+    plots_num_hclust <<- num_hclust
+    plots_col <<- col_t(1000)
+    plots_max_abs_mat_t <<- max_abs_mat_t
+    #cat(file = stderr(), paste0("mat_t =", mat_t ,"\n"))
+    #cat(file = stderr(), paste0("mat_p =", mat_p ,"\n"))
+
     x1 <<- corrplot(mat_t,
                              add = FALSE,
                              type = "lower",

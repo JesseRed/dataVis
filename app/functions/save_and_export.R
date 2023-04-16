@@ -1,3 +1,4 @@
+library(feather)
 
 export_selected_tab_data <- function(data = NULL){
   if (!is.null(data)){
@@ -8,6 +9,8 @@ export_selected_tab_data <- function(data = NULL){
     saveRDS(data$data2, file = file.path(g_act_data_dir(), "ExportData3D_data2_subj_reg1_reg2.Rds"))
     writeMat(file.path(g_act_data_dir(), "ExportData3D_data1_subj_reg1_reg2.mat"), Data1 = data$data1)
     writeMat(file.path(g_act_data_dir(), "ExportData3D_data2_subj_reg1_reg2.mat"), Data2 = data$data2)
+    #write_feather(data$data1, file = file.path(g_act_data_dir(), "ExportData3D_data1_subj_reg1_reg2"))
+    #write_feather(data$data2, file = file.path(g_act_data_dir(), "ExportData3D_data2_subj_reg1_reg2"))
     #writeMat(file.path(g_act_data_dir(), "ExportMoreData.mat"), Data = data)
 
     cat(file = stderr(), paste("data saved into folder",g_act_data_dir(),"\n"))

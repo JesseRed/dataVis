@@ -79,7 +79,11 @@ preprocessingServer <- function(id) {
         req(input$file_beha)
 
         #read.csv("G:/Programming/R_VIS/preprocessing/behavioral_data_20201120.csv", header = TRUE, sep = ";")
-        read.csv(input$file_beha$datapath, header = TRUE, sep = input$delimiter_beha, check.names = FALSE)
+
+        # changed 20221214 from
+        #read.csv(input$file_beha$datapath, header = TRUE, sep = input$delimiter_beha, check.names = FALSE)
+        # to
+        read.csv(input$file_beha$datapath, header = TRUE, sep = input$delimiter_beha, check.names = FALSE, fileEncoding = "UTF-8-BOM")
 
         # changed 20211111 because of a problem of Johanna
 
