@@ -332,6 +332,7 @@ server <- function(input, output, session) {
         tabPanel("Diff Stat", compareDiffOfDiffStatsUI("CohDiffOfDiffStats")),
         tabPanel("Regression", regressionStatsUI("CohRegStats")),
         tabPanel("LongRegression", regressionStatsUI("RSLongRegStats")),
+        tabPanel("LongRegression2", regressionLongStats2UI("RSLongRegStats2")),
         tabPanel("ANCOVA", ancovaStatsUI("CohAncovaStats")),
         tabPanel("Options Regions", optionsUI("CohOptions"))
       )
@@ -407,6 +408,7 @@ server <- function(input, output, session) {
         tabPanel("Diff Stat", compareDiffOfDiffStatsUI("RSDiffOfDiffStats")),
         tabPanel("Regression", regressionStatsUI("RSRegStats")),
         tabPanel("LongRegression", regressionStatsUI("RSLongRegStats")),
+        tabPanel("LongRegression2", regressionLongStats2UI("RSLongRegStats2")),
         tabPanel("ANCOVA", ancovaStatsUI("RSAncovaStats")),
         tabPanel("Options Regions", optionsUI("RSOptions"))
 
@@ -499,6 +501,7 @@ server <- function(input, output, session) {
   behavioralDataStatsServer("CohBehDataStats", reactive(input$glob_sig), reactive(input$freq))
   regressionStatsServer("CohRegStats", reactive(input$glob_sig), reactive(input$freq))
   regressionLongStatsServer("RSLongRegStats", reactive(input$glob_sig), reactive(input$freq))
+  regressionLongStats2Server("RSLongRegStats2", reactive(input$glob_sig), reactive(input$freq))
   ancovaStatsServer("CohAncovaStats", reactive(input$glob_sig), reactive(input$freq))
   longitudinalPlotServer("Coh", dir_listCon())
   overviewPlotServer("CohOverviewPlot", "Coherence", reactive(input$glob_sig), reactive(input$freq))
@@ -546,6 +549,7 @@ server <- function(input, output, session) {
   behavioralDataStatsServer("RSBehDataStats", reactive(input$glob_sig), reactive(input$freq))
   regressionStatsServer("RSRegStats", reactive(input$glob_sig), reactive(input$freq))
   regressionLongStatsServer("RSLongRegStats", reactive(input$glob_sig), reactive(input$freq))
+  regressionLongStats2Server("RSLongRegStats2", reactive(input$glob_sig), reactive(input$freq))
   ancovaStatsServer("RSAncovaStats", reactive(input$glob_sig), reactive(input$freq))
   longitudinalPlotServer("RS", dir_listCon())
   overviewPlotServer("RSOverviewPlot", "RS", reactive(input$glob_sig), reactive(input$freq))

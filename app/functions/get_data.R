@@ -34,6 +34,21 @@ create_my_ttest_string <- function(z, paired = FALSE, mean1 = 0, mean2 = 0,
 
   return(out)
 }
+
+create_my_cortest_string <- function(z){
+
+  out <- paste0(z$method,"\n\n",
+                "r=", round(z$estimate,2), " \n",
+                "t=", round(z$statistic,2), " \n",
+                "p(uncor)=", z$p.value, "  \n",
+                "df=", round(z$parameter,1),"  \n",
+                "CI(",attributes(z$conf.int),")= ",round(z$conf.int[1],3)," ; ",round(z$conf.int[2],3)," \n"
+
+  )
+
+  return(out)
+}
+
 #
 #
 # estimate_p_by_cor_method<-function(p_cor_method = "uncor.", p_cor_num=1, alpha= 0.05){
