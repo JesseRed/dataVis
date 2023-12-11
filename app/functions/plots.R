@@ -237,9 +237,14 @@ generate_plot_Corrplot<-function(mat_p, mat_t,
 
   if (show_color){
     method = "color"
-    col <- colorRampPalette(c("#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF","#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#EE9988", "#BB4444", "#EE9988", "#FFFFFF","#FFFFFF", "#FFFFFF",  "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF","#FFFFFF", "#FFFFFF","#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF" ))
+    # col <- colorRampPalette(c("#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF","#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#EE9988", "#BB4444", "#EE9988", "#FFFFFF","#FFFFFF", "#FFFFFF",  "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF","#FFFFFF", "#FFFFFF","#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF" ))
+    col <- colorRampPalette(c( "#BB4444", "#BB4444", "#BB4444", "#EE9988", "#FFFFFF","#FFFFFF", "#FFFFFF","#FFFFFF", "#FFFFFF","#FFFFFF", "#FFFFFF","#FFFFFF", "#77AADD", "#4477AA"))
+    #col <- colorRampPalette(c( "#BB4444", "#FFFFFF","#FFFFFF", "#FFFFFF","#FFFFFF", "#FFFFFF","#FFFFFF", "#FFFFFF","#FFFFFF", "#4477AA"))
     col <- colorRampPalette(c( "#BB4444", "#EE9988", "#FFFFFF","#FFFFFF", "#FFFFFF","#FFFFFF", "#FFFFFF","#FFFFFF", "#FFFFFF","#FFFFFF", "#77AADD", "#4477AA"))
-    col <- colorRampPalette(c( "#BB4444", "#FFFFFF","#FFFFFF", "#FFFFFF","#FFFFFF", "#FFFFFF","#FFFFFF", "#FFFFFF","#FFFFFF", "#4477AA"))
+    col <- colorRampPalette(c("#BB4444", "#EE9988","#FFFFFF", "#77AADD", "#4477AA"))
+    # Define a color palette with a smoother transition from red to blue
+    col <- colorRampPalette(c("#BB4444", "#EE9988", "#FFFFFF","#BB4444", "#77AADD", "#4477AA"))
+    col <- colorRampPalette(c("#BB4444","#4477AA", "#77AADD", "#FFFFFF", "#FFFFFF"))
     col_t <- colorRampPalette(c( "#BB4444", "#EE9988", "#FFFFFF","#FFFFFF", "#FFFFFF","#FFFFFF", "#FFFFFF","#FFFFFF", "#FFFFFF","#FFFFFF", "#77AADD", "#4477AA"))
   }else{
     method = "color"
@@ -273,7 +278,7 @@ generate_plot_Corrplot<-function(mat_p, mat_t,
 
   glob_mat_p <<- mat_p
   glob_mat_t <<- mat_t
-
+  cat(file = stderr(), paste0("working on it","\n"))
   #cat(file = stderr(), paste0("Corr regions = ", regions,"\n"))
   cat(file = stderr(), paste0("method = ", g_act_method(),"\n"))
   #cat(file = stderr(), paste0("Corr colnames = ", colnames(mat_p),"\n"))
@@ -298,6 +303,7 @@ generate_plot_Corrplot<-function(mat_p, mat_t,
   e_num_hclust <<- num_hclust
 
   e_col <<- col
+  col_p <<- col
   e_col_t<<-col_t
 
 
@@ -376,6 +382,8 @@ generate_plot_Corrplot<-function(mat_p, mat_t,
     plots_clustering_method <<- clustering_method
     plots_num_hclust <<- num_hclust
     plots_col <<- col_t(1000)
+    #plots_col_p <<- col_p(1000)
+
     plots_max_abs_mat_t <<- max_abs_mat_t
     #cat(file = stderr(), paste0("mat_t =", mat_t ,"\n"))
     #cat(file = stderr(), paste0("mat_p =", mat_p ,"\n"))
@@ -420,8 +428,9 @@ generate_plot_Corrplot<-function(mat_p, mat_t,
                              hclust.method = "average",
                              addrect = num_hclust,
                              title = title, #paste0("Corrplot with method ",g_act_method()),
-                             col = create_sig_colorramp(hex_cols),
-                             col.lim = c(0,1),
+                             col = col(1000),
+                             # col = create_sig_colorramp(hex_cols),
+                             #col.lim = c(0,1),
                              #col=colorRampPalette(c("blue","red","green"))(200),
                              mar=c(0,0,2,2)
                             )
