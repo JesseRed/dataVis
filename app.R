@@ -1,6 +1,8 @@
 library(shiny)
 library(shinyBS)
 
+options(shiny.loglevel = "TRACE")
+
 app = shinyApp(
   ui =
     fluidPage(

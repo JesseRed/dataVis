@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  r-shiny:
+    image: r405  # Replace with your image name if different
+    ports:
+      - "8787:8787"
+    volumes:
+      - /BIOMAG_DATA/LIB/dataVis/:/home/rstudio/dataVis
+      - /BIOMAG_DATA/LIB/dataVisdata/:/home/rstudio/dataVisdata/
+    restart: unless-stopped
+
+#logging:
+#  driver: json-file
+#  options:
+#    max-size: "10m"
+#    max-file: "3"
