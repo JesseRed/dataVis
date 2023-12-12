@@ -1,3 +1,5 @@
+Biomag Data Visualizer 
+
 - login on paris
 - start a terminal
 - start firefox [firefox &]
