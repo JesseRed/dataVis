@@ -32,7 +32,7 @@ test_that("network works",{
   D$uregion_list = names(D$uregion_list_named)
   D$utrial_list_named$T1 = 1
   D$utrial_list_named$T2 = 2
-  D$utrial_list <- names(D$utrial_list)
+  D$utrial_list <- names(D$utrial_list_named)
   D$ufreq_list_named <- list()
   D$ufreq_list_named[['0.5']] <- 1
   D$ufreq_list_named[['1.1']] <- 2
